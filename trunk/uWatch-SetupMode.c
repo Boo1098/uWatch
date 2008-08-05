@@ -1,0 +1,328 @@
+//********************************************************
+// uWatch
+// Setup Mode Functions
+// Version 1.3
+// Last Update: 12th June 08
+// Copyright(c) 2008 David L. Jones
+// Written for the Microchip C30 Compiler
+// Target Device: PIC24FJ64GA004 (44pin)
+// http://www.calcwatch.com
+// EMAIL: david@alternatezone.com
+
+// NOTE: This code is designed to be inserted inline into the uWatch-Main.C function
+//       Most variables are passed as globals and are defined in uWatch-Main.C
+//********************************************************
+
+//global variables for Setup Mode
+
+/*********************************************************
+This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**********************************************************/
+
+void SetTimeBCD(unsigned int h, unsigned int m, unsigned int s)
+{
+    if (h < 0x24 && m < 0x60 && s < 0x60)
+    {
+        RCFGCALbits.RTCPTR=1;       //select correct RTC register
+        RTCVAL=h;
+
+        //the result is now a 16bit BCD number
+        m = (m << 8) + s;
+        RCFGCALbits.RTCPTR=0;       //select correct RTC register
+        RTCVAL=m;
+    }
+}
+
+int SetDateBCD(unsigned int y, unsigned int m, unsigned int d)
+{
+    int v = (m && m < 0x13 && d && d < 0x32 && y < 0x100);
+    if (v)
+    {
+        //month and day are combined in the one word
+        m = (m << 8) + d;
+
+        //the result is now a 16bit BCD number
+        RCFGCALbits.RTCPTR=2;       //select correct RTC register
+        RTCVAL=m;
+        
+        //the result is now an 8bit BCD number
+        RCFGCALbits.RTCPTR=3;       //select correct RTC register
+        RTCVAL=y;
+
+    }
+    return v;
+}
+
+void SetDateBCDandUpdate(int y, int m, int d)
+{
+    if (SetDateBCD(y, m, d))
+    {
+
+        // read accepted date and time back
+        RtccReadDate(&Date);
+        RtccReadTime(&Time);       
+
+        // recalculate DoW and MJD
+        dayHasChanged();
+    
+        // infer whether we are in DST
+        DST = inDST(&y); // dummy
+    }
+}
+
+
+static const char* SetupMenu[] = 
+{
+    "Set Time",
+    "Set Date",
+    "Calc Mode",
+    "Clear EEPROM",
+    "Self Test",
+    "LCD timeout",
+    "ClockCalibration",
+    "12/24hr Time",
+    "About",
+    "Location"
+};
+
+//***********************************
+// The main setup mode routine
+// Note that all variables are global
+void SetupMode(void)
+{
+    unsigned int KeyPress2;        //keypress variables
+    char s[MaxLCDdigits + 1];
+    int Mode;
+    int c,c2;
+
+    Mode= DriveMenu("SETUP: +/- & ENT", SetupMenu, DIM(SetupMenu));
+
+    switch(Mode)                
+    {
+    case 0:                 //change time
+        {
+            int h, m, s;
+            UpdateLCDline2("(Press 2 Digits)");
+            UpdateLCDline1("Enter Hours: ");
+            h = GetNumBCD();
+
+            if (h < 0) return; // escape
+
+            UpdateLCDline1("Enter Minutes: ");
+            m = GetNumBCD();
+        
+            UpdateLCDline1("Enter Seconds: ");
+            s = GetNumBCD();
+                    
+            SetTimeBCD(h, m, s);
+        }
+        break;
+    case 1:                 //change date
+        {
+            int y, m, d;
+            UpdateLCDline2("(Press 2 Digits)");
+            UpdateLCDline1("Enter Month: ");
+
+            m = GetNumBCD();
+            if (m < 0) return; // escape
+
+            UpdateLCDline1("Enter Day: ");
+            d = GetNumBCD();
+
+            UpdateLCDline1("Enter Year: ");
+            y = GetNumBCD();
+
+            SetDateBCDandUpdate(y, m, d);
+        }
+        break;
+    case 2:
+        {
+            UpdateLCDline2("  +/- & ENTER");
+            while(TRUE)
+            {
+                if (RPNmode) 
+                    UpdateLCDline1("Calc Mode = RPN");
+                else UpdateLCDline1("Calc Mode = ALG");
+                do KeyPress2=KeyScan(); while(KeyPress2==0);
+                if (KeyPress2==KeyEnter) return;
+                if ((KeyPress2==KeyPlus)||(KeyPress2==KeyMinus))
+                    RPNmode=!RPNmode;
+            }
+        }
+        break;
+    case 3:                 //clear the EEPROM contents
+        {
+            UpdateLCDline1("Erase EEPROM ?");
+            UpdateLCDline2("ENTER or Cancel");
+            do KeyPress2=KeyScan(); while(KeyPress2==0);
+            if (KeyPress2==KeyEnter)
+            {
+                unsigned int c;
+                UpdateLCDline1("Erasing EEPROM");
+                c2=0;
+                for(c=0;c<65534;c++)        //don't overwrite the last byte, it's used for the calibration value
+                {
+                    ResetSleepTimer();          //we don't want to timeout while doing this
+                    if (KeyScan()==KeyClear) break;
+                    I2CmemoryWRITE(c,0);
+                    c2++;
+                    if (c2>=100)    
+                    {
+                        sprintf(s,"%5i of 65535",c);    
+                        UpdateLCDline2(s);
+                        c2=0;
+                    }
+                }
+            }
+        }
+        break;
+    case 4:
+        {
+            I2CmemoryWRITE(65530, 0xAA);
+            c=I2CmemoryREAD(65530);
+            I2CmemoryWRITE(65530, 0);
+            c2=I2CmemoryREAD(65530);
+            if ((c!=0xAA)||(c2!=0))
+            {
+                UpdateLCDline1("EEPROM failed!");
+                UpdateLCDline2("Press ENTER");
+                do KeyPress2=KeyScan(); while(KeyPress2==0);
+                return;
+            }
+            UpdateLCDline1("EEPROM passed");
+            UpdateLCDline2("Press ENTER");
+            do KeyPress2=KeyScan(); while(KeyPress2==0);
+            UpdateLCDline1("Keyboard Test");
+            UpdateLCDline2("MODE to exit");
+                    
+            while(TRUE)
+            {
+                do KeyPress2=KeyScan(); while(KeyPress2==0);
+                switch(KeyPress2)
+                {
+                case Key1: UpdateLCDline2("1"); break;
+                case Key2: UpdateLCDline2("2"); break;
+                case Key3: UpdateLCDline2("3");  break;
+                case Key4: UpdateLCDline2("4"); break;
+                case Key5: UpdateLCDline2("5");  break;
+                case Key6: UpdateLCDline2("6"); break;
+                case Key7: UpdateLCDline2("7");  break;
+                case Key8: UpdateLCDline2("8");  break;
+                case Key9: UpdateLCDline2("9");  break;
+                case Key0: UpdateLCDline2("0");  break;
+                case KeyPoint: UpdateLCDline2(".");  break;
+                case KeyPlus: UpdateLCDline2("+");  break;
+                case KeyMinus: UpdateLCDline2("-"); break;
+                case KeyMult: UpdateLCDline2("X"); break;
+                case KeyDiv: UpdateLCDline2("/"); break;
+                case KeyMenu: UpdateLCDline2("Menu"); break;
+                case KeyEnter: UpdateLCDline2("Enter"); break;
+                case KeyClear: UpdateLCDline2("Clear"); break;
+                case KeySign: UpdateLCDline2("+/-"); break;
+                case KeyEXP: UpdateLCDline2("EXP"); break;
+                case KeyRCL: UpdateLCDline2("STO/RCL"); break;
+                case KeyLP: UpdateLCDline2("(ROLL"); break;
+                case KeyRP: UpdateLCDline2(")"); break;
+                case KeyXY: UpdateLCDline2("X-Y"); break;
+                case KeyMode: return;
+                }
+            }
+        }
+        break;
+    case 5:
+        {
+            UpdateLCDline1("+/- Adj Timeout");
+            do
+            {
+                sprintf(s,"%3i Seconds",PR1/128);
+                UpdateLCDline2(s);
+                do KeyPress2=KeyScan(); while(KeyPress2==0);
+                if ((KeyPress2==KeyPlus)&&(PR1<53760)) PR1=PR1+1280;        //increment by 10 seconds
+                if ((KeyPress2==KeyMinus)&&(PR1>1280)) PR1=PR1-1280;        //decrement by 10 seconds
+                if (KeyPress2==KeyEnter) break;
+            }
+            while(1);   
+        }
+        break;
+    case 6:
+        {
+            UpdateLCDline1("+/- Adjust CAL");
+            do
+            {
+                sprintf(s,"CAL=%4i",RCFGCALbits.CAL);
+                UpdateLCDline2(s);
+                do KeyPress2=KeyScan(); while(KeyPress2==0);
+                if (KeyPress2==KeyPlus) RCFGCALbits.CAL++;
+                if (KeyPress2==KeyMinus) RCFGCALbits.CAL--;
+                if (KeyPress2==KeyEnter) break;
+            }
+            while(1);   
+            I2CmemoryWRITE(63535,RCFGCALbits.CAL);      //store value in last byte
+        }
+        break;
+    case 7:
+        {
+            UpdateLCDline2("  +/- & ENTER");
+            while(TRUE)
+            {
+                if (TwelveHour) 
+                    UpdateLCDline1("Time Mode = 12h");
+                else UpdateLCDline1("Time Mode = 24h");
+                do KeyPress2=KeyScan(); while(!KeyPress2);
+                if (KeyPress2==KeyEnter) return;
+                if (KeyPress2==KeyPlus||KeyPress2==KeyMinus)
+                    TwelveHour=!TwelveHour;
+            }
+        }
+        break;
+    case 8:
+        {
+            strcpy(s," Watch ");
+            strcat(s,RevString);
+            s[0]=228;               //mu symbol
+            UpdateLCDline1(s);
+            UpdateLCDline2("(c)David L Jones");
+            do KeyPress2=KeyScan(); while(KeyPress2==0);
+        }
+        break;
+    case 9: // location
+        {
+            UpdateLCDline2("  +/- & ENTER");
+            while(TRUE)
+            {
+                UpdateLCDline1(TimeZones[(int)dstRegion].region);
+                        
+                do KeyPress2=KeyScan(); while(!KeyPress2);
+                if (KeyPress2==KeyEnter) 
+                {
+                    DST = inDST(&Mode); // dummy
+                    return;
+                }
+
+                if (KeyPress2 == KeyPlus)
+                {
+                    if (++dstRegion >= DIM(TimeZones))
+                        dstRegion = 0;
+                }
+                else if (KeyPress2 == KeyMinus)
+                {
+                    if (--dstRegion < 0)
+                        dstRegion += DIM(TimeZones);
+                }
+            }
+        }
+        break;
+    }
+}
+
