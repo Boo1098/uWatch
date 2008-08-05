@@ -1,0 +1,54 @@
+**** Operational and Implementation Notes
+
+*** Daylight Saving Time.
+
+This is driven from a table of regions. Each region specifies the start and
+end of DST by supplying a start month, a start type, an end month and an end
+type. The allowed types are currently; firstSunday, secondSunday, lastSunday.
+
+Additionally, the region supplies the hour on which the change takes place and
+the time adjustment. This adjustment is always 1 hour except when it is -1,
+which is supplied for regions where the DST applies OUTSIDE the specified
+region. ie places in the southern hemisphere. In all cases the start month
+preceeds the end month chronologically.
+
+The region "NONE" means DST is disabled.
+
+When the date is set, the DST state is inferred, but the time is never
+adjusted at this point.
+
+In normal operation, if DST is in effect, a little "." character appears after
+the time on display.
+
+Because the watch can power up at any time, it must allways consider a DST
+change, either into or out of DST (when not disabled). If DST is detemined as
+ON, but it is not active, DST is applied and becomes active and the time chage
+applied. This means that when you power up after the spring changover (even
+days later!), DST will trigger. Similarly, if DST is active, but DST is
+determined as OFF, DST will be deactivated and the time change applied.
+
+There is the little problem of falling back into a DST loop!
+
+This is tackled by the DST calculation returning a proximity behind any of the
+changeover thresholds (called the "gap" in the code). In the case where DST ON
+would otherwise trigger, this does not happen if the current time is too close
+to the threshold (ie a gap > 0).
+
+What this means is that, if you wait all summer then power up 1 hour before
+the fall, it wont kick into DST and it wont fall back again. basically, it
+will remain out of DST.
+
+Another problem with making the DST adjustment is that it can happen anytime
+the watch is powered up, and there is the nasty case of it causing the date to
+change (ie near midnight). This is why the DST checking code if triggered
+causes the clock date re-read because it can set the date as well as the time.
+
+The DST rules used are those from the "timezone" (TZ) library. 
+
+
+
+
+
+
+
+
