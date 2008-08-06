@@ -30,11 +30,9 @@
 #define MaxLCDdigits    16
 #endif
 
-extern unsigned int MJD;
+extern long MJD;
 extern BOOL DST;
-
-extern void UpdateLCDline1(const char*);
-extern void UpdateLCDline2(const char*);
+extern double Longitude, Latitude;
 
 extern void CalcRiseAndSet(double* rise, double* set);
 

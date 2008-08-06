@@ -182,7 +182,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #define ClearRow6       _TRISA7=1
 #define ClearRow7       _TRISB14=1
 
-#define MaxRPNmenuItems 4       //this must match the numbr of lines in the menu below
+//#define MaxRPNmenuItems 4       //this must match the numbr of lines in the menu below
 
 //global variables for both RPN and Algebraic calculator
 
@@ -204,7 +204,9 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #define OPRptor         16
 
 #define PI              3.14159265358979
-#define PIstring        "3.14159265358979"
+#define RAD             (180.0/PI)
+
+#define DIM(_x) (sizeof(_x)/sizeof((_x)[0]))
 
 int  CurrentMenu;               // The number of the currently active menu line. 0 to MaxRPNmenuItems
 char ExponentIncluded;          //FLAG, TRUE if Exponent has already been entered
@@ -217,7 +219,7 @@ char DegreesMode;               //FLAG, TRUE if degres mode is on, otherwise rad
 char DisplayXreg[MaxLCDdigits+1];   //holds the value currently being entered by the user, or the Xreg
 char DisplayYreg[MaxLCDdigits+1];   //holds the value currently in Yreg
 char ValueEntered;              //FLAG, TRUE if value has been entered by using the ENTER key
-char MenuMode;                  //FLAG, TRUE is the menu if switched on.
+//char MenuMode;                  //FLAG, TRUE is the menu if switched on.
 int  EnableXregOverwrite;       //FLAG, TRUE if the Xreg will be automatically overwritten on first key press (the ENTER key enables this for example)
 double Xreg, Yreg, Zreg, Treg;  //the working registers (Treg not used for Algebraic)
 double Yreg1, Zreg1;        //extra working registers for algebraic parentheses
@@ -239,23 +241,129 @@ char WatchMode;             //0=time mode, 1=calc mode, 2=setup mode
 
 double Sreg[10];                //the storage registers. Contents retained when calc mode is exited.
 
-// These are the menu options for the RPN calculator
-// one set of menu options for each LCD display line
-char CalcMenuLine1[MaxRPNmenuItems][MaxLCDdigits+1]=
-    {
-        " 1/x  x^2  Sqrt ",
-        " Sin  Cos  Tan  ",
-        " Pi   Y^X  e^x  ",
-        " Rec Play  Conv "
-    };
+#define CALC_OP_NULL            0
+#define CALC_OP_RECIPROCAL      1
+#define CALC_OP_SQUARE          2
+#define CALC_OP_SQRT            3
+#define CALC_OP_LN              4
+#define CALC_OP_EXP             5
+#define CALC_OP_NPOW            6
+#define CALC_OP_NROOT           7
+#define CALC_OP_LN10            8
+#define CALC_OP_10X             9
+#define CALC_OP_SIN             10
+#define CALC_OP_COS             11
+#define CALC_OP_TAN             12
+#define CALC_OP_ASIN            13
+#define CALC_OP_ACOS            14
+#define CALC_OP_ATAN            15
+#define CALC_OP_MODEDEG         16
+#define CALC_OP_MODERAD         17
+#define CALC_OP_PI              18
+#define CALC_OP_HMS             19
+#define CALC_OP_R2P             20
+#define CALC_OP_FACTORIAL       21
+#define CALC_OP_DMY             22
+#define CALC_OP_HOURS           23
+#define CALC_OP_P2R             24
+#define CALC_OP_SUNSET          25
+#define CALC_OP_DAYS            26
+#define CALC_OP_RECORD          27
+#define CALC_OP_PLAY            28
+#define CALC_OP_CONV            29
+#define CALC_OP_PARALLEL        30
 
-char CalcMenuLine2[MaxRPNmenuItems][MaxLCDdigits+1]=
-    {
-        " Log 10^x  Ln  ",
-        " Arc  Hyp       ",
-        " R>P  P>R   //  ",
-        "  x! Time   A-F ",
-    };
+
+typedef struct
+{
+    char*       lines[4];
+    unsigned char ops[10];
+} CalcMenuInfo;
+
+
+CalcMenuInfo MainMenus[] = 
+{
+
+    { // menu 0
+        {" 1/x  x^2   Sqrt ",   
+         " Inv  y^x   Ln   ", 
+         " 1/x  x^2   Sqrt ", 
+         " Inv  y^1/x e^x  "
+        },
+
+        { CALC_OP_RECIPROCAL, 
+          CALC_OP_SQUARE,
+          CALC_OP_SQRT,
+          CALC_OP_NPOW,
+          CALC_OP_LN,
+          CALC_OP_RECIPROCAL, 
+          CALC_OP_SQUARE,
+          CALC_OP_SQRT,
+          CALC_OP_NROOT,
+          CALC_OP_EXP 
+        }
+    },
+
+    { // menu 1
+        {" Sin  Cos  Tan  ",   
+         " Inv  Pi   Deg  ", 
+         " aSin aCos aTan ", 
+         " Inv       Rad   "
+        },
+
+        { CALC_OP_SIN,
+          CALC_OP_COS,
+          CALC_OP_TAN,
+          CALC_OP_PI,
+          CALC_OP_MODEDEG,
+          CALC_OP_ASIN,
+          CALC_OP_ACOS,
+          CALC_OP_ATAN,
+          CALC_OP_NULL, // empty slot
+          CALC_OP_MODERAD
+        }
+    },
+
+    { // menu 2
+        {" HMS       R>P  ",   
+         " Inv  x!   ->D  ", 
+         " ->H       P>R  ", 
+         " Inv  Sun  DMY  "
+        },
+
+        { CALC_OP_HMS,
+          CALC_OP_NULL, // spare!
+          CALC_OP_R2P,
+          CALC_OP_FACTORIAL,
+          CALC_OP_DAYS,
+          CALC_OP_HOURS,
+          CALC_OP_NULL, // inverse spare!
+          CALC_OP_P2R,
+          CALC_OP_SUNSET,
+          CALC_OP_DMY,
+        }
+    },
+
+    { // menu 3
+        {" Rec  Play Conv ",   
+         " 2nd  //        ", 
+         "                ", 
+         " 2nd            "
+        },
+
+        { CALC_OP_RECORD,
+          CALC_OP_PLAY,
+          CALC_OP_CONV,
+          CALC_OP_PARALLEL,
+          CALC_OP_NULL,
+          CALC_OP_NULL,
+          CALC_OP_NULL,
+          CALC_OP_NULL,
+          CALC_OP_NULL,
+          CALC_OP_NULL,
+        }
+    },
+};
 
 char LCDline1[MaxLCDdigits+1];  //holds data for the first LCD display line
 char LCDline2[MaxLCDdigits+1];  //holds data for the second LCD display line
@@ -277,13 +385,15 @@ unsigned char MoonPhase;
 BOOL DST; // are we in daylight saving time?
 char dstRegion = 0; // index into TimeZone table
 
-unsigned int MJD; // modified julian date (days since 200)
+long MJD; // modified julian date (days since 200)
 
 // updated when day changes
 unsigned int Year;
 unsigned int Month;
 unsigned int Day;
 unsigned char DayOfWeek;
+double Longitude;
+double Latitude;
 
 typedef enum
 {
@@ -611,7 +721,9 @@ unsigned int KeystrokeReplay(void)
 {
     unsigned int key;
 
-    if (ProgPlay==FALSE) return(0);     //keystroke reply not enabled, so exit without any key press
+    //keystroke reply not enabled, so exit without any key press
+    if (!ProgPlay) return(0);
+
     key=I2CmemoryREAD(MemPointer);      //read the keystroke from EEPROM
     if (key==0)                         //check for end of keystroke replay
     {
@@ -771,7 +883,7 @@ unsigned char itochar(int i)
     return '*';
 }
 
-unsigned int mjd(int y, int m, int d)
+long mjd(int y, int m, int d)
 {
     // here is the new Hodges' version 2008
     // rebased to 2000/1/1 (add back 51544 for old version)
@@ -784,7 +896,6 @@ unsigned int mjd(int y, int m, int d)
 
 // 0=sunday, 1=monday etc.
 #define DAYOFWEEK(_x)    (((_x)+6)%7)
-#define DIM(_x) (sizeof(_x)/sizeof((_x)[0]))
 
 /* called when we read a date and the day has changed from last read
  * perform calculations based on day here.
@@ -864,11 +975,15 @@ int ReturnNumber(int key)
     return -1; // not a number
 }
 
-// Two line menu driver
-int DriveMenu2(const char* line1, const char* line2)
+// Two line menu driver with optional inv
+// if we escape or change modes, return -keypress
+int DriveMenu2(const char* line1, const char* line2,
+               const char* inv1, const char* inv2)
 {
-    int mi = -1; // escape
+    int mi;
     int key;
+    int inv = 0;
+    int invOption = (inv1 != 0); // enabled?
 
     /* Display `line1' and `line2' consisting of 6 menu items
      * corresponding to the function keys.
@@ -877,28 +992,86 @@ int DriveMenu2(const char* line1, const char* line2)
      *
      *  0  1  2
      *  3  4  5
+     *
+     * or, when inv is used
+     *
+     *  0  1  2
+     *  X  3  4
+     *
+     *  5  6  7
+     *  X  8  9
+     *
      */
-    UpdateLCDline1(line1);
-    UpdateLCDline2(line2);
 
     for (;;)
     {
+        if (!inv)
+        {
+            // display normal choices
+            UpdateLCDline1(line1);
+            UpdateLCDline2(line2);
+        }
+        else
+        {
+            // display inv choices
+            UpdateLCDline1(inv1);
+            if (inv2) UpdateLCDline2(inv2);
+        }
+
+        // get a key
         while (!(key = KeyScan())) ;
 
+        // reset timer
         ResetSleepTimer();
         
-        if (key==KeyClear || key == KeyMode) break;
+        // escape?
+        if (key==KeyClear || key == KeyMode || key == KeyMenu)
+        {
+            // < 0 => escape. also return keypress incase useful.
+            mi = -key;
+            break;
+        }
 
+        // look for a function key
         key = ReturnNumber(key);
         if (key >= 4 && key <= 9)
         {
             // is a function key
-            if (key >= 7)
-                mi = key - 7; // 789
+            if (inv)
+            {
+                // in "inv" mode, return alternate choice numbers
+                if (key == 4)
+                {
+                    // inv => not inv
+                    inv = 0;
+                }
+                else
+                {
+                    mi = key - 2; // 789 -> 567
+                    if (key < 7)
+                    {
+                        mi = key + 3; // 456 -> X89
+                        if (inv2 == 0)
+                            mi = key - 2; // 456 -> X34 
+                    }
+                    break;
+                }
+            }
             else
-                mi = key - 1; // 456
-
-            break;
+            {
+                if (key == 4 && invOption)
+                {
+                    // go to inv choices
+                    inv = 1;
+                }
+                else
+                {
+                    mi = key - 7; // 789 -> 012
+                    if (key < 7)
+                        mi = key - 1 - invOption; // 456 -> 345 (or X34)
+                    break;
+                }
+            }
         }
     }
     return mi;
@@ -1127,7 +1300,7 @@ BOOL inDST(int* gap)
     return res;
 }
 
-void caldati(unsigned int mjd,
+void caldati(long mjd,
              unsigned int* y, unsigned int* m, unsigned int* d)
 {
     // here is the new Hodges' version 2008
@@ -1540,6 +1713,10 @@ void ProgramInit(void)
     ProgPlay=FALSE;         //turn off keystroke playback
     ProgRec=FALSE;          //turn off keystroke record
     DegreesMode=FALSE;      //default is radians mode
+
+    // greenwich, UK
+    Longitude = 0;
+    Latitude = 51.5; 
 }
 
 
@@ -1607,7 +1784,16 @@ int main(void)
         } while (Key!=KeyMode); //loop until a key has been pressed
 
         WatchMode=1;    
-        if (RPNmode) RPNcalculator(); else ALGcalculator();
+        if (RPNmode)
+        { 
+            RPNcalculator();
+        }
+        else 
+        {
+            // XX !!
+            RPNcalculator();
+            // ALGcalculator();
+        }
 
         //user did something in the calc mode, so return to time/date
         if (NextMode==FALSE) continue; 

@@ -32,7 +32,6 @@ This program is free software: you can redistribute it and/or modify
 
 extern void Conversions(void);
 extern void HexEntry(void);
-extern void UpdateTRIGdisplay(void);
 extern void UpdateXregDisplay(void);
 extern void UpdateYregDisplay(void);
 extern void UpdateDisplayRegs(void);
@@ -44,35 +43,173 @@ extern void StoreRecall(void);
 extern void SignKey(void);
 extern void KeyRecord(void);
 extern void KeyReplay(void);
-extern void CalcMenu(void);
-extern double Deg(double num);
-// These routines are common to both the RPN and Algebraic routines
+extern long mjd(int y, int m, int d);
+extern void caldati(long mjd,
+                    unsigned int* y, unsigned int* m, unsigned int* d);
 
-//converts randians to degrees
-double Deg(double num)
+extern void DropStack(void);
+
+void Push(void)
 {
-    return((180/PI)*num);
+    Treg=Zreg;
+    Zreg=Yreg;
+    Yreg=Xreg;
 }
 
-//converts degrees to radians
-double Rad(double num)
+void RtoP(void)
 {
-    return((PI*num)/180);
+    double temp;
+    temp=sqrt((Yreg*Yreg)+(Xreg*Xreg));
+    Xreg=atan(Xreg/Yreg);
+    if (DegreesMode) Xreg *= RAD;
+    Yreg=temp;
 }
 
-//***********************************
-// we cheat here and update the trig display seperately from the other menu items as it is dynamic.
-void UpdateTRIGdisplay(void)
+void PtoR(void)
 {
-    //display DEG/RAD mode
-    if (CurrentMenu==1)
+    double temp;
+    if (DegreesMode) Xreg /= RAD;
+    temp=Yreg*cos(Xreg);
+    Xreg=Yreg*sin(Xreg);
+    Yreg=temp;
+}
+
+double hms(double h)
+{
+    return (90*h+100*(int)(h)+(int)(60*h))/250;
+}
+
+double hr(double x)
+{
+    return (250*x-60*(int)(x)-(int)(100*x))/90;
+}
+
+void Operate(int op)
+{
+    CompleteXreg();		//enter value on stack if needed
+            
+    switch(op)
     {
-        if (DegreesMode==TRUE) 
-            UpdateLCDline2(" Arc  Hyp (Deg)");
-        else
-            UpdateLCDline2(" Arc  Hyp (Rad)");
-    }
+    case CALC_OP_RECIPROCAL:
+        Xreg=1/Xreg;			
+        break;
+    case CALC_OP_SQUARE:
+        Xreg=Xreg*Xreg;			
+        break;
+    case CALC_OP_SQRT:
+        Xreg=sqrt(Xreg);
+        break;
+    case CALC_OP_LN:
+        Xreg=log(Xreg);			
+	break;
+    case CALC_OP_EXP:
+        Xreg=exp(Xreg);
+        break;
+    case CALC_OP_NPOW:
+        Xreg=pow(Yreg,Xreg);			
+        break;
+    case CALC_OP_NROOT:
+        Xreg=pow(Yreg,1.0/Xreg);			        
+        break;
+    case CALC_OP_LN10:
+        break;
+    case CALC_OP_10X:
+        break;
+    case CALC_OP_SIN:
+        if (DegreesMode) Xreg /= RAD;
+        Xreg=sin(Xreg);
+        break;
+    case CALC_OP_COS:
+        if (DegreesMode) Xreg /= RAD;
+        Xreg=cos(Xreg);
+        break;
+    case CALC_OP_TAN:
+        if (DegreesMode) Xreg /= RAD;
+        Xreg=tan(Xreg);
+        break;
+    case CALC_OP_ASIN:
+        Xreg=asin(Xreg);
+        if (DegreesMode) Xreg *= RAD;
+        break;
+    case CALC_OP_ACOS:
+        Xreg=acos(Xreg);
+        if (DegreesMode) Xreg *= RAD;
+        break;
+    case CALC_OP_ATAN:
+        Xreg=atan(Xreg);
+        if (DegreesMode) Xreg *= RAD;
+        break;
+    case CALC_OP_MODEDEG:
+        DegreesMode = TRUE;
+        break;
+    case CALC_OP_MODERAD:
+        DegreesMode = FALSE;
+        break;
+    case CALC_OP_PI:
+        Push();
+        Xreg = PI;
+        break;
+    case CALC_OP_HMS:
+        Xreg = hms(Xreg);
+        break;
+    case CALC_OP_R2P:
+        RtoP();
+        break;
+    case CALC_OP_FACTORIAL:
+        Xreg = Factorial(Xreg);
+        break;
+    case CALC_OP_DMY:
+        {
+            unsigned int y, m, d;
+            caldati(Xreg, &y, &m, &d);
+            Xreg = y/1.0e6 + m/100.0 + d;
+        }
+        break;
+    case CALC_OP_HOURS:
+        Xreg = hr(Xreg);
+        break;
+    case CALC_OP_P2R:
+        PtoR();
+        break;
+    case CALC_OP_SUNSET:
+        {
+            Push();
+            Push();
+            CalcRiseAndSet(&Yreg, &Xreg);
+        }
+        break;
+    case CALC_OP_DAYS:
+        {
+            // assume Xreg is in format dd.mmyyyy
+            int d = Xreg;
+            double t = (Xreg - d)*100;
+            int m = t;
+            int y = (t - m) * 10000;
+            Xreg = mjd(y, m, d);
+        }
+        break;
+    case CALC_OP_RECORD:
 
+        // when we go into record, reset the menu to the first page
+        // so that we get consistent results on replay.
+        CurrentMenu = 0;
+        KeyRecord();
+        break;
+    case CALC_OP_PLAY:
+
+        // for playback put the menu onto the same page as for record.
+        CurrentMenu = 0;
+        KeyReplay();
+        break;
+    case CALC_OP_CONV:
+        Conversions();
+        break;
+    case CALC_OP_PARALLEL:
+        Xreg=(Yreg*Xreg)/(Yreg+Xreg);
+        DropStack();
+        break;
+    }
+    UpdateDisplayRegs();	//update display again
 }
 
 //***********************************
@@ -125,138 +262,6 @@ void UpdateDisplayRegs(void)
 	
     UpdateLCDline1(DisplayYreg);
     UpdateLCDline2(DisplayXreg);
-}
-
-//*************************************************
-// all the 6 functions for menu item 0
-// common to both RPN and ALG modes
-void Menu0(int MenuItem)
-{
-    CompleteXreg();		//enter value on stack if needed
-            
-    switch(MenuItem)
-    {
-    case 1:		//1/x key pressed
-        Xreg=1/Xreg;			
-        break;
-    case 2:		//X^2  key pressed
-        Xreg=Xreg*Xreg;			
-        break;
-    case 3:		//SQRT key pressed
-        Xreg=sqrt(Xreg);
-        break;
-    case 4:		//LOG key presssed
-        Xreg=log10(Xreg);			
-	break;
-    case 5:		//10^X key pressed
-        Xreg=pow(10,Xreg);			
-        break;
-    case 6:		//LOGe key pressed
-        Xreg=log(Xreg);			
-        break;
-    }
-
-    UpdateDisplayRegs();	//update display again
-    SwitchMenuOff();
-}
-
-//*************************************************
-// all the 6 functions for menu item 1
-// common to both RPN and ALG modes
-void Menu1(int MenuItem)
-{
-    switch(MenuItem)
-    {
-    case 1:			// SIN key pressed
-        {
-            CompleteXreg();		//enter value on stack if needed
-            if (InverseKey==TRUE) 
-            {
-                Xreg=asin(Xreg);
-                if (DegreesMode==TRUE) Xreg=Deg(Xreg);
-            }
-            if (HYPkey==TRUE) 
-            {
-                Xreg=sinh(Xreg);
-            }
-            if ((InverseKey==FALSE) && (HYPkey==FALSE)) 
-            {
-                if (DegreesMode==TRUE) Xreg=Rad(Xreg);
-                Xreg=sin(Xreg);			
-            }
-            InverseKey=FALSE;		//reset the function flags
-            HYPkey=FALSE;
-            UpdateDisplayRegs();	//update display again
-            SwitchMenuOff();
-            break;
-        }
-    case 2:			// COS key pressed
-        {
-            CompleteXreg();		//enter value on stack if needed
-            if (InverseKey==TRUE) 
-            {
-                Xreg=acos(Xreg);
-                if (DegreesMode==TRUE) Xreg=Deg(Xreg);
-            }
-            if (HYPkey==TRUE) 
-            {
-                Xreg=cosh(Xreg);
-            }
-            if ((InverseKey==FALSE) && (HYPkey==FALSE)) 
-            {
-                if (DegreesMode==TRUE) Xreg=Rad(Xreg);
-                Xreg=cos(Xreg);			
-            }
-            InverseKey=FALSE;		//reset the function flags
-            HYPkey=FALSE;
-            UpdateDisplayRegs();	//update display again
-            SwitchMenuOff();
-            break;
-        }
-    case 3:			// TAN key pressed
-        {
-            CompleteXreg();		//enter value on stack if needed
-            if (InverseKey==TRUE) 
-            {
-                Xreg=atan(Xreg);
-                if (DegreesMode==TRUE) Xreg=Deg(Xreg);
-            }
-            if (HYPkey==TRUE) 
-            {
-                Xreg=tanh(Xreg);
-            }
-            if ((InverseKey==FALSE) && (HYPkey==FALSE)) 
-            {
-                if (DegreesMode==TRUE) Xreg=Rad(Xreg);
-                Xreg=tan(Xreg);			
-            }
-            InverseKey=FALSE;		//reset the function flags
-            HYPkey=FALSE;
-            UpdateDisplayRegs();	//update display again
-            SwitchMenuOff();
-            break;
-        }
-    case 4:			//INV key pressed
-        {
-            InverseKey=TRUE;
-            UpdateLCDline2(" Inverse");
-            break;
-        }
-    case 5:			//HYP key pressed
-        {
-            HYPkey=TRUE;
-            UpdateLCDline2(" Hyperbolic");
-            break;
-        }
-    case 6:			// DEG/RAD key
-        {
-            if (DegreesMode==TRUE)
-                DegreesMode=FALSE;
-            else DegreesMode=TRUE;
-            UpdateTRIGdisplay();
-        }
-    }
-
 }
 
 static double dgamma(double x)
@@ -359,7 +364,7 @@ void UpdateYregDisplay(void)
 //switches the menu off and restores the Xreg/Yreg display
 void SwitchMenuOff(void)
 {
-    MenuMode=FALSE;
+    //MenuMode=FALSE;
     UpdateLCDline1(DisplayYreg);
     UpdateLCDline2(DisplayXreg);
 }
@@ -417,71 +422,68 @@ void StoreRecall(void)
 void SignKey(void)
 {
     int n = strlen(DisplayXreg);
-    if (MenuMode==FALSE) //this key is not used in MENU mode			
+    char* p = DisplayXreg;
+    char* q;
+
+    //do this if there is an exponent already
+    if (ExponentIncluded==TRUE)
     {
-        char* p = DisplayXreg;
-        char* q;
+        //search Xreg for 'e'
+        while (*p != 'e') ++p;
+        ++p;
 
-        //do this if there is an exponent already
-        if (ExponentIncluded==TRUE)
+        //minus already exists so lets remove it
+        if (MinusIncludedInExponent==TRUE)
         {
-            //search Xreg for 'e'
-            while (*p != 'e') ++p;
-            ++p;
-
-            //minus already exists so lets remove it
-            if (MinusIncludedInExponent==TRUE)
-            {
-                q = p + 1;
-                while ((*p++ = *q++) != 0) ;
-                MinusIncludedInExponent=FALSE;
-            }
-            else //minus does not exist yet so lets add one
-            {
-                char* k;
-                q = DisplayXreg + n + 1;
-                k = q;
-                while (q != p)
-                    *q-- = *--k;
-
-                *p = '-';
-                MinusIncludedInExponent=TRUE;
-            }
-            UpdateLCDline2(DisplayXreg);		//update the display
+            q = p + 1;
+            while ((*p++ = *q++) != 0) ;
+            MinusIncludedInExponent=FALSE;
         }
-        else //do this if there is only a mantissa
+        else //minus does not exist yet so lets add one
         {
-            if (ValueEntered==TRUE) 	//if this is the first digit pressed
-            {
-                if (EnableXregOverwrite==FALSE)	//check to see if we don't have to overwrite the Xreg
-                    DisplayXreg[0] = 0; //clear (overwrite)what was in the Xreg
-                EnableXregOverwrite=FALSE;	//disable overwriting the Xreg for future key presses
-            }
-	
-            if (MinusIncluded==TRUE)
-            {
-                MinusIncluded=FALSE;
-                
-                //shift all characters one space left to remove existing minus sign
-                q = p + 1;
-                while ((*p++ = *q++) != 0) ;
-            }
-            else
-            {
-                char* k;
-                q = DisplayXreg + n + 1;
-                k = q;
-                while (q != p)
-                    *q-- = *--k;
+            char* k;
+            q = DisplayXreg + n + 1;
+            k = q;
+            while (q != p)
+                *q-- = *--k;
 
-                MinusIncluded=TRUE;
-
-                *p = '-';
-            }
+            *p = '-';
+            MinusIncludedInExponent=TRUE;
         }
-        ValueEntered=FALSE;
         UpdateLCDline2(DisplayXreg);		//update the display
     }
+    else //do this if there is only a mantissa
+    {
+        if (ValueEntered==TRUE) 	//if this is the first digit pressed
+        {
+            if (EnableXregOverwrite==FALSE)	//check to see if we don't have to overwrite the Xreg
+                DisplayXreg[0] = 0; //clear (overwrite)what was in the Xreg
+            EnableXregOverwrite=FALSE;	//disable overwriting the Xreg for future key presses
+        }
+	
+        if (MinusIncluded==TRUE)
+        {
+            MinusIncluded=FALSE;
+                
+            //shift all characters one space left to remove existing minus sign
+            q = p + 1;
+            while ((*p++ = *q++) != 0) ;
+        }
+        else
+        {
+            char* k;
+            q = DisplayXreg + n + 1;
+            k = q;
+            while (q != p)
+                *q-- = *--k;
+
+            MinusIncluded=TRUE;
+
+            *p = '-';
+        }
+    }
+    ValueEntered=FALSE;
+    UpdateLCDline2(DisplayXreg);		//update the display
 }
 
 void KeyRecord(void)
@@ -494,12 +496,11 @@ void KeyRecord(void)
 
     //now get a two digit number from the user
     num=GetNumBCD();
-
     if (num < 0) return; // escape
 
     num = BCDtoDEC(num);
     if (num>59) num=59;
-
+    
     //set the memory pointer to after the header info
     MemPointer=(num*1024)+16;
 
@@ -526,84 +527,17 @@ void KeyReplay(void)
     num = BCDtoDEC(num);
     if (num>59) num=59;
 
-    MemPointer=(num*1024)+16;		//set the memory pointer to after the header info
+    //set the memory pointer to after the header info
+    MemPointer=(num*1024)+16;
     for(c=0;c<15;c++) s[c]=I2CmemoryREAD((MemPointer-16)+c);
     s[16]=NULL;
-    ProgPlay=TRUE;						//switch on keystroke programming mode
+    ProgPlay=TRUE; //switch on keystroke programming mode
     UpdateLCDline1(s);
     UpdateLCDline2("Running...");
     DelayMs(1000);
 }
 
-void CalcMenu(void)
-{
-    if (MenuMode==TRUE)		//menu is already on so switch menu screens
-    {
-        if (++CurrentMenu>=MaxRPNmenuItems) 
-            CurrentMenu=0;
-    }
 
-    MenuMode=TRUE;
-    UpdateLCDline1(CalcMenuLine1[CurrentMenu]);
-    UpdateLCDline2(CalcMenuLine2[CurrentMenu]);
-    UpdateTRIGdisplay(); //not very elegant, but gotta do it somewhere
-}
-
-
-void RtoP(void)
-{
-    double temp;
-    temp=sqrt((Yreg*Yreg)+(Xreg*Xreg));
-    Xreg=atan(Xreg/Yreg);
-    if (DegreesMode==TRUE) Xreg=Deg(Xreg);
-    Yreg=temp;
-}
-
-void PtoR(void)
-{
-    double temp;
-    if (DegreesMode==TRUE) temp=Yreg*cos(Rad(Xreg));
-    else temp=Yreg*cos(Xreg);
-		
-    if (DegreesMode==TRUE) Xreg=Yreg*sin(Rad(Xreg));
-    else Xreg=Yreg*sin(Xreg);
-    Yreg=temp;
-}
-
-double hms(double h)
-{
-    return (90*h+100*(int)(h)+(int)(60*h))/250;
-}
-
-double hr(double x)
-{
-    return (250*x-60*(int)(x)-(int)(100*x))/90;
-}
-
-// return true to stay on menu
-void TimeFunctions()
-{
-    int c;
-    c = DriveMenu2(" Sun            ",
-                   " ->H HMS        ");
-
-    switch (c)
-    {
-    case 0: // rise & set
-        {
-            UpdateLCDline2("Working...");
-            CalcRiseAndSet(&Yreg, &Xreg);
-            break;
-        case 3: // ->H
-            Xreg = hr(Xreg);
-            break;
-        case 4: // HMS
-            Xreg = hms(Xreg);
-            break;
-        }
-        break;
-    }
-}
 
 //**************************************
 // enter a HEX digit A-F onto the current Xreg string
@@ -642,7 +576,7 @@ void HexEntry(void)
         strcat(DisplayXreg,digit);
 
         ValueEntered=FALSE;
-        MenuMode=FALSE;					//flag that a number has been entered
+        //MenuMode=FALSE;					//flag that a number has been entered
         UpdateLCDline1(DisplayYreg);
         UpdateLCDline2(DisplayXreg);
     }
@@ -663,7 +597,7 @@ static const char* ConversionsMenu[] =
 // display the conversions menu
 void Conversions(void)
 {
-    char s[17];
+    char s[MaxLCDdigits+1];
     int Mode;
 
     Mode= DriveMenu("CONV: +/- & ENT", ConversionsMenu, DIM(ConversionsMenu));
@@ -671,31 +605,21 @@ void Conversions(void)
     {
     case 0: 
         {
-            CompleteXreg();		//enter value on stack if needed
             Xreg=Xreg*0.0254;
-            UpdateDisplayRegs();	//update display again
-            SwitchMenuOff();
             break;
         }
     case 1:
         {
-            CompleteXreg();		//enter value on stack if needed
             Xreg=Xreg*(1.0/0.0254);
-            UpdateDisplayRegs();	//update display again
-            SwitchMenuOff();
             break;
         }
     case 2: 
         {
-            CompleteXreg();		//enter value on stack if needed
             Xreg=(Xreg-32.0)*5.0/9.0;
-            UpdateDisplayRegs();	//update display again
-            SwitchMenuOff();
             break;
         }
     case 3:
         {
-            CompleteXreg();		//enter value on stack if needed
             Xreg=Xreg*9.0/5.0+32.0;
             UpdateDisplayRegs();	//update display again
             SwitchMenuOff();
@@ -703,18 +627,12 @@ void Conversions(void)
         }
     case 4:
         {
-            CompleteXreg();		//enter value on stack if needed
             Xreg=Xreg*2.2046226218487757;
-            UpdateDisplayRegs();	//update display again
-            SwitchMenuOff();
             break;
         }
     case 5:
         {
-            CompleteXreg();		//enter value on stack if needed
             Xreg=Xreg*0.45359237;
-            UpdateDisplayRegs();	//update display again
-            SwitchMenuOff();
             break;
         }
     case 6: //BASE-N mode

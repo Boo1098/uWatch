@@ -29,13 +29,12 @@ This program is free software: you can redistribute it and/or modify
 **********************************************************/
 
 
+
 //***********************************
 // pushes the stack up and leaves the Xreg intact
 void PushStackUp(void)
 {
-    Treg=Zreg;
-    Zreg=Yreg;
-    Yreg=Xreg;
+    Push();
     UpdateYregDisplay(); //Yreg has changed, so keep display register up to date
 }
 
@@ -49,6 +48,7 @@ void DropStack(void)
 }
 
 
+#if 0
 //**********************************
 // Performs the function passed by the MenuItem number
 // MenuItem numbers on screen are as follows:
@@ -174,6 +174,7 @@ void ProcessMenuItemRPN(int MenuItem)
         break;
     }
 }
+#endif
 
 //**********************************
 void ProcessNumberKey(char* digit)
@@ -193,7 +194,7 @@ void ProcessNumberKey(char* digit)
         }
         strcat(DisplayXreg,digit);
         ValueEntered=FALSE;
-        MenuMode=FALSE;
+        //MenuMode=FALSE;
         UpdateLCDline1(DisplayYreg);
         UpdateLCDline2(DisplayXreg);
     }
@@ -241,10 +242,33 @@ void RPNcalculator(void)
         ResetSleepTimer();
 
         // common menu mode or not
-        if (Key == KeyMenu)
+        while (Key == KeyMenu)
         {
-            CalcMenu();
+            int mi;
+            CalcMenuInfo* mifo;
+
+            mifo = MainMenus + CurrentMenu;
+            mi = DriveMenu2(mifo->lines[0], mifo->lines[1],
+                            mifo->lines[2], mifo->lines[3]);
+            
+            Key = 0;
+            if (mi >= 0)
+            {
+                mi = mifo->ops[mi];
+                if (mi > 0)
+                {
+                    Operate(mi);
+                }
+            }
+            else
+            {
+                // retrieve key pressed
+                Key = -mi;
+                if (Key == KeyMenu)
+                    if (++CurrentMenu>=DIM(MainMenus)) CurrentMenu=0;
+            }
         }
+#if 0
         else if (MenuMode)
         {
             switch (Key)
@@ -280,177 +304,175 @@ void RPNcalculator(void)
                 break;
             }
         }
-        else 
+#endif
+        switch (Key)
         {
-            switch (Key)
+        case Key1: //user has pressed the 1 key
+            ProcessNumberKey("1");
+            break;
+        case Key2: //user has pressed the 2 key
+            ProcessNumberKey("2");
+            break;
+        case Key3: //user has pressed the 3 key
+            ProcessNumberKey("3");
+            break;
+        case Key4: //user has pressed the 4 key
+            ProcessNumberKey("4");
+            break;
+        case Key5: //user has pressed the 5 key
+            ProcessNumberKey("5");
+            break;
+        case Key6: //user has pressed the 6 key
+            ProcessNumberKey("6");
+            break;
+        case Key7: //user has pressed the 7 key
+            ProcessNumberKey("7");
+            break;
+        case Key8: //user has pressed the 8 key
+            ProcessNumberKey("8");
+            break;
+        case Key9: //user has pressed the 9 key
+            ProcessNumberKey("9");
+            break;
+        case Key0: //user has pressed the 0 key
+            ProcessNumberKey("0");
+            break;
+        case KeyPoint: //user has pressed the DECIMAL POINT key
             {
-            case Key1: //user has pressed the 1 key
-                ProcessNumberKey("1");
-                break;
-            case Key2: //user has pressed the 2 key
-                ProcessNumberKey("2");
-                break;
-            case Key3: //user has pressed the 3 key
-                ProcessNumberKey("3");
-                break;
-            case Key4: //user has pressed the 4 key
-                ProcessNumberKey("4");
-                break;
-            case Key5: //user has pressed the 5 key
-                ProcessNumberKey("5");
-                break;
-            case Key6: //user has pressed the 6 key
-                ProcessNumberKey("6");
-                break;
-            case Key7: //user has pressed the 7 key
-                ProcessNumberKey("7");
-                break;
-            case Key8: //user has pressed the 8 key
-                ProcessNumberKey("8");
-                break;
-            case Key9: //user has pressed the 9 key
-                ProcessNumberKey("9");
-                break;
-            case Key0: //user has pressed the 0 key
-                ProcessNumberKey("0");
-                break;
-            case KeyPoint: //user has pressed the DECIMAL POINT key
-                {
-                    if (strlen(DisplayXreg)<MaxLCDdigits)
-                        //only do if decimal point does not already exist AND there is no exponent
-                        if ((DecimalIncluded==FALSE) && ExponentIncluded==FALSE)		
+                if (strlen(DisplayXreg)<MaxLCDdigits)
+                    //only do if decimal point does not already exist AND there is no exponent
+                    if ((DecimalIncluded==FALSE) && ExponentIncluded==FALSE)		
+                    {
+                        if (ValueEntered==TRUE) 	//user has pressed POINT as the first digit
                         {
-                            if (ValueEntered==TRUE) 	//user has pressed POINT as the first digit
-                            {
-                                strcpy(DisplayXreg,"0.");	//decimal point needs a 0 added to the start
-                            }
-                            else		
-                                strcat(DisplayXreg,".");
-                            DecimalIncluded=TRUE;
-                            ValueEntered=FALSE;
-                            UpdateLCDline1(DisplayYreg);
-                            UpdateLCDline2(DisplayXreg);
+                            strcpy(DisplayXreg,"0.");	//decimal point needs a 0 added to the start
                         }
-                }
-                break;
-            case KeyEnter: //user has pressed the ENTER key
-                {
-                    CompleteXreg();
-                    PushStackUp();
-                    ResetFlags();
-                    EnableXregOverwrite=TRUE;	//overwite the flag and force the Xreg to be overwritten on the next entry
-                    UpdateDisplayRegs();
-                }
-                break;
-            case KeyPlus: //user has pressed the PLUS key
-                {
-                    CompleteXreg();
-                    ResetFlags();
-                    Xreg=Xreg+Yreg;		//perform PLUS operation
-                    DropStack();
-                    UpdateDisplayRegs();
-                }
-                break;
-            case KeyMinus: //user has pressed the MINUS key
-                {
-                    CompleteXreg();
-                    ResetFlags();
-                    Xreg=Yreg-Xreg;			//perform MINUS operation
-                    DropStack();
-                    UpdateDisplayRegs();
-                }
-                break;
-            case KeyMult: //user has pressed the MULTIPLY key
-                {
-                    CompleteXreg();
-                    ResetFlags();
-                    Xreg=Xreg*Yreg;			//perform MULTIPLY operation
-                    DropStack();
-                    UpdateDisplayRegs();
-                }
-                break;
-            case KeyDiv: //user has pressed the DIVIDE key
-                {
-                    CompleteXreg();
-                    ResetFlags();
-                    Xreg=Yreg/Xreg;		//perform DIVIDE operation
-                    DropStack();
-                    UpdateDisplayRegs();
-                }
-                break;
-            case KeyClear: //user has pressed the CLEAR key
-                {
-                    InverseKey=FALSE;		//reset the function flags
-                    HYPkey=FALSE;
-                
-                    //only clear if there is something in the display register to clear
-                    if (ValueEntered==FALSE)	
-                    {
-                        Xreg = 0;
-                        UpdateDisplayRegs();
-                        ResetFlags();
-                        EnableXregOverwrite = TRUE;
+                        else		
+                            strcat(DisplayXreg,".");
+                        DecimalIncluded=TRUE;
+                        ValueEntered=FALSE;
+                        UpdateLCDline1(DisplayYreg);
+                        UpdateLCDline2(DisplayXreg);
                     }
-                    else //clear the X register instead and DROP the stack
-                    {
-                        Xreg=Yreg; //drop X reg from the stack
-                        DropStack();
-                        Treg=0;
-                        UpdateDisplayRegs();
-                        ResetFlags();
-                    }
-
-
-                }
-                break;
-            case KeyEXP: 
-                {
-                    if (ExponentIncluded==FALSE)	//can't add exponent twice
-                    {
-                        ExponentIncluded=TRUE;
-
-                        // EXP is first key pressed, so add a 1 to the front
-                        if (ValueEntered==TRUE) strcpy(DisplayXreg,"1e");
-                        else strcat(DisplayXreg,"e");		
-                        ValueEntered=FALSE;	
-                        UpdateLCDline2(DisplayXreg);		//update the display
-                    }
-                }
-                break;
-            case KeyXY: 
-                {
-                    CompleteXreg();		//enter value on stack if needed
-                    TEMPreg=Xreg;			
-                    Xreg=Yreg;			//swap and X and Y regs
-                    Yreg=TEMPreg;
-                    UpdateDisplayRegs();	//update display again
-                }
-                break;
-            case KeyLP: 
-                {
-                    CompleteXreg();		//enter value on stack if needed
-                    TEMPreg=Xreg;			
-                    Xreg=Yreg;			// roll the stack DOWN
-                    Yreg=Zreg;
-                    Zreg=Treg;
-                    Treg=TEMPreg;
-                    UpdateDisplayRegs();	//update display again
-                }
-                break;
-            case KeyRCL: 
-                {
-                    //recalls the one of the user defined memory registers into the Xreg
-                    CompleteXreg();
-                    StoreRecall();
-                    UpdateDisplayRegs();	//update display again
-                }
-                break;
-            case KeySign: 
-                //changes the sign of the mantissa or exponent
-                SignKey();
-                break;
             }
+            break;
+        case KeyEnter: //user has pressed the ENTER key
+            {
+                CompleteXreg();
+                PushStackUp();
+                ResetFlags();
+                EnableXregOverwrite=TRUE;	//overwite the flag and force the Xreg to be overwritten on the next entry
+                UpdateDisplayRegs();
+            }
+            break;
+        case KeyPlus: //user has pressed the PLUS key
+            {
+                CompleteXreg();
+                ResetFlags();
+                Xreg=Xreg+Yreg;		//perform PLUS operation
+                DropStack();
+                UpdateDisplayRegs();
+            }
+            break;
+        case KeyMinus: //user has pressed the MINUS key
+            {
+                CompleteXreg();
+                ResetFlags();
+                Xreg=Yreg-Xreg;			//perform MINUS operation
+                DropStack();
+                UpdateDisplayRegs();
+            }
+            break;
+        case KeyMult: //user has pressed the MULTIPLY key
+            {
+                CompleteXreg();
+                ResetFlags();
+                Xreg=Xreg*Yreg;			//perform MULTIPLY operation
+                DropStack();
+                UpdateDisplayRegs();
+            }
+            break;
+        case KeyDiv: //user has pressed the DIVIDE key
+            {
+                CompleteXreg();
+                ResetFlags();
+                Xreg=Yreg/Xreg;		//perform DIVIDE operation
+                DropStack();
+                UpdateDisplayRegs();
+            }
+            break;
+        case KeyClear: //user has pressed the CLEAR key
+            {
+                InverseKey=FALSE;		//reset the function flags
+                HYPkey=FALSE;
+                
+                //only clear if there is something in the display register to clear
+                if (ValueEntered==FALSE)	
+                {
+                    Xreg = 0;
+                    UpdateDisplayRegs();
+                    ResetFlags();
+                    EnableXregOverwrite = TRUE;
+                }
+                else //clear the X register instead and DROP the stack
+                {
+                    Xreg=Yreg; //drop X reg from the stack
+                    DropStack();
+                    Treg=0;
+                    UpdateDisplayRegs();
+                    ResetFlags();
+                }
+
+
+            }
+            break;
+        case KeyEXP: 
+            {
+                if (ExponentIncluded==FALSE)	//can't add exponent twice
+                {
+                    ExponentIncluded=TRUE;
+
+                    // EXP is first key pressed, so add a 1 to the front
+                    if (ValueEntered==TRUE) strcpy(DisplayXreg,"1e");
+                    else strcat(DisplayXreg,"e");		
+                    ValueEntered=FALSE;	
+                    UpdateLCDline2(DisplayXreg);		//update the display
+                }
+            }
+            break;
+        case KeyXY: 
+            {
+                CompleteXreg();		//enter value on stack if needed
+                TEMPreg=Xreg;			
+                Xreg=Yreg;			//swap and X and Y regs
+                Yreg=TEMPreg;
+                UpdateDisplayRegs();	//update display again
+            }
+            break;
+        case KeyLP: 
+            {
+                CompleteXreg();		//enter value on stack if needed
+                TEMPreg=Xreg;			
+                Xreg=Yreg;			// roll the stack DOWN
+                Yreg=Zreg;
+                Zreg=Treg;
+                Treg=TEMPreg;
+                UpdateDisplayRegs();	//update display again
+            }
+            break;
+        case KeyRCL: 
+            {
+                //recalls the one of the user defined memory registers into the Xreg
+                CompleteXreg();
+                StoreRecall();
+                UpdateDisplayRegs();	//update display again
+            }
+            break;
+        case KeySign: 
+            //changes the sign of the mantissa or exponent
+            SignKey();
+            break;
         }
-    }	//end of entire loop
+    }
 }
 

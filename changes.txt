@@ -50,6 +50,14 @@ uWatch Revisions:
 - increase number of digits displayed by 1.
 - refactored 2digit input code for menus and selections.
 - refactored menu drivers.
+- totally changed RPN mode 
+- calculator operations now driven from generic menus
+- menu system expanded to have an "inv" or "2nd" page
+- WaRNING: DISCONNECTED ALG MODE !!!! <- yes, i will put this back in
+- added DMY and ->D date arithmetic
+- moved everything about on the menus! (there are currently some gaps)
+
+
 
 
 
