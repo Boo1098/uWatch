@@ -29,6 +29,7 @@ This program is free software: you can redistribute it and/or modify
 **********************************************************/
 
 
+#if 0
 
 
 void ProcessXYoperator(void)
@@ -603,3 +604,4 @@ void ALGcalculator(void)
     }   //end of entire loop
 }
 
+#endif

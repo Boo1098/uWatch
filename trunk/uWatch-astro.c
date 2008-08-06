@@ -138,10 +138,12 @@ void CalcRiseAndSet(double* r, double* s)
     double sinh0;
     double lambda, phi, t;
     
-    sinh0 = sin(-50.0/60.0 * RPD); /* sunrise           at h=-50'        */
+    //sinh0 = sin(-50.0/60.0 * RPD); /* sunrise           at h=-50'        */
+    sinh0 =  0.5831436921810546296649407264315;
 
-    lambda = 0; // longitude
-    phi = 51.5; // latitude
+    // get global position
+    lambda = Longitude; 
+    phi = Latitude;
 
     t = MJD + 51544;
     SunRiseSet(t,lambda, phi, sinh0, r, s);
