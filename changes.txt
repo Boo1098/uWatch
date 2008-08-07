@@ -44,7 +44,6 @@ uWatch Revisions:
 - baseN conversion does not hang (although still not implemented)
 - change menu "LOGe" to "Ln"
 - change menu items to use lower case
-- remove 3root from menu, replace with "Time" a new menu of time functions
 - added time function ("sun" rise & set).
 - added time functions ->H and HMS,
 - increase number of digits displayed by 1.
@@ -53,9 +52,10 @@ uWatch Revisions:
 - totally changed RPN mode 
 - calculator operations now driven from generic menus
 - menu system expanded to have an "inv" or "2nd" page
-- WaRNING: DISCONNECTED ALG MODE !!!! <- yes, i will put this back in
 - added DMY and ->D date arithmetic
 - moved everything about on the menus! (there are currently some gaps)
+- ALG mode operational again (needs more testing).
+
 
 
 

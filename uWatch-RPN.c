@@ -30,176 +30,6 @@ This program is free software: you can redistribute it and/or modify
 
 
 
-//***********************************
-// pushes the stack up and leaves the Xreg intact
-void PushStackUp(void)
-{
-    Push();
-    UpdateYregDisplay(); //Yreg has changed, so keep display register up to date
-}
-
-//**********************************
-// Drops the stack down and leaves Treg intact making it useful as a "constant" register
-// Xreg is handled in the calling routine
-void DropStack(void)
-{
-    Yreg=Zreg;
-    Zreg=Treg;
-}
-
-
-#if 0
-//**********************************
-// Performs the function passed by the MenuItem number
-// MenuItem numbers on screen are as follows:
-// " 1  2  3  4 "
-// " 5  6  7  8 "
-// CurrentMenu holds the desired menu display number
-void ProcessMenuItemRPN(int MenuItem)
-{	
-    switch(CurrentMenu)
-    {
-    case 0:			//MENU #1
-        Menu0(MenuItem);
-        break;
-    case 1:
-        Menu1(MenuItem);
-        break;
-    case 2:
-        switch(MenuItem)
-        {
-        case 1:		//PI key
-            {
-                if (ValueEntered==TRUE) PushStackUp();
-                strcpy(DisplayXreg,PIstring);
-                ValueEntered=FALSE;
-                break;
-            }
-        case 2:		//X^Y key
-            {
-                CompleteXreg();		//enter value on stack if needed
-                Xreg=pow(Yreg,Xreg); 
-                DropStack();
-                UpdateDisplayRegs();	//update display again
-                break;
-            }
-        case 3:		//e^X key
-            {
-                CompleteXreg();		//enter value on stack if needed
-                Xreg=exp(Xreg);				
-                UpdateDisplayRegs();	//update display again
-                break;
-            }
-        case 4:		// R-P key
-            {
-                CompleteXreg();			//enter value on stack if needed
-                RtoP();
-                UpdateDisplayRegs();	//update display again
-                break;
-            }
-        case 5:		// P-R key
-            {
-                CompleteXreg();		//enter value on stack if needed					
-                PtoR();
-                UpdateDisplayRegs();	//update display again
-                break;
-            }
-        case 6:		//Parallel key 
-            {
-                CompleteXreg();		//enter value on stack if needed
-                Xreg=(Yreg*Xreg)/(Yreg+Xreg);
-                DropStack();
-                UpdateDisplayRegs();	//update display again
-                break;
-            }
-        }
-
-        // all cases
-        SwitchMenuOff();
-        break;
-
-    case 3:
-
-        switch(MenuItem)
-        {
-        case 1:			//Keystroke RECORD selected
-            {
-                CompleteXreg();		//enter value on stack if needed
-                KeyRecord();
-                SwitchMenuOff();
-                break;
-            }
-        case 2:			//keystroke PLAYBACK
-            {
-                CompleteXreg();		//enter value on stack if needed
-                KeyReplay();
-                SwitchMenuOff();
-                break;
-            }
-        case 3:			// conversions
-            {
-                Conversions();
-                break;
-            }
-        case 4:			//X! key 
-            {
-                CompleteXreg();		//enter value on stack if needed
-                Xreg=Factorial(Xreg);
-                UpdateDisplayRegs();	//update display again
-                SwitchMenuOff();
-                break;
-            }
-        case 5:			
-            {
-#if 1
-                // continue with time functions until escape
-                TimeFunctions();
-                UpdateDisplayRegs();	//update display again
-                SwitchMenuOff();
-#else
-                //cube root key
-                CompleteXreg();		//enter value on stack if needed
-                Xreg=pow(Xreg,(1.0/3.0));	
-                UpdateDisplayRegs();	//update display again
-                SwitchMenuOff();
-#endif
-            }
-            break;
-        case 6:			// HEX entry key
-            {
-                HexEntry();
-                break;
-            }
-        }
-        break;
-    }
-}
-#endif
-
-//**********************************
-void ProcessNumberKey(char* digit)
-{
-    if (strlen(DisplayXreg)<MaxLCDdigits)
-    {
- 	//if this is the first digit pressed
-        if (ValueEntered==TRUE)
-        {
-            //check to see if we don't have to overwrite the Xreg
-            if (EnableXregOverwrite==FALSE)
-                PushStackUp(); //push the stck up for the first key entry, i.e. *don't* overwrite the Xreg
-            
-            //clear (overwrite)what was in the Xreg
-            DisplayXreg[0] = 0;
-            EnableXregOverwrite=FALSE;	//disable overwriting the Xreg for future key presses
-        }
-        strcat(DisplayXreg,digit);
-        ValueEntered=FALSE;
-        //MenuMode=FALSE;
-        UpdateLCDline1(DisplayYreg);
-        UpdateLCDline2(DisplayXreg);
-    }
-}
-
 
 //***********************************
 // The main RPN calculator routine
@@ -208,6 +38,8 @@ void RPNcalculator(void)
 {
     unsigned int Key; //keypress variables
     double TEMPreg; //temp register for calculations
+    int c;
+
     DisplayXreg[0] = 0;
     DisplayYreg[0] = 0;
     DecimalIncluded=FALSE;
@@ -268,75 +100,19 @@ void RPNcalculator(void)
                     if (++CurrentMenu>=DIM(MainMenus)) CurrentMenu=0;
             }
         }
-#if 0
-        else if (MenuMode)
-        {
-            switch (Key)
-            {
-            case Key4: //user has pressed the 4 key
-                ProcessMenuItemRPN(4);
-                break;
-            case Key5:
-                ProcessMenuItemRPN(5);
-                break;
-            case Key6:
-                ProcessMenuItemRPN(6);
-                break;
-            case Key7:
-                ProcessMenuItemRPN(1);
-                break;
-            case Key8:
-                ProcessMenuItemRPN(2);
-                break;
-            case Key9:
-                ProcessMenuItemRPN(3);
-                break;
-            case KeyClear: //user has pressed the CLEAR key
-                {
-                    InverseKey=FALSE;		//reset the function flags
-                    HYPkey=FALSE;
-                    MenuMode=FALSE;		//switch off menu mode
 
-                    //display the X & Y regs again
-                    UpdateLCDline1(DisplayYreg);
-                    UpdateLCDline2(DisplayXreg);
-                }
-                break;
-            }
+        // handle numbers
+        c = ReturnNumber(Key);
+        if (c >= 0)
+        {
+            // key is 0 to 9
+            ProcessNumberKey('0' + c);
+            continue;
         }
-#endif
+
+        // handle specific keys
         switch (Key)
         {
-        case Key1: //user has pressed the 1 key
-            ProcessNumberKey("1");
-            break;
-        case Key2: //user has pressed the 2 key
-            ProcessNumberKey("2");
-            break;
-        case Key3: //user has pressed the 3 key
-            ProcessNumberKey("3");
-            break;
-        case Key4: //user has pressed the 4 key
-            ProcessNumberKey("4");
-            break;
-        case Key5: //user has pressed the 5 key
-            ProcessNumberKey("5");
-            break;
-        case Key6: //user has pressed the 6 key
-            ProcessNumberKey("6");
-            break;
-        case Key7: //user has pressed the 7 key
-            ProcessNumberKey("7");
-            break;
-        case Key8: //user has pressed the 8 key
-            ProcessNumberKey("8");
-            break;
-        case Key9: //user has pressed the 9 key
-            ProcessNumberKey("9");
-            break;
-        case Key0: //user has pressed the 0 key
-            ProcessNumberKey("0");
-            break;
         case KeyPoint: //user has pressed the DECIMAL POINT key
             {
                 if (strlen(DisplayXreg)<MaxLCDdigits)
@@ -367,38 +143,41 @@ void RPNcalculator(void)
             break;
         case KeyPlus: //user has pressed the PLUS key
             {
-                CompleteXreg();
-                ResetFlags();
-                Xreg=Xreg+Yreg;		//perform PLUS operation
-                DropStack();
-                UpdateDisplayRegs();
+                //CompleteXreg();
+                //ResetFlags();
+                //Xreg=Xreg+Yreg;		//perform PLUS operation
+                //DropStack();
+                //UpdateDisplayRegs();
+                Operate(CALC_OP_PLUS);
             }
             break;
         case KeyMinus: //user has pressed the MINUS key
             {
-                CompleteXreg();
-                ResetFlags();
-                Xreg=Yreg-Xreg;			//perform MINUS operation
-                DropStack();
-                UpdateDisplayRegs();
+                //CompleteXreg();
+                //ResetFlags();
+                //Xreg=Yreg-Xreg;			//perform MINUS operation
+                //DropStack();
+                //UpdateDisplayRegs();
+                Operate(CALC_OP_MINUS);
             }
             break;
         case KeyMult: //user has pressed the MULTIPLY key
             {
-                CompleteXreg();
-                ResetFlags();
-                Xreg=Xreg*Yreg;			//perform MULTIPLY operation
-                DropStack();
-                UpdateDisplayRegs();
+                //CompleteXreg();
+                //ResetFlags();
+                //DropStack();
+                //UpdateDisplayRegs();
+                Operate(CALC_OP_MULT);
             }
             break;
         case KeyDiv: //user has pressed the DIVIDE key
             {
-                CompleteXreg();
-                ResetFlags();
-                Xreg=Yreg/Xreg;		//perform DIVIDE operation
-                DropStack();
-                UpdateDisplayRegs();
+                //CompleteXreg();
+                //ResetFlags();
+
+                //DropStack();
+                //UpdateDisplayRegs();
+                Operate(CALC_OP_DIVIDE);
             }
             break;
         case KeyClear: //user has pressed the CLEAR key
@@ -449,7 +228,7 @@ void RPNcalculator(void)
                 UpdateDisplayRegs();	//update display again
             }
             break;
-        case KeyLP: 
+        case KeyLP:  // ROLL
             {
                 CompleteXreg();		//enter value on stack if needed
                 TEMPreg=Xreg;			
