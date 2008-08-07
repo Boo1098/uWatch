@@ -47,13 +47,28 @@ extern long mjd(int y, int m, int d);
 extern void caldati(long mjd,
                     unsigned int* y, unsigned int* m, unsigned int* d);
 
-extern void DropStack(void);
-
 void Push(void)
 {
     Treg=Zreg;
     Zreg=Yreg;
     Yreg=Xreg;
+}
+
+//***********************************
+// pushes the stack up and leaves the Xreg intact
+void PushStackUp(void)
+{
+    Push();
+    UpdateYregDisplay(); //Yreg has changed, so keep display register up to date
+}
+
+//**********************************
+// Drops the stack down and leaves Treg intact making it useful as a "constant" register
+// Xreg is handled in the calling routine
+void DropStack(void)
+{
+    Yreg=Zreg;
+    Zreg=Treg;
 }
 
 void RtoP(void)
@@ -84,60 +99,73 @@ double hr(double x)
     return (250*x-60*(int)(x)-(int)(100*x))/90;
 }
 
-void Operate(int op)
+void Drop(int level)
 {
-    CompleteXreg();		//enter value on stack if needed
-            
+    if (!level) 
+    {
+        Yreg = Zreg;
+    }
+    Zreg = Treg;
+    OperatorXY = OperatorYZ; // bring down any operator too
+    OperatorYZ = 0;
+}
+
+// Raw operation
+void Operation(int op, int level)
+{
+    double* rp = Regs + level;
     switch(op)
     {
     case CALC_OP_RECIPROCAL:
-        Xreg=1/Xreg;			
+        *rp=1/(*rp);
         break;
     case CALC_OP_SQUARE:
-        Xreg=Xreg*Xreg;			
+        *rp=(*rp)*(*rp);
         break;
     case CALC_OP_SQRT:
-        Xreg=sqrt(Xreg);
+        *rp=sqrt(*rp);
         break;
     case CALC_OP_LN:
-        Xreg=log(Xreg);			
+        *rp=log(*rp);			
 	break;
     case CALC_OP_EXP:
-        Xreg=exp(Xreg);
+        *rp=exp(*rp);
         break;
     case CALC_OP_NPOW:
-        Xreg=pow(Yreg,Xreg);			
+        *rp=pow(rp[1],*rp);			
+        Drop(level);
         break;
     case CALC_OP_NROOT:
-        Xreg=pow(Yreg,1.0/Xreg);			        
+        *rp=pow(rp[1],1.0/(*rp));			        
+        Drop(level);
         break;
     case CALC_OP_LN10:
         break;
     case CALC_OP_10X:
         break;
     case CALC_OP_SIN:
-        if (DegreesMode) Xreg /= RAD;
-        Xreg=sin(Xreg);
+        if (DegreesMode) *rp /= RAD;
+        *rp=sin(*rp);
         break;
     case CALC_OP_COS:
-        if (DegreesMode) Xreg /= RAD;
-        Xreg=cos(Xreg);
+        if (DegreesMode) *rp /= RAD;
+        *rp=cos(*rp);
         break;
     case CALC_OP_TAN:
-        if (DegreesMode) Xreg /= RAD;
-        Xreg=tan(Xreg);
+        if (DegreesMode) *rp /= RAD;
+        *rp=tan(*rp);
         break;
     case CALC_OP_ASIN:
-        Xreg=asin(Xreg);
-        if (DegreesMode) Xreg *= RAD;
+        *rp=asin(*rp);
+        if (DegreesMode) *rp *= RAD;
         break;
     case CALC_OP_ACOS:
-        Xreg=acos(Xreg);
-        if (DegreesMode) Xreg *= RAD;
+        *rp=acos(*rp);
+        if (DegreesMode) *rp *= RAD;
         break;
     case CALC_OP_ATAN:
-        Xreg=atan(Xreg);
-        if (DegreesMode) Xreg *= RAD;
+        *rp=atan(*rp);
+        if (DegreesMode) *rp *= RAD;
         break;
     case CALC_OP_MODEDEG:
         DegreesMode = TRUE;
@@ -147,26 +175,26 @@ void Operate(int op)
         break;
     case CALC_OP_PI:
         Push();
-        Xreg = PI;
+        *rp = PI;
         break;
     case CALC_OP_HMS:
-        Xreg = hms(Xreg);
+        *rp = hms(*rp);
         break;
     case CALC_OP_R2P:
         RtoP();
         break;
     case CALC_OP_FACTORIAL:
-        Xreg = Factorial(Xreg);
+        *rp = Factorial(*rp);
         break;
     case CALC_OP_DMY:
         {
             unsigned int y, m, d;
-            caldati(Xreg, &y, &m, &d);
-            Xreg = y/1.0e6 + m/100.0 + d;
+            caldati(*rp, &y, &m, &d);
+            *rp = y/1.0e6 + m/100.0 + d;
         }
         break;
     case CALC_OP_HOURS:
-        Xreg = hr(Xreg);
+        *rp = hr(*rp);
         break;
     case CALC_OP_P2R:
         PtoR();
@@ -175,17 +203,17 @@ void Operate(int op)
         {
             Push();
             Push();
-            CalcRiseAndSet(&Yreg, &Xreg);
+            CalcRiseAndSet(rp + 1, &*rp);
         }
         break;
     case CALC_OP_DAYS:
         {
-            // assume Xreg is in format dd.mmyyyy
-            int d = Xreg;
-            double t = (Xreg - d)*100;
+            // assume *rp is in format dd.mmyyyy
+            int d = *rp;
+            double t = (*rp - d)*100;
             int m = t;
             int y = (t - m) * 10000;
-            Xreg = mjd(y, m, d);
+            *rp = mjd(y, m, d);
         }
         break;
     case CALC_OP_RECORD:
@@ -205,10 +233,34 @@ void Operate(int op)
         Conversions();
         break;
     case CALC_OP_PARALLEL:
-        Xreg=(Yreg*Xreg)/(Yreg+Xreg);
-        DropStack();
+        *rp=(rp[1]*(*rp))/(rp[1]+(*rp));
+        Drop(level);
+        break;
+    case CALC_OP_PLUS:
+        *rp=(*rp)+rp[1];		//perform PLUS operation
+        Drop(level);
+        break;
+    case CALC_OP_MINUS:
+        *rp=rp[1]-(*rp);			//perform MINUS operation
+        Drop(level);
+        break;
+    case CALC_OP_MULT:
+        *rp=(*rp)*rp[1];			//perform MULTIPLY operation
+        Drop(level);
+        break;
+    case CALC_OP_DIVIDE:
+        *rp=rp[1]/(*rp);		//perform DIVIDE operation
+        Drop(level);
         break;
     }
+}
+
+
+// Perform operation and display
+void Operate(int op)
+{
+    CompleteXreg();		//enter value on stack if needed
+    Operation(op, 0);           // operate on X & Y
     UpdateDisplayRegs();	//update display again
 }
 
@@ -222,44 +274,52 @@ void UpdateDisplayRegs(void)
     UpdateXregDisplay();
     UpdateYregDisplay();
 
-    if (RPNmode==TRUE)
+    if (!RPNmode)
     {
-        UpdateLCDline1(DisplayYreg);
-        UpdateLCDline2(DisplayXreg);
-        return;		//nothing more to do in RPN mode
+        //the rest of this code is for the ALG mode only
+        c = ' ';
+        if (OperatorXY)
+        {
+            switch (OperatorXY)
+            {
+            case CALC_OP_PLUS:  c='+'; break;
+            case CALC_OP_MINUS: c='-'; break;
+            case CALC_OP_MULT:  c='x'; break;
+            case CALC_OP_DIVIDE:  c='/'; break;
+            case CALC_OP_NPOW:
+            case CALC_OP_NROOT:
+                c = '^'; 
+                break;
+            case CALC_OP_P2R:
+            case CALC_OP_R2P:
+                c = '>';
+                break;
+            default:
+                c = 'o'; 
+            }
+        }
+
+	//replace NULL with space
+        for(i=0; i<MaxLCDdigits; i++)
+            if (!DisplayYreg[i]) DisplayYreg[i]=' ';
+
+        //display the operator character
+        DisplayYreg[15]=c;		
+        DisplayYreg[16]=0;
+
+        for (i = 0; i < 7; ++i)
+        {
+            if (!OperatorsXY[i]) break;
+        }
+        
+        if (i > 1)
+        {
+            //display the operator character	
+            DisplayYreg[13]='(';
+            DisplayYreg[14]='0' + i - 1;
+        }
     }
 
-    //the rest of this code is for the ALG mode only
-    switch (OperatorXY)
-    {
-    case OPRplus:  c='+'; break;
-    case OPRminus: c='-'; break;
-    case OPRmult:  c='x'; break;
-    case OPRdiv:   c='/'; break;
-    case OPRparra: c='|'; break;
-    case OPRnPr:   c='P'; break;
-    case OPRnCr:   c='C'; break;
-    case OPRxpwry: c='^'; break;
-    case OPRrtop:  c='>'; break;
-    case OPRptor:  c='<'; break;
-    default: c=' ';break;
-    }
-    for(i=0; i<=15; i++)
-        if (DisplayYreg[i]==NULL) DisplayYreg[i]=' ';	//replace NULL with space
-    DisplayYreg[15]=c;				//display the operator character
-    DisplayYreg[16]=NULL;
-
-    if (OperatorXY1!=0) 
-    {
-        DisplayYreg[13]='(';				//display the operator character	
-        DisplayYreg[14]='1';
-    }
-    if (OperatorXY2!=0) DisplayYreg[14]='2';
-    if (OperatorXY3!=0) DisplayYreg[14]='3';
-    if (OperatorXY4!=0) DisplayYreg[14]='4';
-    if (OperatorXY5!=0) DisplayYreg[14]='5';
-    if (OperatorXY6!=0) DisplayYreg[14]='6'; 
-	
     UpdateLCDline1(DisplayYreg);
     UpdateLCDline2(DisplayXreg);
 }
@@ -702,3 +762,30 @@ void Conversions(void)
         }
     }
 } 
+
+void ProcessNumberKey(int digit)
+{
+    unsigned int l = strlen(DisplayXreg);
+    if (l<MaxLCDdigits)
+    {
+ 	//if this is the first digit pressed
+        if (ValueEntered==TRUE)
+        {
+            //check to see if we don't have to overwrite the Xreg
+            if (EnableXregOverwrite==FALSE)
+                PushStackUp(); //push the stck up for the first key entry, i.e. *don't* overwrite the Xreg
+            
+            l = 0;
+            EnableXregOverwrite=FALSE;	//disable overwriting the Xreg for future key presses
+        }
+        
+        DisplayXreg[l] = digit;
+        DisplayXreg[l+1] = 0;  // ensure termination
+
+        ValueEntered=FALSE;
+
+        UpdateLCDline1(DisplayYreg);
+        UpdateLCDline2(DisplayXreg);
+    }
+}
+

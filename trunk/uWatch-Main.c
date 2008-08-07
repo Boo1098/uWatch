@@ -182,27 +182,6 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #define ClearRow6       _TRISA7=1
 #define ClearRow7       _TRISB14=1
 
-//#define MaxRPNmenuItems 4       //this must match the numbr of lines in the menu below
-
-//global variables for both RPN and Algebraic calculator
-
-#define OPRplus         1       //arbitrary value definitions for algebraic operators
-#define OPRminus        2
-#define OPRmult         3
-#define OPRdiv          4
-#define OPRpar1         5       //parentheses
-#define OPRpar2         6
-#define OPRpar3         7
-#define OPRpar4         8
-#define OPRpar5         9
-#define OPRpar6         10
-#define OPRnPr          11
-#define OPRnCr          12
-#define OPRparra        13
-#define OPRxpwry        14
-#define OPRrtop         15
-#define OPRptor         16
-
 #define PI              3.14159265358979
 #define RAD             (180.0/PI)
 
@@ -221,21 +200,23 @@ char DisplayYreg[MaxLCDdigits+1];   //holds the value currently in Yreg
 char ValueEntered;              //FLAG, TRUE if value has been entered by using the ENTER key
 //char MenuMode;                  //FLAG, TRUE is the menu if switched on.
 int  EnableXregOverwrite;       //FLAG, TRUE if the Xreg will be automatically overwritten on first key press (the ENTER key enables this for example)
-double Xreg, Yreg, Zreg, Treg;  //the working registers (Treg not used for Algebraic)
-double Yreg1, Zreg1;        //extra working registers for algebraic parentheses
-double Yreg2, Zreg2;        //extra working registers for algebraic parentheses
-double Yreg3, Zreg3;        //extra working registers for algebraic parentheses
-double Yreg4, Zreg4;        //extra working registers for algebraic parentheses
-double Yreg5, Zreg5;        //extra working registers for algebraic parentheses
-double Yreg6, Zreg6;        //extra working registers for algebraic parentheses
 
-int OperatorXY,  OperatorYZ;        //algebraic operators
-int OperatorXY1, OperatorYZ1;
-int OperatorXY2, OperatorYZ2;
-int OperatorXY3, OperatorYZ3;
-int OperatorXY4, OperatorYZ4;
-int OperatorXY5, OperatorYZ5;
-int OperatorXY6, OperatorYZ6;
+
+//the working registers (Treg not used for Algebraic)
+double Regs[4];
+#define Xreg Regs[0]
+#define Yreg Regs[1]
+#define Zreg Regs[2]
+#define Treg Regs[3]
+
+//algebraic operators
+int OperatorsXY[7], OperatorsYZ[7];
+
+#define OperatorXY OperatorsXY[0]
+#define OperatorYZ OperatorsYZ[0]
+
+double Yregs[6], Zregs[6];
+
 
 char WatchMode;             //0=time mode, 1=calc mode, 2=setup mode
 
@@ -272,6 +253,30 @@ double Sreg[10];                //the storage registers. Contents retained when 
 #define CALC_OP_PLAY            28
 #define CALC_OP_CONV            29
 #define CALC_OP_PARALLEL        30
+#define CALC_OP_PLUS            31
+#define CALC_OP_MINUS           32
+#define CALC_OP_MULT            33
+#define CALC_OP_DIVIDE          34
+
+int opPrec(int op)
+{
+    // uni ops are 0
+    // bin ops r>p, p>r, x^y are 1
+    // bin ops: * / are 2
+    // bin ops: + - are 3
+
+    int prec = 0;
+    if (op == CALC_OP_NPOW ||
+        op == CALC_OP_R2P  ||
+        op == CALC_OP_P2R  ||
+        op == CALC_OP_NROOT) prec = 1;
+    else if (op == CALC_OP_PLUS ||
+             op == CALC_OP_MINUS) prec = 3;
+    else if (op == CALC_OP_MULT ||
+             op == CALC_OP_DIVIDE) prec = 2;
+
+    return prec;
+}
 
 
 typedef struct
@@ -541,24 +546,11 @@ void UpdateLCDline2(const char* s)
 
 void ClearAllRegs(void)
 {
-    Xreg=0;             
-    Yreg=0;
-    Zreg=0;
-    Treg=0;
-    Yreg1=0; Zreg1=0;
-    Yreg2=0; Zreg2=0;
-    Yreg3=0; Zreg3=0;
-    Yreg4=0; Zreg4=0;
-    Yreg5=0; Zreg5=0;
-    Yreg6=0; Zreg6=0;
-
-    OperatorXY=0;  OperatorYZ=0;
-    OperatorXY1=0; OperatorYZ1=0;
-    OperatorXY2=0; OperatorYZ2=0;                   
-    OperatorXY3=0; OperatorYZ3=0;
-    OperatorXY4=0; OperatorYZ4=0;
-    OperatorXY5=0; OperatorYZ5=0;
-    OperatorXY6=0; OperatorYZ6=0;
+    memset(Regs, 0, 4*sizeof(Regs[0]));
+    memset(Yregs, 0, 6*sizeof(Yregs[0]));
+    memset(Zregs, 0, 6*sizeof(Zregs[0]));
+    memset(OperatorsXY, 0, 7*sizeof(OperatorsXY[0]));
+    memset(OperatorsYZ, 0, 7*sizeof(OperatorsYZ[0]));
 }
 
 
@@ -1790,9 +1782,7 @@ int main(void)
         }
         else 
         {
-            // XX !!
-            RPNcalculator();
-            // ALGcalculator();
+            ALGcalculator();
         }
 
         //user did something in the calc mode, so return to time/date
