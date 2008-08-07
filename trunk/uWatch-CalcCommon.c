@@ -37,7 +37,6 @@ extern void UpdateYregDisplay(void);
 extern void UpdateDisplayRegs(void);
 extern void CompleteXreg(void);
 extern void ResetFlags(void);
-extern void SwitchMenuOff(void);
 extern double Factorial(double num);
 extern void StoreRecall(void);
 extern void SignKey(void);
@@ -264,6 +263,102 @@ void Operate(int op)
     UpdateDisplayRegs();	//update display again
 }
 
+void ProcessNumberKey(int digit)
+{
+    unsigned int l = strlen(DisplayXreg);
+    if (l<MaxLCDdigits)
+    {
+ 	//if this is the first digit pressed
+        if (ValueEntered==TRUE)
+        {
+            //check to see if we don't have to overwrite the Xreg
+            if (EnableXregOverwrite==FALSE)
+            {
+                PushStackUp(); //push the stck up for the first key entry, i.e. *don't* overwrite the Xreg
+                UpdateLCDline1(DisplayYreg);
+            }
+            
+            l = 0;
+            EnableXregOverwrite=FALSE;	//disable overwriting the Xreg for future key presses
+        }
+        
+        DisplayXreg[l] = digit;
+        DisplayXreg[l+1] = 0;  // ensure termination
+
+        ValueEntered=FALSE;
+        UpdateLCDline2(DisplayXreg);
+    }
+}
+
+
+// handle number input. return key if not handled (0 otherwise)
+int EnterNumber(int Key)
+{
+    // handle numbers
+    int c = ReturnNumber(Key);
+    if (c >= 0)
+    {
+        // key is 0 to 9
+        ProcessNumberKey('0' + c);
+        Key = 0; 
+    }
+
+    switch (Key)
+    {
+    case KeyPoint: //user has pressed the DECIMAL POINT key
+        Key = 0;
+        if (strlen(DisplayXreg)<MaxLCDdigits)
+            //only do if decimal point does not already exist AND there is no exponent
+            if (!DecimalIncluded && !ExponentIncluded)		
+            {
+                //user has pressed POINT as the first digit
+                if (ValueEntered==TRUE) 
+                {
+                    //decimal point needs a 0 added to the start
+                    strcpy(DisplayXreg,"0.");
+                }
+                else		
+                    strcat(DisplayXreg,".");
+                
+                DecimalIncluded=TRUE;
+                ValueEntered=FALSE;
+                //UpdateLCDline1(DisplayYreg);
+                UpdateLCDline2(DisplayXreg);
+            }
+        break;
+    case KeyEXP: 
+        Key = 0;
+        if (!ExponentIncluded)	//can't add exponent twice
+        {
+            ExponentIncluded=TRUE;
+            
+            // EXP is first key pressed, so add a 1 to the front
+            if (ValueEntered==TRUE) strcpy(DisplayXreg,"1e");
+            else strcat(DisplayXreg,"e");		
+            ValueEntered=FALSE;	
+            UpdateLCDline2(DisplayXreg);		//update the display
+        }
+        break;
+    case KeySign: 
+        //changes the sign of the mantissa or exponent
+        Key = 0;
+        SignKey();
+        break;
+    case KeyClear: 
+        // only handle one level of clear. ie Clear Entry
+        if (ValueEntered==FALSE)	
+        {
+            Key = 0;
+            Xreg = 0;
+            UpdateDisplayRegs();
+            ResetFlags();
+            EnableXregOverwrite = TRUE;
+        }
+        break;
+    }
+    return Key;
+}
+
 //***********************************
 //Converts both X&Y regs from real numbers into display strings and then displays them
 //Also displays the current algebraic operator
@@ -291,8 +386,13 @@ void UpdateDisplayRegs(void)
                 c = '^'; 
                 break;
             case CALC_OP_P2R:
+                c = 'p';
+                break;
             case CALC_OP_R2P:
-                c = '>';
+                c = 'r';
+                break;
+            case CALC_OP_PARALLEL:
+                c = 'l';
                 break;
             default:
                 c = 'o'; 
@@ -399,7 +499,6 @@ void CompleteXreg(void)
     {
         Xreg=atof(DisplayXreg); //convert display string to number
         ResetFlags();
-        ValueEntered=TRUE; //value is now entered on the stack, so we must flag this.
     }
 }
 
@@ -418,15 +517,6 @@ void UpdateYregDisplay(void)
 {
     strcpy(DisplayYreg,"                ");		//blank the string first
     sprintf(DisplayYreg,"%.9g",Yreg);
-}
-
-//**********************************
-//switches the menu off and restores the Xreg/Yreg display
-void SwitchMenuOff(void)
-{
-    //MenuMode=FALSE;
-    UpdateLCDline1(DisplayYreg);
-    UpdateLCDline2(DisplayXreg);
 }
 
 //***********************************
@@ -682,7 +772,6 @@ void Conversions(void)
         {
             Xreg=Xreg*9.0/5.0+32.0;
             UpdateDisplayRegs();	//update display again
-            SwitchMenuOff();
             break;
         }
     case 4:
@@ -763,29 +852,4 @@ void Conversions(void)
     }
 } 
 
-void ProcessNumberKey(int digit)
-{
-    unsigned int l = strlen(DisplayXreg);
-    if (l<MaxLCDdigits)
-    {
- 	//if this is the first digit pressed
-        if (ValueEntered==TRUE)
-        {
-            //check to see if we don't have to overwrite the Xreg
-            if (EnableXregOverwrite==FALSE)
-                PushStackUp(); //push the stck up for the first key entry, i.e. *don't* overwrite the Xreg
-            
-            l = 0;
-            EnableXregOverwrite=FALSE;	//disable overwriting the Xreg for future key presses
-        }
-        
-        DisplayXreg[l] = digit;
-        DisplayXreg[l+1] = 0;  // ensure termination
-
-        ValueEntered=FALSE;
-
-        UpdateLCDline1(DisplayYreg);
-        UpdateLCDline2(DisplayXreg);
-    }
-}
 

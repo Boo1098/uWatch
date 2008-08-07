@@ -55,8 +55,8 @@ uWatch Revisions:
 - added DMY and ->D date arithmetic
 - moved everything about on the menus! (there are currently some gaps)
 - ALG mode operational again (needs more testing).
-
-
+- changed setup menu "Location" to "DST Zone"
+- setup "location" now enters longitude and latitude in HMS format.
 
 
 
