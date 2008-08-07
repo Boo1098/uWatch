@@ -139,7 +139,7 @@ void CalcRiseAndSet(double* r, double* s)
     double lambda, phi, t;
     
     //sinh0 = sin(-50.0/60.0 * RPD); /* sunrise           at h=-50'        */
-    sinh0 =  0.5831436921810546296649407264315;
+    sinh0 = -1.454389765158265677038484573310e-2;
 
     // get global position
     lambda = Longitude; 
