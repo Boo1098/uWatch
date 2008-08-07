@@ -192,7 +192,7 @@ char ExponentIncluded;          //FLAG, TRUE if Exponent has already been entere
 char DecimalIncluded;           //FLAG, TRUE if decimal point has already been entered
 char MinusIncluded;             //FLAG, TRUE if minus sign already included
 char MinusIncludedInExponent;   //FLAG, TRUE if minus sign already included in exponent
-char InverseKey;                //FLAG, TRUE if the inverse key has been pressed
+//char InverseKey;                //FLAG, TRUE if the inverse key has been pressed
 char HYPkey;                    //FLAG, TRUE if the HYP key has been pressed
 char DegreesMode;               //FLAG, TRUE if degres mode is on, otherwise radians
 char DisplayXreg[MaxLCDdigits+1];   //holds the value currently being entered by the user, or the Xreg
@@ -261,13 +261,14 @@ double Sreg[10];                //the storage registers. Contents retained when 
 int opPrec(int op)
 {
     // uni ops are 0
-    // bin ops r>p, p>r, x^y are 1
+    // bin ops r>p, p>r, x^y, parallel are 1
     // bin ops: * / are 2
     // bin ops: + - are 3
 
     int prec = 0;
     if (op == CALC_OP_NPOW ||
         op == CALC_OP_R2P  ||
+        op == CALC_OP_PARALLEL ||
         op == CALC_OP_P2R  ||
         op == CALC_OP_NROOT) prec = 1;
     else if (op == CALC_OP_PLUS ||
@@ -349,11 +350,10 @@ CalcMenuInfo MainMenus[] =
         }
     },
 
-    { // menu 3
+    { // menu 3 (no 2nd page yet!)
         {" Rec  Play Conv ",   
-         " 2nd  //        ", 
-         "                ", 
-         " 2nd            "
+         " //             ", 
+         0, 0
         },
 
         { CALC_OP_RECORD,
@@ -924,7 +924,7 @@ int DriveMenu(const char* title, const char** Menu, int n)
     {
         UpdateLCDline1(Menu[mi]);
 
-        do key=KeyScan(); while(key==0);
+        while ((key = KeyScan()) == 0) ;
 
         ResetSleepTimer();		
         //start to process the keypress

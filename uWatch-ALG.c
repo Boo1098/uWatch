@@ -50,7 +50,7 @@ void ALGcalculator(void)
     MinusIncluded=FALSE;    
     MinusIncludedInExponent=FALSE;
     ExponentIncluded=FALSE;
-    InverseKey=FALSE;
+    //InverseKey=FALSE;
     HYPkey=FALSE;
     CurrentMenu=0;
     ValueEntered=TRUE;
@@ -125,32 +125,7 @@ void ALGcalculator(void)
         }
 
         // handle numbers
-        c = ReturnNumber(Key);
-        if (c >= 0)
-        {
-            // key is 0 to 9
-            ProcessNumberKey('0' + c);
-            continue;
-        }
-
-        if (Key==KeyPoint)          //user has pressed the DECIMAL POINT key
-        {
-            if (strlen(DisplayXreg)<MaxLCDdigits)
-                //only do if decimal point does not already exist AND there is no exponent
-                if ((DecimalIncluded==FALSE) && ExponentIncluded==FALSE)        
-                {
-                    if (ValueEntered==TRUE)     //user has pressed POINT as the first digit
-                    {
-                        strcpy(DisplayXreg,"0.");   //decimal point needs a 0 added to the start
-                    }
-                    else        
-                        strcat(DisplayXreg,".");
-                    DecimalIncluded=TRUE;
-                    ValueEntered=FALSE;
-                    UpdateLCDline1(DisplayYreg);
-                    UpdateLCDline2(DisplayXreg);
-                }
-        }
+        c = EnterNumber(Key);
 
         if (Key==KeyEnter)          //user has pressed the ENTER (=) key
         {
@@ -223,37 +198,13 @@ void ALGcalculator(void)
             OperatorXY=CALC_OP_DIVIDE;
             UpdateDisplayRegs();
         }
+
         if (Key==KeyClear)          //user has pressed the CLEAR key
         {
-            InverseKey=FALSE;       //reset the function flags
-            HYPkey=FALSE;
-
-            if (ValueEntered==FALSE)        //only clear if there is something in the display register to clear
-            {
-                Xreg = 0;
-                UpdateDisplayRegs();
-                ResetFlags();
-                EnableXregOverwrite = TRUE;
-            }
-            else 
-            {
-                //clear all the registers and operators
-                ClearAllRegs();
-                ResetFlags();
-                UpdateDisplayRegs();
-            }
-        }
-
-        if (Key==KeyEXP)            //user has pressed the EXP key
-        {
-            if (ExponentIncluded==FALSE)    //can't add exponent twice
-            {
-                ExponentIncluded=TRUE;
-                if (ValueEntered==TRUE) strcpy(DisplayXreg,"1e");   // EXP is first key pressed, so add a 1 to the front
-                else strcat(DisplayXreg,"e");   
-                ValueEntered=FALSE; 
-                UpdateLCDline2(DisplayXreg);        //update the display
-            }
+            //clear all the registers and operators
+            ClearAllRegs();
+            ResetFlags();
+            UpdateDisplayRegs();
         }
 
         if (Key==KeyXY)             //user has pressed the X-Y key
@@ -322,12 +273,6 @@ void ALGcalculator(void)
             CompleteXreg();
             StoreRecall();
             UpdateDisplayRegs();    //update display again
-        }
-        
-        if (Key==KeySign)           //user has pressed the +/- key
-        {
-            //changes the sign of the mantissa or exponent
-            SignKey();
         }
     }
 }

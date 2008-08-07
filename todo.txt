@@ -1,11 +1,8 @@
 
 **** List of Requested Features, bugs and Ideas
 
-* ->HMS and ->H
 * physical constants
 * moon phase graphic
-* sunrise & sunset (will need long, lat in setup)
-* change ARC to "inv" and apply this to logs to save menu slots
 * world times
 * more conversions like miles -> km etc.
 * stopwatch

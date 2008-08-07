@@ -93,8 +93,46 @@ static const char* SetupMenu[] =
     "ClockCalibration",
     "12/24hr Time",
     "About",
-    "Location"
+    "DST Zone",
+    "Location",
 };
+
+// enter a number on line return in Xreg
+// return final key pressed
+int OneLineNumberEntry()
+{
+    // Assume Xreg contains old value
+    // display old value
+    UpdateXregDisplay();
+    UpdateLCDline2(DisplayXreg);
+
+    // process input
+    ResetFlags();
+    EnableXregOverwrite = TRUE;
+
+    for (;;)
+    {
+        int c;
+        int key;
+
+        while ((key = KeyScan()) == 0) ;
+        ResetSleepTimer();		
+                
+        c = EnterNumber(key);
+
+        if (c == KeyMode || c == KeyClear || c == KeyMenu)
+            return c;
+
+        if (c == KeyEnter)
+        {
+            CompleteXreg();
+            
+            UpdateXregDisplay();
+            UpdateLCDline2(DisplayXreg);
+            return c;
+        }
+    }
+}
 
 //***********************************
 // The main setup mode routine
@@ -146,7 +184,7 @@ void SetupMode(void)
             SetDateBCDandUpdate(y, m, d);
         }
         break;
-    case 2:
+    case 2: // calc mode
         {
             UpdateLCDline2("  +/- & ENTER");
             while(TRUE)
@@ -187,7 +225,7 @@ void SetupMode(void)
             }
         }
         break;
-    case 4:
+    case 4: // self test
         {
             I2CmemoryWRITE(65530, 0xAA);
             c=I2CmemoryREAD(65530);
@@ -240,7 +278,7 @@ void SetupMode(void)
             }
         }
         break;
-    case 5:
+    case 5: // LCD timeout
         {
             UpdateLCDline1("+/- Adj Timeout");
             do
@@ -254,7 +292,7 @@ void SetupMode(void)
             }
             while(1);   
         }
-        break;
+        break; // Clock calibration
     case 6:
         {
             UpdateLCDline1("+/- Adjust CAL");
@@ -271,7 +309,7 @@ void SetupMode(void)
             I2CmemoryWRITE(63535,RCFGCALbits.CAL);      //store value in last byte
         }
         break;
-    case 7:
+    case 7: // 12/24 hour mode
         {
             UpdateLCDline2("  +/- & ENTER");
             while(TRUE)
@@ -286,7 +324,7 @@ void SetupMode(void)
             }
         }
         break;
-    case 8:
+    case 8: // about
         {
             strcpy(s," Watch ");
             strcat(s,RevString);
@@ -296,7 +334,7 @@ void SetupMode(void)
             do KeyPress2=KeyScan(); while(KeyPress2==0);
         }
         break;
-    case 9: // location
+    case 9: // DST Zone
         {
             UpdateLCDline2("  +/- & ENTER");
             while(TRUE)
@@ -321,6 +359,71 @@ void SetupMode(void)
                         dstRegion += DIM(TimeZones);
                 }
             }
+        }
+        break;
+    case 10: // location
+        {
+            int c;
+            /* The location feature will be expanded to provide a 
+             * selectable menu of major world cities. These will feed
+             * the world time, the DST and the long/lat.
+             *
+             * However, in any case there should be a CUSTOM selector
+             */
+
+            /* only implement the CUSTOM for now.. */
+
+            BOOL ok = FALSE;
+            do
+            {
+                UpdateLCDline1("Longitude (E<0) ");
+                
+                // Display old Long and enter new value
+                Xreg = hms(Longitude);
+                
+                c = OneLineNumberEntry();
+                if (c != KeyEnter) return; // escape
+                
+                // validate longitude -180 <= long <= +180
+                if (Xreg < -180 || Xreg > 180)
+                {
+                    UpdateLCDline1("long [-180,+180]");                
+                }
+                else
+                {
+                    // assume HMS format
+                    Longitude = hr(Xreg);
+                    UpdateLCDline1("Longitude SET   ");
+                    ok = TRUE;
+                }
+                DelayMs(2000); // visual delay
+            } while (!ok);
+            
+            ok = FALSE;
+            do
+            {
+                // display old lat and enter new value
+                UpdateLCDline1("Latitude        ");
+
+                Xreg = hms(Latitude);
+
+                c = OneLineNumberEntry();            
+                if (c != KeyEnter) return; // escape
+
+                // validate lat -90 <= lat <= +90
+
+                if (Xreg < -90 || Xreg > 90)
+                {
+                    UpdateLCDline1("lat [-90,+90]   ");
+                }
+                else
+                {
+                    Latitude = hr(Xreg);
+                    UpdateLCDline1("Latitude SET    ");
+                    ok = TRUE;
+                }
+                DelayMs(2000); // visual delay
+            } while (!ok);
         }
         break;
     }

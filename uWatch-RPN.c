@@ -102,36 +102,11 @@ void RPNcalculator(void)
         }
 
         // handle numbers
-        c = ReturnNumber(Key);
-        if (c >= 0)
-        {
-            // key is 0 to 9
-            ProcessNumberKey('0' + c);
-            continue;
-        }
-
+        c = EnterNumber(Key);
+        
         // handle specific keys
         switch (Key)
         {
-        case KeyPoint: //user has pressed the DECIMAL POINT key
-            {
-                if (strlen(DisplayXreg)<MaxLCDdigits)
-                    //only do if decimal point does not already exist AND there is no exponent
-                    if ((DecimalIncluded==FALSE) && ExponentIncluded==FALSE)		
-                    {
-                        if (ValueEntered==TRUE) 	//user has pressed POINT as the first digit
-                        {
-                            strcpy(DisplayXreg,"0.");	//decimal point needs a 0 added to the start
-                        }
-                        else		
-                            strcat(DisplayXreg,".");
-                        DecimalIncluded=TRUE;
-                        ValueEntered=FALSE;
-                        UpdateLCDline1(DisplayYreg);
-                        UpdateLCDline2(DisplayXreg);
-                    }
-            }
-            break;
         case KeyEnter: //user has pressed the ENTER key
             {
                 CompleteXreg();
@@ -142,82 +117,23 @@ void RPNcalculator(void)
             }
             break;
         case KeyPlus: //user has pressed the PLUS key
-            {
-                //CompleteXreg();
-                //ResetFlags();
-                //Xreg=Xreg+Yreg;		//perform PLUS operation
-                //DropStack();
-                //UpdateDisplayRegs();
-                Operate(CALC_OP_PLUS);
-            }
+            Operate(CALC_OP_PLUS);
             break;
         case KeyMinus: //user has pressed the MINUS key
-            {
-                //CompleteXreg();
-                //ResetFlags();
-                //Xreg=Yreg-Xreg;			//perform MINUS operation
-                //DropStack();
-                //UpdateDisplayRegs();
-                Operate(CALC_OP_MINUS);
-            }
+            Operate(CALC_OP_MINUS);
             break;
         case KeyMult: //user has pressed the MULTIPLY key
-            {
-                //CompleteXreg();
-                //ResetFlags();
-                //DropStack();
-                //UpdateDisplayRegs();
-                Operate(CALC_OP_MULT);
-            }
+            Operate(CALC_OP_MULT);
             break;
         case KeyDiv: //user has pressed the DIVIDE key
-            {
-                //CompleteXreg();
-                //ResetFlags();
-
-                //DropStack();
-                //UpdateDisplayRegs();
-                Operate(CALC_OP_DIVIDE);
-            }
+            Operate(CALC_OP_DIVIDE);
             break;
         case KeyClear: //user has pressed the CLEAR key
-            {
-                InverseKey=FALSE;		//reset the function flags
-                HYPkey=FALSE;
-                
-                //only clear if there is something in the display register to clear
-                if (ValueEntered==FALSE)	
-                {
-                    Xreg = 0;
-                    UpdateDisplayRegs();
-                    ResetFlags();
-                    EnableXregOverwrite = TRUE;
-                }
-                else //clear the X register instead and DROP the stack
-                {
-                    Xreg=Yreg; //drop X reg from the stack
-                    DropStack();
-                    Treg=0;
-                    UpdateDisplayRegs();
-                    ResetFlags();
-                }
-
-
-            }
-            break;
-        case KeyEXP: 
-            {
-                if (ExponentIncluded==FALSE)	//can't add exponent twice
-                {
-                    ExponentIncluded=TRUE;
-
-                    // EXP is first key pressed, so add a 1 to the front
-                    if (ValueEntered==TRUE) strcpy(DisplayXreg,"1e");
-                    else strcat(DisplayXreg,"e");		
-                    ValueEntered=FALSE;	
-                    UpdateLCDline2(DisplayXreg);		//update the display
-                }
-            }
+            Xreg=Yreg; //drop X reg from the stack
+            DropStack();
+            Treg=0;
+            UpdateDisplayRegs();
+            ResetFlags();
             break;
         case KeyXY: 
             {
@@ -246,10 +162,6 @@ void RPNcalculator(void)
                 StoreRecall();
                 UpdateDisplayRegs();	//update display again
             }
-            break;
-        case KeySign: 
-            //changes the sign of the mantissa or exponent
-            SignKey();
             break;
         }
     }
