@@ -139,8 +139,10 @@ void Operation(int op, int level)
         Drop(level);
         break;
     case CALC_OP_LN10:
+        *rp=log10(*rp);
         break;
     case CALC_OP_10X:
+        *rp = pow(10, *rp);
         break;
     case CALC_OP_SIN:
         if (DegreesMode) *rp /= RAD;
@@ -322,7 +324,6 @@ int EnterNumber(int Key)
                 
                 DecimalIncluded=TRUE;
                 ValueEntered=FALSE;
-                //UpdateLCDline1(DisplayYreg);
                 UpdateLCDline2(DisplayXreg);
             }
         break;
@@ -502,14 +503,13 @@ void CompleteXreg(void)
     }
 }
 
-
 //***********************************
 // Converts the Xreg double value into a string for the DisplayXreg
 void UpdateXregDisplay(void)
 {
     strcpy(DisplayXreg,"                ");		//blank the string first
     sprintf(DisplayXreg,"%.10g",Xreg);
-}
+    }
 
 //***********************************
 // Converts the Yreg double value into a string for the DisplayYreg
@@ -518,6 +518,7 @@ void UpdateYregDisplay(void)
     strcpy(DisplayYreg,"                ");		//blank the string first
     sprintf(DisplayYreg,"%.9g",Yreg);
 }
+
 
 //***********************************
 //resets all the flags after a calculation, ready for the next number to be entered by the user
@@ -576,7 +577,7 @@ void SignKey(void)
     char* q;
 
     //do this if there is an exponent already
-    if (ExponentIncluded==TRUE)
+    if (ExponentIncluded)
     {
         //search Xreg for 'e'
         while (*p != 'e') ++p;
@@ -604,11 +605,18 @@ void SignKey(void)
     }
     else //do this if there is only a mantissa
     {
-        if (ValueEntered==TRUE) 	//if this is the first digit pressed
+ 	//if this is the first digit pressed
+        if (ValueEntered)
         {
-            if (EnableXregOverwrite==FALSE)	//check to see if we don't have to overwrite the Xreg
-                DisplayXreg[0] = 0; //clear (overwrite)what was in the Xreg
-            EnableXregOverwrite=FALSE;	//disable overwriting the Xreg for future key presses
+            //check to see if we don't have to overwrite the Xreg
+            if (EnableXregOverwrite)
+            {
+                *p = 0; //clear (overwrite)what was in the Xreg
+                n = 0;
+
+                //disable overwriting the Xreg for future key presses
+                EnableXregOverwrite=FALSE;
+            }
         }
 	
         if (MinusIncluded==TRUE)
@@ -622,7 +630,7 @@ void SignKey(void)
         else
         {
             char* k;
-            q = DisplayXreg + n + 1;
+            q = p + n + 1;
             k = q;
             while (q != p)
                 *q-- = *--k;

@@ -159,6 +159,10 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #define DisableSleepTimer()     IEC0bits.T1IE = 0       //disable Timer1 interrupt
 #define EnableSleepTimer()      IEC0bits.T1IE = 1       //disable Timer1 interrupt
 
+#define StopSleepTimer()  T1CONbits.TON = 0
+
+#define StartSleepTimer() T1CONbits.TON = 1
+
 #define SDA1            LATB=LATB|OR9
 #define SDA0            LATB=LATB&AND9
 #define SCL1            LATB=LATB|OR8
@@ -292,29 +296,29 @@ CalcMenuInfo MainMenus[] =
 
     { // menu 0
         {" 1/x  x^2   Sqrt ",   
-         " Inv  y^x   Ln   ", 
-         " 1/x  x^2   Sqrt ", 
-         " Inv  y^1/x e^x  "
+         " 2nd  y^x   Exp  ", 
+         " 1/x  Log10 10^x ", 
+         " 2nd  y^1/x Ln   "
         },
 
         { CALC_OP_RECIPROCAL, 
           CALC_OP_SQUARE,
           CALC_OP_SQRT,
           CALC_OP_NPOW,
-          CALC_OP_LN,
+          CALC_OP_EXP,
           CALC_OP_RECIPROCAL, 
-          CALC_OP_SQUARE,
-          CALC_OP_SQRT,
+          CALC_OP_LN10,
+          CALC_OP_10X,
           CALC_OP_NROOT,
-          CALC_OP_EXP 
+          CALC_OP_LN,
         }
     },
 
     { // menu 1
         {" Sin  Cos  Tan  ",   
-         " Inv  Pi   Deg  ", 
+         " 2nd  Pi   Deg  ", 
          " aSin aCos aTan ", 
-         " Inv       Rad   "
+         " 2nd       Rad   "
         },
 
         { CALC_OP_SIN,
@@ -332,9 +336,9 @@ CalcMenuInfo MainMenus[] =
 
     { // menu 2
         {" HMS       R>P  ",   
-         " Inv  x!   ->D  ", 
+         " 2nd  x!   ->D  ", 
          " ->H       P>R  ", 
-         " Inv  Sun  DMY  "
+         " 2nd  Sun  DMY  "
         },
 
         { CALC_OP_HMS,
@@ -372,8 +376,9 @@ CalcMenuInfo MainMenus[] =
 
 char LCDline1[MaxLCDdigits+1];  //holds data for the first LCD display line
 char LCDline2[MaxLCDdigits+1];  //holds data for the second LCD display line
+
 char LCDhistory1[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
-char LCDhistory2[MaxLCDdigits+1];   //so the program can restore the LCD to were it was when powered back up
+char LCDhistory2[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
 
 BOOL NextMode;          //TRUE if MODE button switches to next mode. FALSE returns to Time/Date mode.
 BOOL TwelveHour;        //TRUE if 12 hour mode
@@ -521,14 +526,33 @@ void Clock32KHz(void)
 //***********************************
 // Display the data string passed
 // on top line of the LCD display
-void UpdateLCDline1(const char* s)
+void UpdateLCD(const char* s, int line)
 {
     int c;
-    strcpy(LCDhistory1,s);      //make a backup copy of the display
-    lcd_goto(0);
+
+    // prevent the sleep timer going off when we write to the
+    // screen, so that the interrupt doesnt happen.
+    StopSleepTimer();
+
+    c = 0;
+    if (line) c = 40;
+    lcd_goto(c);
+
     lcd_puts(s);
     for (c=strlen(s);c<MaxLCDdigits;c++)
         lcd_write(' ');     //blank the rest of the line
+
+    // sleep time ok from now on.
+    StartSleepTimer();
+}
+
+//***********************************
+// Display the data string passed
+// on top line of the LCD display
+void UpdateLCDline1(const char* s)
+{
+    strcpy(LCDhistory1,s);      //make a backup copy of the display
+    UpdateLCD(s, 0);
 }
 
 //***********************************
@@ -536,12 +560,8 @@ void UpdateLCDline1(const char* s)
 // on bottom line of the LCD display
 void UpdateLCDline2(const char* s)
 {
-    int c;
     strcpy(LCDhistory2,s);      //make a backup copy of the display
-    lcd_goto(40);               //first charcter on line #2
-    lcd_puts(s);
-    for (c=strlen(s);c<MaxLCDdigits;c++)
-        lcd_write(' ');     //blank the rest of the line
+    UpdateLCD(s, 1);
 }
 
 void ClearAllRegs(void)
@@ -1546,8 +1566,7 @@ void BacklightOFF(void)
 // This is called by a timeout because the user as not pressed a key in a few minutes
 void __attribute__((__interrupt__)) _T1Interrupt( void )
 {
-    char s[17];
-    T1CONbits.TON=0;            //switch the SLEEP timer OFF
+    StopSleepTimer();            //switch the SLEEP timer OFF
     LCDoff();                   //switch OFF LCD power
     BacklightOFF();             //switch off backlight
     _TRISB8=1;          //SCL
@@ -1582,14 +1601,13 @@ void __attribute__((__interrupt__)) _T1Interrupt( void )
     //restore the previous display contents, except time mode
     if (WatchMode!=0)
     {
-        strcpy(s,LCDhistory1);      
-        UpdateLCDline1(s);          
-        UpdateLCDline1(s);          
-        strcpy(s,LCDhistory2);
-        UpdateLCDline2(s);      
+        UpdateLCD(LCDhistory1, 0);
+        UpdateLCD(LCDhistory1, 0); // twice!
+        UpdateLCD(LCDhistory2, 1);
     }       
+
     ResetSleepTimer();
-    T1CONbits.TON=1;            //switch the SLEEP timr back on
+    StartSleepTimer();            //switch the SLEEP timer back on
     DelayMs(500);               //add a key delay
 }
 
@@ -1645,11 +1663,11 @@ void ProgramInit(void)
     T1CONbits.TCKPS1=1;     //timer ticks over at 128 times per sec
     T1CONbits.TCS=1;        //exteral clock select (32.768KHz crystal)
     IPC0bits.T1IP = 4;      //set Timer1 interrupt priority to 4 
-    PR1 = 7680;             //set the timeout value in the period register
-    //7680 = 1 minute
+    PR1 = 5760;             //set the timeout value in the period register
+    //7680 = 1 minute (5760 ~ 45 seconds)
     //128 counts for every second
     TMR1=0;
-    T1CONbits.TON=1;        //switch on sleep timer
+    StartSleepTimer();        //switch on sleep timer
     IEC0bits.T1IE = 1;      //enable Timer1 interrupt
 
     //setup Timer2 used for the PWM LCD Display Power & backlight display
