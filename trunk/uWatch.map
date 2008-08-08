@@ -32,6 +32,8 @@ c:/mplab/bin/bin/../../lib\libm-coff.a(exp.o)
                               uWatch-Main.o (exp)
 c:/mplab/bin/bin/../../lib\libm-coff.a(pow.o)
                               uWatch-Main.o (pow)
+c:/mplab/bin/bin/../../lib\libm-coff.a(log10.o)
+                              uWatch-Main.o (log10)
 c:/mplab/bin/bin/../../lib\libm-coff.a(tan.o)
                               uWatch-Main.o (tan)
 c:/mplab/bin/bin/../../lib\libm-coff.a(asin.o)
@@ -80,10 +82,10 @@ c:/mplab/bin/bin/../../lib\libm-coff.a(dpropagateNaN.o)
                               c:/mplab/bin/bin/../../lib\libm-coff.a(dunpack2.o) (_dPropagateNaN)
 c:/mplab/bin/bin/../../lib\libm-coff.a(dmodrem.o)
                               c:/mplab/bin/bin/../../lib\libm-coff.a(fmod.o) (_dmodrem)
-c:/mplab/bin/bin/../../lib\libc-coff.a(strcpy.o)
-                              uWatch-Main.o (strcpy)
 c:/mplab/bin/bin/../../lib\libc-coff.a(strlen.o)
                               uWatch-Main.o (strlen)
+c:/mplab/bin/bin/../../lib\libc-coff.a(strcpy.o)
+                              uWatch-Main.o (strcpy)
 c:/mplab/bin/bin/../../lib\libc-coff.a(xstold.o)
                               uWatch-Main.o (_Stold)
 c:/mplab/bin/bin/../../lib\libc-coff.a(sprintf.do)
@@ -161,15 +163,15 @@ section                    address   length (PC units)   length (bytes) (dec)
 .reset                           0                 0x4             0x6  (6)
 .ivt                           0x4                0xfc           0x17a  (378)
 .aivt                        0x104                0xfc           0x17a  (378)
-.text                        0x200              0x30f0          0x4968  (18792)
-.const                      0x32f0               0x5da           0x8c7  (2247)
-.text                       0x38ca              0x2a5e          0x3f8d  (16269)
-.dinit                      0x6328               0x1c0           0x2a0  (672)
-.isr                        0x64e8                 0x2             0x3  (3)
+.text                        0x200              0x30fc          0x497a  (18810)
+.const                      0x32fc               0x5ec           0x8e2  (2274)
+.text                       0x38e8              0x2a74          0x3fae  (16302)
+.dinit                      0x635c               0x1c0           0x2a0  (672)
+.isr                        0x651c                 0x2             0x3  (3)
 __CONFIG2                   0xabfc                 0x2             0x3  (3)
 __CONFIG1                   0xabfe                 0x2             0x3  (3)
 
-                     Total program memory used (bytes):         0x975f  (38751) 59%
+                     Total program memory used (bytes):         0x97ad  (38829) 59%
 
 
 Data Memory Usage
@@ -293,12 +295,12 @@ External Symbols in Program Memory (by address):
                   0x000200                  __resetPRI
                   0x00021e                  __psv_init
                   0x00022e                  __data_init
-                  0x00028e                  _strcpy
-                  0x00029e                  _strlen
+                  0x00028e                  _strlen
+                  0x00029c                  _strcpy
                   0x0002ac                  __Stold
                   0x00041c                  sprintf.do:_prout
-                  0x000428                  __dsprintf
                   0x000428                  __isprintf
+                  0x000428                  __dsprintf
                   0x00044a                  _strcat
                   0x000468                  _memmove
                   0x000490                  _memset
@@ -308,8 +310,8 @@ External Symbols in Program Memory (by address):
                   0x000956                  __LDscale
                   0x000a7c                  __LDtento
                   0x000bc2                  _memcpy
-                  0x000bd0                  ___dPrintf
                   0x000bd0                  ___iPrintf
+                  0x000bd0                  ___dPrintf
                   0x000d42                  _isspace
                   0x000d52                  _isalnum
                   0x000d6e                  _memchr
@@ -318,8 +320,8 @@ External Symbols in Program Memory (by address):
                   0x000e72                  __Feraise
                   0x000e88                  __Vacopy
                   0x000e92                  _strchr
-                  0x000ea4                  ___dPutfld
                   0x000ea4                  ___iPutfld
+                  0x000ea4                  ___dPutfld
                   0x00118a                  __Puttxt
                   0x00131e                  __Ldtob
                   0x001770                  __Litob
@@ -334,230 +336,234 @@ External Symbols in Program Memory (by address):
                   0x001e3a                  ___divdf3
                   0x001eee                  _atanl
                   0x001eee                  _atan
-                  0x00205a                  _cosl
                   0x00205a                  _cos
-                  0x00205e                  _sinl
+                  0x00205a                  _cosl
                   0x00205e                  _sin
+                  0x00205e                  _sinl
                   0x002062                  ___fixdfsi
                   0x0020ba                  ___floatsidf
                   0x0020c0                  ___subdf3
-                  0x0020c4                  _logl
                   0x0020c4                  _log
+                  0x0020c4                  _logl
                   0x0021f4                  _exp
                   0x0021f4                  _expl
                   0x002324                  _pow
                   0x002324                  _powl
-                  0x002560                  _tanl
-                  0x002560                  _tan
-                  0x0026ac                  _asin
-                  0x0026ac                  _asinl
-                  0x0026b0                  _acos
-                  0x0026b0                  _acosl
-                  0x0026b4                  ___ledf2
-                  0x0026b4                  ___eqdf2
-                  0x0026b4                  ___ltdf2
-                  0x0026be                  ___gtdf2
-                  0x0026be                  ___gedf2
-                  0x0026c8                  _floorl
-                  0x0026c8                  _floor
-                  0x0026da                  ___divsi3
-                  0x0026f8                  ___umodsi3
-                  0x0026fe                  __dunpack2
-                  0x002720                  __dreturnNaN
-                  0x002726                  __dunpack2exit
-                  0x002730                  __dpack
-                  0x002788                  __dunpack
-                  0x0027d6                  __dtype
-                  0x0027fa                  __sincos
-                  0x002954                  ___floatdidf
-                  0x0029c2                  _frexpl
-                  0x0029c2                  _frexp
-                  0x0029fc                  _ldexpl
-                  0x0029fc                  _ldexp
-                  0x002a62                  __dchop
-                  0x002aea                  _fmod
-                  0x002aea                  _fmodl
-                  0x002af2                  __asinacos
-                  0x002c70                  __dcompare
-                  0x002cc2                  ___udivsi3
-                  0x002ce2                  __dPropagateNaN
-                  0x002cfe                  __dmodrem
-                  0x002dce                  ___mulsi3
-                  0x002e00                  ___udivmoddi3
-                  0x002ece                  ___udivdi3
-                  0x002edc                  ___umoddi3
-                  0x002ee4                  ___divdi3
-                  0x002f1e                  ___moddi3
-                  0x002ff0                  ___muldi3
-                  0x00304c                  ___umuldi3
-                  0x003090                  _OpenTimer1
-                  0x003098                  _RtccInitClock
-                  0x0030ba                  _RtccReadTime
-                  0x0030ee                  _RtccReadDate
-                  0x00312a                  _RtccWrOn
-                  0x003158                  _RtccWriteDate
-                  0x003228                  _RtccWriteTime
-                  0x0038ca                  _opPrec
-                  0x0038fc                  _DelayMs
-                  0x003910                  _Clock1MHz
-                  0x003918                  _Clock4MHz
-                  0x003920                  _Clock250KHz
-                  0x003928                  _Clock125KHz
-                  0x003930                  _Clock32KHz
-                  0x003938                  _LCD_STROBE
-                  0x00393e                  _SetLCDdata
-                  0x00394c                  _lcd_write
-                  0x00395c                  _lcd_clear
-                  0x003964                  _lcd_puts
-                  0x00397c                  _lcd_goto
-                  0x003986                  _lcd_init
-                  0x0039a8                  _UpdateLCDline1
-                  0x0039d2                  _UpdateLCDline2
-                  0x0039fc                  _ClearAllRegs
-                  0x003a9c                  _i2c_high_sda
-                  0x003aa0                  _i2c_low_sda
-                  0x003aa4                  _i2c_high_scl
-                  0x003aa8                  _i2c_low_scl
-                  0x003aac                  _i2c_in_byte
-                  0x003ad0                  _i2c_out_byte
-                  0x003af0                  _i2c_nack
-                  0x003af8                  _i2c_ack
-                  0x003b02                  _i2c_start
-                  0x003b0e                  _i2c_stop
-                  0x003b18                  _I2CmemoryWRITE
-                  0x003b46                  _I2CmemoryREAD
-                  0x003b78                  _KeystrokeReplay
-                  0x003b96                  _KeystrokeRecord
-                  0x003bbc                  _KeyScan
-                  0x003d2a                  _BCDtoDEC
-                  0x003d34                  _DECtoBCD
-                  0x003d4a                  _itochar
-                  0x003d58                  _mjd
-                  0x003e18                  _DriveMenu
-                  0x003e68                  _ReturnNumber
-                  0x003eaa                  _DriveMenu2
-                  0x003f38                  _GetNumBCD
-                  0x003f5a                  _Push
-                  0x003f7c                  _PushStackUp
-                  0x003f82                  _DropStack
-                  0x003f9a                  _RtoP
-                  0x00400c                  _PtoR
-                  0x004076                  _hms
-                  0x0040e4                  _hr
-                  0x004152                  _Drop
-                  0x004176                  _Operation
-                  0x00450e                  _Operate
-                  0x004520                  _ProcessNumberKey
-                  0x00455c                  _EnterNumber
-                  0x004626                  _UpdateDisplayRegs
-                  0x0048ca                  _Factorial
-                  0x00498a                  _CompleteXreg
-                  0x0049a0                  _UpdateXregDisplay
-                  0x0049c0                  _UpdateYregDisplay
-                  0x0049e0                  _ResetFlags
-                  0x0049f2                  _StoreRecall
-                  0x004a52                  _SignKey
-                  0x004b02                  _KeyRecord
-                  0x004b58                  _KeyReplay
-                  0x004ba4                  _HexEntry
-                  0x004c36                  _Conversions
-                  0x004db4                  _RPNcalculator
-                  0x004f08                  _ProcessXYoperator
-                  0x004f10                  _ALGcalculator
-                  0x005174                  _SetTimeBCD
-                  0x0051a0                  _SetDateBCD
-                  0x0051d8                  _SetDateBCDandUpdate
-                  0x0051f6                  _OneLineNumberEntry
-                  0x00522e                  _SetupMode
-                  0x005642                  _RTCCunlock
-                  0x005654                  _LCDon
-                  0x00565e                  _LCDoff
-                  0x00566c                  _IdleI2C1
-                  0x00568c                  _moonPhase
-                  0x0057c6                  _inDST
-                  0x005830                  _caldati
-                  0x0058e2                  _AdjustDateTime
-                  0x0059a4                  _TimeDateDisplay
-                  0x005b1a                  _BacklightON
-                  0x005b28                  _BacklightOFF
-                  0x005b30                  __T1Interrupt
-                  0x005ba8                  _ProgramInit
-                  0x005c9a                  _main
-                  0x0062c6                  _CalcRiseAndSet
-                  0x0064e8                  __DefaultInterrupt
+                  0x002560                  _log10
+                  0x002560                  _log10l
+                  0x00256c                  _tan
+                  0x00256c                  _tanl
+                  0x0026b8                  _asinl
+                  0x0026b8                  _asin
+                  0x0026bc                  _acos
+                  0x0026bc                  _acosl
+                  0x0026c0                  ___eqdf2
+                  0x0026c0                  ___ltdf2
+                  0x0026c0                  ___ledf2
+                  0x0026ca                  ___gtdf2
+                  0x0026ca                  ___gedf2
+                  0x0026d4                  _floor
+                  0x0026d4                  _floorl
+                  0x0026e6                  ___divsi3
+                  0x002704                  ___umodsi3
+                  0x00270a                  __dunpack2
+                  0x00272c                  __dreturnNaN
+                  0x002732                  __dunpack2exit
+                  0x00273c                  __dpack
+                  0x002794                  __dunpack
+                  0x0027e2                  __dtype
+                  0x002806                  __sincos
+                  0x002960                  ___floatdidf
+                  0x0029ce                  _frexpl
+                  0x0029ce                  _frexp
+                  0x002a08                  _ldexp
+                  0x002a08                  _ldexpl
+                  0x002a6e                  __dchop
+                  0x002af6                  _fmodl
+                  0x002af6                  _fmod
+                  0x002afe                  __asinacos
+                  0x002c7c                  __dcompare
+                  0x002cce                  ___udivsi3
+                  0x002cee                  __dPropagateNaN
+                  0x002d0a                  __dmodrem
+                  0x002dda                  ___mulsi3
+                  0x002e0c                  ___udivmoddi3
+                  0x002eda                  ___udivdi3
+                  0x002ee8                  ___umoddi3
+                  0x002ef0                  ___divdi3
+                  0x002f2a                  ___moddi3
+                  0x002ffc                  ___muldi3
+                  0x003058                  ___umuldi3
+                  0x00309c                  _OpenTimer1
+                  0x0030a4                  _RtccInitClock
+                  0x0030c6                  _RtccReadTime
+                  0x0030fa                  _RtccReadDate
+                  0x003136                  _RtccWrOn
+                  0x003164                  _RtccWriteDate
+                  0x003234                  _RtccWriteTime
+                  0x0038e8                  _opPrec
+                  0x00391a                  _DelayMs
+                  0x00392e                  _Clock1MHz
+                  0x003936                  _Clock4MHz
+                  0x00393e                  _Clock250KHz
+                  0x003946                  _Clock125KHz
+                  0x00394e                  _Clock32KHz
+                  0x003956                  _LCD_STROBE
+                  0x00395c                  _SetLCDdata
+                  0x00396a                  _lcd_write
+                  0x00397a                  _lcd_clear
+                  0x003982                  _lcd_puts
+                  0x00399a                  _lcd_goto
+                  0x0039a4                  _lcd_init
+                  0x0039c6                  _UpdateLCD
+                  0x0039f4                  _UpdateLCDline1
+                  0x003a08                  _UpdateLCDline2
+                  0x003a1c                  _ClearAllRegs
+                  0x003abc                  _i2c_high_sda
+                  0x003ac0                  _i2c_low_sda
+                  0x003ac4                  _i2c_high_scl
+                  0x003ac8                  _i2c_low_scl
+                  0x003acc                  _i2c_in_byte
+                  0x003af0                  _i2c_out_byte
+                  0x003b10                  _i2c_nack
+                  0x003b18                  _i2c_ack
+                  0x003b22                  _i2c_start
+                  0x003b2e                  _i2c_stop
+                  0x003b38                  _I2CmemoryWRITE
+                  0x003b66                  _I2CmemoryREAD
+                  0x003b98                  _KeystrokeReplay
+                  0x003bb6                  _KeystrokeRecord
+                  0x003bdc                  _KeyScan
+                  0x003d4a                  _BCDtoDEC
+                  0x003d54                  _DECtoBCD
+                  0x003d6a                  _itochar
+                  0x003d78                  _mjd
+                  0x003e38                  _DriveMenu
+                  0x003e88                  _ReturnNumber
+                  0x003eca                  _DriveMenu2
+                  0x003f58                  _GetNumBCD
+                  0x003f7a                  _Push
+                  0x003f9c                  _PushStackUp
+                  0x003fa2                  _DropStack
+                  0x003fba                  _RtoP
+                  0x00402c                  _PtoR
+                  0x004096                  _hms
+                  0x004104                  _hr
+                  0x004172                  _Drop
+                  0x004196                  _Operation
+                  0x00454c                  _Operate
+                  0x00455e                  _ProcessNumberKey
+                  0x00459a                  _EnterNumber
+                  0x004664                  _UpdateDisplayRegs
+                  0x004908                  _Factorial
+                  0x0049c8                  _CompleteXreg
+                  0x0049de                  _UpdateXregDisplay
+                  0x0049fe                  _UpdateYregDisplay
+                  0x004a1e                  _ResetFlags
+                  0x004a30                  _StoreRecall
+                  0x004a90                  _SignKey
+                  0x004b3a                  _KeyRecord
+                  0x004b90                  _KeyReplay
+                  0x004bdc                  _HexEntry
+                  0x004c6e                  _Conversions
+                  0x004dec                  _RPNcalculator
+                  0x004f40                  _ProcessXYoperator
+                  0x004f48                  _ALGcalculator
+                  0x0051ac                  _SetTimeBCD
+                  0x0051d8                  _SetDateBCD
+                  0x005210                  _SetDateBCDandUpdate
+                  0x00522e                  _OneLineNumberEntry
+                  0x005266                  _SetupMode
+                  0x00567a                  _RTCCunlock
+                  0x00568c                  _LCDon
+                  0x005696                  _LCDoff
+                  0x0056a4                  _IdleI2C1
+                  0x0056c4                  _moonPhase
+                  0x0057fe                  _inDST
+                  0x005868                  _caldati
+                  0x00591a                  _AdjustDateTime
+                  0x0059dc                  _TimeDateDisplay
+                  0x005b52                  _BacklightON
+                  0x005b60                  _BacklightOFF
+                  0x005b68                  __T1Interrupt
+                  0x005bdc                  _ProgramInit
+                  0x005cce                  _main
+                  0x0062fa                  _CalcRiseAndSet
+                  0x00651c                  __DefaultInterrupt
 
 External Symbols in Program Memory (by name):
 
-                  0x004f10                  _ALGcalculator
-                  0x0058e2                  _AdjustDateTime
-                  0x003d2a                  _BCDtoDEC
-                  0x005b28                  _BacklightOFF
-                  0x005b1a                  _BacklightON
-                  0x0062c6                  _CalcRiseAndSet
-                  0x0039fc                  _ClearAllRegs
-                  0x003928                  _Clock125KHz
-                  0x003910                  _Clock1MHz
-                  0x003920                  _Clock250KHz
-                  0x003930                  _Clock32KHz
-                  0x003918                  _Clock4MHz
-                  0x00498a                  _CompleteXreg
-                  0x004c36                  _Conversions
-                  0x003d34                  _DECtoBCD
-                  0x0038fc                  _DelayMs
-                  0x003e18                  _DriveMenu
-                  0x003eaa                  _DriveMenu2
-                  0x004152                  _Drop
-                  0x003f82                  _DropStack
-                  0x00455c                  _EnterNumber
-                  0x0048ca                  _Factorial
-                  0x003f38                  _GetNumBCD
-                  0x004ba4                  _HexEntry
-                  0x003b46                  _I2CmemoryREAD
-                  0x003b18                  _I2CmemoryWRITE
-                  0x00566c                  _IdleI2C1
-                  0x004b02                  _KeyRecord
-                  0x004b58                  _KeyReplay
-                  0x003bbc                  _KeyScan
-                  0x003b96                  _KeystrokeRecord
-                  0x003b78                  _KeystrokeReplay
-                  0x003938                  _LCD_STROBE
-                  0x00565e                  _LCDoff
-                  0x005654                  _LCDon
-                  0x0051f6                  _OneLineNumberEntry
-                  0x003090                  _OpenTimer1
-                  0x00450e                  _Operate
-                  0x004176                  _Operation
-                  0x004520                  _ProcessNumberKey
-                  0x004f08                  _ProcessXYoperator
-                  0x005ba8                  _ProgramInit
-                  0x00400c                  _PtoR
-                  0x003f5a                  _Push
-                  0x003f7c                  _PushStackUp
-                  0x004db4                  _RPNcalculator
-                  0x005642                  _RTCCunlock
-                  0x0049e0                  _ResetFlags
-                  0x003e68                  _ReturnNumber
-                  0x003098                  _RtccInitClock
-                  0x0030ee                  _RtccReadDate
-                  0x0030ba                  _RtccReadTime
-                  0x00312a                  _RtccWrOn
-                  0x003158                  _RtccWriteDate
-                  0x003228                  _RtccWriteTime
-                  0x003f9a                  _RtoP
-                  0x0051a0                  _SetDateBCD
-                  0x0051d8                  _SetDateBCDandUpdate
-                  0x00393e                  _SetLCDdata
-                  0x005174                  _SetTimeBCD
-                  0x00522e                  _SetupMode
-                  0x004a52                  _SignKey
-                  0x0049f2                  _StoreRecall
-                  0x0059a4                  _TimeDateDisplay
-                  0x004626                  _UpdateDisplayRegs
-                  0x0039a8                  _UpdateLCDline1
-                  0x0039d2                  _UpdateLCDline2
-                  0x0049a0                  _UpdateXregDisplay
-                  0x0049c0                  _UpdateYregDisplay
-                  0x0064e8                  __DefaultInterrupt
+                  0x004f48                  _ALGcalculator
+                  0x00591a                  _AdjustDateTime
+                  0x003d4a                  _BCDtoDEC
+                  0x005b60                  _BacklightOFF
+                  0x005b52                  _BacklightON
+                  0x0062fa                  _CalcRiseAndSet
+                  0x003a1c                  _ClearAllRegs
+                  0x003946                  _Clock125KHz
+                  0x00392e                  _Clock1MHz
+                  0x00393e                  _Clock250KHz
+                  0x00394e                  _Clock32KHz
+                  0x003936                  _Clock4MHz
+                  0x0049c8                  _CompleteXreg
+                  0x004c6e                  _Conversions
+                  0x003d54                  _DECtoBCD
+                  0x00391a                  _DelayMs
+                  0x003e38                  _DriveMenu
+                  0x003eca                  _DriveMenu2
+                  0x004172                  _Drop
+                  0x003fa2                  _DropStack
+                  0x00459a                  _EnterNumber
+                  0x004908                  _Factorial
+                  0x003f58                  _GetNumBCD
+                  0x004bdc                  _HexEntry
+                  0x003b66                  _I2CmemoryREAD
+                  0x003b38                  _I2CmemoryWRITE
+                  0x0056a4                  _IdleI2C1
+                  0x004b3a                  _KeyRecord
+                  0x004b90                  _KeyReplay
+                  0x003bdc                  _KeyScan
+                  0x003bb6                  _KeystrokeRecord
+                  0x003b98                  _KeystrokeReplay
+                  0x003956                  _LCD_STROBE
+                  0x005696                  _LCDoff
+                  0x00568c                  _LCDon
+                  0x00522e                  _OneLineNumberEntry
+                  0x00309c                  _OpenTimer1
+                  0x00454c                  _Operate
+                  0x004196                  _Operation
+                  0x00455e                  _ProcessNumberKey
+                  0x004f40                  _ProcessXYoperator
+                  0x005bdc                  _ProgramInit
+                  0x00402c                  _PtoR
+                  0x003f7a                  _Push
+                  0x003f9c                  _PushStackUp
+                  0x004dec                  _RPNcalculator
+                  0x00567a                  _RTCCunlock
+                  0x004a1e                  _ResetFlags
+                  0x003e88                  _ReturnNumber
+                  0x0030a4                  _RtccInitClock
+                  0x0030fa                  _RtccReadDate
+                  0x0030c6                  _RtccReadTime
+                  0x003136                  _RtccWrOn
+                  0x003164                  _RtccWriteDate
+                  0x003234                  _RtccWriteTime
+                  0x003fba                  _RtoP
+                  0x0051d8                  _SetDateBCD
+                  0x005210                  _SetDateBCDandUpdate
+                  0x00395c                  _SetLCDdata
+                  0x0051ac                  _SetTimeBCD
+                  0x005266                  _SetupMode
+                  0x004a90                  _SignKey
+                  0x004a30                  _StoreRecall
+                  0x0059dc                  _TimeDateDisplay
+                  0x004664                  _UpdateDisplayRegs
+                  0x0039c6                  _UpdateLCD
+                  0x0039f4                  _UpdateLCDline1
+                  0x003a08                  _UpdateLCDline2
+                  0x0049de                  _UpdateXregDisplay
+                  0x0049fe                  _UpdateYregDisplay
+                  0x00651c                  __DefaultInterrupt
                   0x000d82                  __Dnorm
                   0x000e72                  __Feraise
                   0x00191a                  __Genld
@@ -571,105 +577,107 @@ External Symbols in Program Memory (by name):
                   0x0002ac                  __Stold
                   0x00049e                  __Stopfx
                   0x00076c                  __Stoxflt
-                  0x005b30                  __T1Interrupt
+                  0x005b68                  __T1Interrupt
                   0x000e88                  __Vacopy
                   0x001ca0                  ___adddf3
                   0x000bd0                  ___dPrintf
                   0x000ea4                  ___dPutfld
                   0x001e3a                  ___divdf3
-                  0x002ee4                  ___divdi3
-                  0x0026da                  ___divsi3
-                  0x0026b4                  ___eqdf2
+                  0x002ef0                  ___divdi3
+                  0x0026e6                  ___divsi3
+                  0x0026c0                  ___eqdf2
                   0x002062                  ___fixdfsi
-                  0x002954                  ___floatdidf
+                  0x002960                  ___floatdidf
                   0x0020ba                  ___floatsidf
-                  0x0026be                  ___gedf2
-                  0x0026be                  ___gtdf2
+                  0x0026ca                  ___gedf2
+                  0x0026ca                  ___gtdf2
                   0x000bd0                  ___iPrintf
                   0x000ea4                  ___iPutfld
-                  0x0026b4                  ___ledf2
-                  0x0026b4                  ___ltdf2
-                  0x002f1e                  ___moddi3
+                  0x0026c0                  ___ledf2
+                  0x0026c0                  ___ltdf2
+                  0x002f2a                  ___moddi3
                   0x001b98                  ___modsi3
                   0x001bb6                  ___muldf3
-                  0x002ff0                  ___muldi3
-                  0x002dce                  ___mulsi3
+                  0x002ffc                  ___muldi3
+                  0x002dda                  ___mulsi3
                   0x0020c0                  ___subdf3
-                  0x002ece                  ___udivdi3
-                  0x002e00                  ___udivmoddi3
-                  0x002cc2                  ___udivsi3
-                  0x002edc                  ___umoddi3
-                  0x0026f8                  ___umodsi3
-                  0x00304c                  ___umuldi3
-                  0x002af2                  __asinacos
-                  0x002ce2                  __dPropagateNaN
+                  0x002eda                  ___udivdi3
+                  0x002e0c                  ___udivmoddi3
+                  0x002cce                  ___udivsi3
+                  0x002ee8                  ___umoddi3
+                  0x002704                  ___umodsi3
+                  0x003058                  ___umuldi3
+                  0x002afe                  __asinacos
+                  0x002cee                  __dPropagateNaN
                   0x00022e                  __data_init
-                  0x002a62                  __dchop
-                  0x002c70                  __dcompare
-                  0x002cfe                  __dmodrem
-                  0x002730                  __dpack
-                  0x002720                  __dreturnNaN
+                  0x002a6e                  __dchop
+                  0x002c7c                  __dcompare
+                  0x002d0a                  __dmodrem
+                  0x00273c                  __dpack
+                  0x00272c                  __dreturnNaN
                   0x000428                  __dsprintf
-                  0x0027d6                  __dtype
-                  0x002788                  __dunpack
-                  0x0026fe                  __dunpack2
-                  0x002726                  __dunpack2exit
+                  0x0027e2                  __dtype
+                  0x002794                  __dunpack
+                  0x00270a                  __dunpack2
+                  0x002732                  __dunpack2exit
                   0x000428                  __isprintf
                   0x00021e                  __psv_init
                   0x000200                  __resetPRI
-                  0x0027fa                  __sincos
-                  0x0026b0                  _acos
-                  0x0026b0                  _acosl
-                  0x0026ac                  _asin
-                  0x0026ac                  _asinl
+                  0x002806                  __sincos
+                  0x0026bc                  _acos
+                  0x0026bc                  _acosl
+                  0x0026b8                  _asin
+                  0x0026b8                  _asinl
                   0x001eee                  _atan
                   0x001eee                  _atanl
-                  0x005830                  _caldati
+                  0x005868                  _caldati
                   0x00205a                  _cos
                   0x00205a                  _cosl
                   0x001b82                  _div
                   0x0021f4                  _exp
                   0x0021f4                  _expl
-                  0x0026c8                  _floor
-                  0x0026c8                  _floorl
-                  0x002aea                  _fmod
-                  0x002aea                  _fmodl
-                  0x0029c2                  _frexp
-                  0x0029c2                  _frexpl
-                  0x004076                  _hms
-                  0x0040e4                  _hr
-                  0x003af8                  _i2c_ack
-                  0x003aa4                  _i2c_high_scl
-                  0x003a9c                  _i2c_high_sda
-                  0x003aac                  _i2c_in_byte
-                  0x003aa8                  _i2c_low_scl
-                  0x003aa0                  _i2c_low_sda
-                  0x003af0                  _i2c_nack
-                  0x003ad0                  _i2c_out_byte
-                  0x003b02                  _i2c_start
-                  0x003b0e                  _i2c_stop
-                  0x0057c6                  _inDST
+                  0x0026d4                  _floor
+                  0x0026d4                  _floorl
+                  0x002af6                  _fmod
+                  0x002af6                  _fmodl
+                  0x0029ce                  _frexp
+                  0x0029ce                  _frexpl
+                  0x004096                  _hms
+                  0x004104                  _hr
+                  0x003b18                  _i2c_ack
+                  0x003ac4                  _i2c_high_scl
+                  0x003abc                  _i2c_high_sda
+                  0x003acc                  _i2c_in_byte
+                  0x003ac8                  _i2c_low_scl
+                  0x003ac0                  _i2c_low_sda
+                  0x003b10                  _i2c_nack
+                  0x003af0                  _i2c_out_byte
+                  0x003b22                  _i2c_start
+                  0x003b2e                  _i2c_stop
+                  0x0057fe                  _inDST
                   0x000d52                  _isalnum
                   0x000d42                  _isspace
-                  0x003d4a                  _itochar
-                  0x00395c                  _lcd_clear
-                  0x00397c                  _lcd_goto
-                  0x003986                  _lcd_init
-                  0x003964                  _lcd_puts
-                  0x00394c                  _lcd_write
-                  0x0029fc                  _ldexp
-                  0x0029fc                  _ldexpl
+                  0x003d6a                  _itochar
+                  0x00397a                  _lcd_clear
+                  0x00399a                  _lcd_goto
+                  0x0039a4                  _lcd_init
+                  0x003982                  _lcd_puts
+                  0x00396a                  _lcd_write
+                  0x002a08                  _ldexp
+                  0x002a08                  _ldexpl
                   0x0018e0                  _ldiv
                   0x0020c4                  _log
+                  0x002560                  _log10
+                  0x002560                  _log10l
                   0x0020c4                  _logl
-                  0x005c9a                  _main
+                  0x005cce                  _main
                   0x000d6e                  _memchr
                   0x000bc2                  _memcpy
                   0x000468                  _memmove
                   0x000490                  _memset
-                  0x003d58                  _mjd
-                  0x00568c                  _moonPhase
-                  0x0038ca                  _opPrec
+                  0x003d78                  _mjd
+                  0x0056c4                  _moonPhase
+                  0x0038e8                  _opPrec
                   0x002324                  _pow
                   0x002324                  _powl
                   0x00205e                  _sin
@@ -678,10 +686,10 @@ External Symbols in Program Memory (by name):
                   0x001d9a                  _sqrtl
                   0x00044a                  _strcat
                   0x000e92                  _strchr
-                  0x00028e                  _strcpy
-                  0x00029e                  _strlen
-                  0x002560                  _tan
-                  0x002560                  _tanl
+                  0x00029c                  _strcpy
+                  0x00028e                  _strlen
+                  0x00256c                  _tan
+                  0x00256c                  _tanl
                   0x00041c                  sprintf.do:_prout
 
 Memory Configuration
@@ -720,7 +728,7 @@ LOAD c:/mplab/bin/bin/../../lib/PIC24F\libpPIC24Fxxx-coff.a
                   0x000002          0x2 SHORT 0x0 ((<code 337> (__reset) >> 0x10) & 0x7f)
                   0x000003          0x2 SHORT 0x0
 
-.text             0x000200       0x30f0
+.text             0x000200       0x30fc
  *(.init)
  .init            0x000200         0x8a c:/mplab/bin/bin/../../lib\libpic30-coff.a(crt0.o)
                   0x000200                  _resetPRI
@@ -731,10 +739,10 @@ LOAD c:/mplab/bin/bin/../../lib/PIC24F\libpPIC24Fxxx-coff.a
  *(.handle)
  .handle          0x00028a          0x4 jump_table
  *(.libc)
- .libc            0x00028e         0x10 c:/mplab/bin/bin/../../lib\libc-coff.a(strcpy.o)
-                  0x00028e                  strcpy
- .libc            0x00029e          0xe c:/mplab/bin/bin/../../lib\libc-coff.a(strlen.o)
-                  0x00029e                  strlen
+ .libc            0x00028e          0xe c:/mplab/bin/bin/../../lib\libc-coff.a(strlen.o)
+                  0x00028e                  strlen
+ .libc            0x00029c         0x10 c:/mplab/bin/bin/../../lib\libc-coff.a(strcpy.o)
+                  0x00029c                  strcpy
  .libc            0x0002ac        0x170 c:/mplab/bin/bin/../../lib\libc-coff.a(xstold.o)
                   0x0002ac                  _Stold
  .libc            0x00041c         0x2e c:/mplab/bin/bin/../../lib\libc-coff.a(sprintf.do)
@@ -829,92 +837,95 @@ LOAD c:/mplab/bin/bin/../../lib/PIC24F\libpPIC24Fxxx-coff.a
  .libm            0x002324        0x23c c:/mplab/bin/bin/../../lib\libm-coff.a(pow.o)
                   0x002324                  pow
                   0x002324                  powl
- .libm            0x002560        0x14c c:/mplab/bin/bin/../../lib\libm-coff.a(tan.o)
-                  0x002560                  tanl
-                  0x002560                  tan
- .libm            0x0026ac          0x4 c:/mplab/bin/bin/../../lib\libm-coff.a(asin.o)
-                  0x0026ac                  asin
-                  0x0026ac                  asinl
- .libm            0x0026b0          0x4 c:/mplab/bin/bin/../../lib\libm-coff.a(acos.o)
-                  0x0026b0                  acos
-                  0x0026b0                  acosl
- .libm            0x0026b4          0xa c:/mplab/bin/bin/../../lib\libm-coff.a(deqltle.o)
-                  0x0026b4                  __eqdf2
-                  0x0026b4                  __ltdf2
-                  0x0026b4                  __ledf2
- .libm            0x0026be          0xa c:/mplab/bin/bin/../../lib\libm-coff.a(dgtge.o)
-                  0x0026be                  __gtdf2
-                  0x0026be                  __gedf2
- .libm            0x0026c8         0x12 c:/mplab/bin/bin/../../lib\libm-coff.a(floor.o)
-                  0x0026c8                  floor
-                  0x0026c8                  floorl
- .libm            0x0026da         0x1e c:/mplab/bin/bin/../../lib\libm-coff.a(divsi3.o)
-                  0x0026da                  __divsi3
- .libm            0x0026f8          0x6 c:/mplab/bin/bin/../../lib\libm-coff.a(umodsi3.o)
-                  0x0026f8                  __umodsi3
- .libm            0x0026fe         0x32 c:/mplab/bin/bin/../../lib\libm-coff.a(dunpack2.o)
-                  0x0026fe                  _dunpack2
-                  0x002720                  _dreturnNaN
-                  0x002726                  _dunpack2exit
- .libm            0x002730         0x58 c:/mplab/bin/bin/../../lib\libm-coff.a(dpack.o)
-                  0x002730                  _dpack
- .libm            0x002788         0x4e c:/mplab/bin/bin/../../lib\libm-coff.a(dunpack.o)
-                  0x002788                  _dunpack
- .libm            0x0027d6         0x24 c:/mplab/bin/bin/../../lib\libm-coff.a(dtype.o)
-                  0x0027d6                  _dtype
- .libm            0x0027fa        0x15a c:/mplab/bin/bin/../../lib\libm-coff.a(sincos.o)
-                  0x0027fa                  _sincos
- .libm            0x002954         0x6e c:/mplab/bin/bin/../../lib\libm-coff.a(floatdidf.o)
-                  0x002954                  __floatdidf
- .libm            0x0029c2         0x3a c:/mplab/bin/bin/../../lib\libm-coff.a(frexp.o)
-                  0x0029c2                  frexp
-                  0x0029c2                  frexpl
- .libm            0x0029fc         0x66 c:/mplab/bin/bin/../../lib\libm-coff.a(ldexp.o)
-                  0x0029fc                  ldexp
-                  0x0029fc                  ldexpl
- .libm            0x002a62         0x88 c:/mplab/bin/bin/../../lib\libm-coff.a(dchop.o)
-                  0x002a62                  _dchop
- .libm            0x002aea          0x8 c:/mplab/bin/bin/../../lib\libm-coff.a(fmod.o)
-                  0x002aea                  fmod
-                  0x002aea                  fmodl
- .libm            0x002af2        0x17e c:/mplab/bin/bin/../../lib\libm-coff.a(asinacos.o)
-                  0x002af2                  _asinacos
- .libm            0x002c70         0x52 c:/mplab/bin/bin/../../lib\libm-coff.a(dcompare.o)
-                  0x002c70                  _dcompare
- .libm            0x002cc2         0x20 c:/mplab/bin/bin/../../lib\libm-coff.a(udivsi3.o)
-                  0x002cc2                  __udivsi3
- .libm            0x002ce2         0x1c c:/mplab/bin/bin/../../lib\libm-coff.a(dpropagateNaN.o)
-                  0x002ce2                  _dPropagateNaN
- .libm            0x002cfe         0xd0 c:/mplab/bin/bin/../../lib\libm-coff.a(dmodrem.o)
-                  0x002cfe                  _dmodrem
- .libm            0x002dce          0xc c:/mplab/bin/bin/../../lib\libm-coff.a(mulsi3.o)
-                  0x002dce                  __mulsi3
- .libm            0x002dda        0x216 c:/mplab/bin/bin/../../lib\libm-coff.a(divmoddi3.o)
-                  0x002e00                  __udivmoddi3
-                  0x002ece                  __udivdi3
-                  0x002edc                  __umoddi3
-                  0x002ee4                  __divdi3
-                  0x002f1e                  __moddi3
- .libm            0x002ff0         0x5c c:/mplab/bin/bin/../../lib\libm-coff.a(muldi3.o)
-                  0x002ff0                  __muldi3
- .libm            0x00304c         0x44 c:/mplab/bin/bin/../../lib\libm-coff.a(umuldi3.o)
-                  0x00304c                  __umuldi3
+ .libm            0x002560          0xc c:/mplab/bin/bin/../../lib\libm-coff.a(log10.o)
+                  0x002560                  log10l
+                  0x002560                  log10
+ .libm            0x00256c        0x14c c:/mplab/bin/bin/../../lib\libm-coff.a(tan.o)
+                  0x00256c                  tanl
+                  0x00256c                  tan
+ .libm            0x0026b8          0x4 c:/mplab/bin/bin/../../lib\libm-coff.a(asin.o)
+                  0x0026b8                  asin
+                  0x0026b8                  asinl
+ .libm            0x0026bc          0x4 c:/mplab/bin/bin/../../lib\libm-coff.a(acos.o)
+                  0x0026bc                  acos
+                  0x0026bc                  acosl
+ .libm            0x0026c0          0xa c:/mplab/bin/bin/../../lib\libm-coff.a(deqltle.o)
+                  0x0026c0                  __eqdf2
+                  0x0026c0                  __ltdf2
+                  0x0026c0                  __ledf2
+ .libm            0x0026ca          0xa c:/mplab/bin/bin/../../lib\libm-coff.a(dgtge.o)
+                  0x0026ca                  __gtdf2
+                  0x0026ca                  __gedf2
+ .libm            0x0026d4         0x12 c:/mplab/bin/bin/../../lib\libm-coff.a(floor.o)
+                  0x0026d4                  floor
+                  0x0026d4                  floorl
+ .libm            0x0026e6         0x1e c:/mplab/bin/bin/../../lib\libm-coff.a(divsi3.o)
+                  0x0026e6                  __divsi3
+ .libm            0x002704          0x6 c:/mplab/bin/bin/../../lib\libm-coff.a(umodsi3.o)
+                  0x002704                  __umodsi3
+ .libm            0x00270a         0x32 c:/mplab/bin/bin/../../lib\libm-coff.a(dunpack2.o)
+                  0x00270a                  _dunpack2
+                  0x00272c                  _dreturnNaN
+                  0x002732                  _dunpack2exit
+ .libm            0x00273c         0x58 c:/mplab/bin/bin/../../lib\libm-coff.a(dpack.o)
+                  0x00273c                  _dpack
+ .libm            0x002794         0x4e c:/mplab/bin/bin/../../lib\libm-coff.a(dunpack.o)
+                  0x002794                  _dunpack
+ .libm            0x0027e2         0x24 c:/mplab/bin/bin/../../lib\libm-coff.a(dtype.o)
+                  0x0027e2                  _dtype
+ .libm            0x002806        0x15a c:/mplab/bin/bin/../../lib\libm-coff.a(sincos.o)
+                  0x002806                  _sincos
+ .libm            0x002960         0x6e c:/mplab/bin/bin/../../lib\libm-coff.a(floatdidf.o)
+                  0x002960                  __floatdidf
+ .libm            0x0029ce         0x3a c:/mplab/bin/bin/../../lib\libm-coff.a(frexp.o)
+                  0x0029ce                  frexp
+                  0x0029ce                  frexpl
+ .libm            0x002a08         0x66 c:/mplab/bin/bin/../../lib\libm-coff.a(ldexp.o)
+                  0x002a08                  ldexp
+                  0x002a08                  ldexpl
+ .libm            0x002a6e         0x88 c:/mplab/bin/bin/../../lib\libm-coff.a(dchop.o)
+                  0x002a6e                  _dchop
+ .libm            0x002af6          0x8 c:/mplab/bin/bin/../../lib\libm-coff.a(fmod.o)
+                  0x002af6                  fmod
+                  0x002af6                  fmodl
+ .libm            0x002afe        0x17e c:/mplab/bin/bin/../../lib\libm-coff.a(asinacos.o)
+                  0x002afe                  _asinacos
+ .libm            0x002c7c         0x52 c:/mplab/bin/bin/../../lib\libm-coff.a(dcompare.o)
+                  0x002c7c                  _dcompare
+ .libm            0x002cce         0x20 c:/mplab/bin/bin/../../lib\libm-coff.a(udivsi3.o)
+                  0x002cce                  __udivsi3
+ .libm            0x002cee         0x1c c:/mplab/bin/bin/../../lib\libm-coff.a(dpropagateNaN.o)
+                  0x002cee                  _dPropagateNaN
+ .libm            0x002d0a         0xd0 c:/mplab/bin/bin/../../lib\libm-coff.a(dmodrem.o)
+                  0x002d0a                  _dmodrem
+ .libm            0x002dda          0xc c:/mplab/bin/bin/../../lib\libm-coff.a(mulsi3.o)
+                  0x002dda                  __mulsi3
+ .libm            0x002de6        0x216 c:/mplab/bin/bin/../../lib\libm-coff.a(divmoddi3.o)
+                  0x002e0c                  __udivmoddi3
+                  0x002eda                  __udivdi3
+                  0x002ee8                  __umoddi3
+                  0x002ef0                  __divdi3
+                  0x002f2a                  __moddi3
+ .libm            0x002ffc         0x5c c:/mplab/bin/bin/../../lib\libm-coff.a(muldi3.o)
+                  0x002ffc                  __muldi3
+ .libm            0x003058         0x44 c:/mplab/bin/bin/../../lib\libm-coff.a(umuldi3.o)
+                  0x003058                  __umuldi3
  *(.libdsp)
  *(.lib*)
- .libperi         0x003090          0x8 uWatch-Main.o
-                  0x003090                  OpenTimer1
- .libperi         0x003098         0x22 RTCCInitClock.o
-                  0x003098                  RtccInitClock
- .libperi         0x0030ba         0x34 RtccReadTime.o
-                  0x0030ba                  RtccReadTime
- .libperi         0x0030ee         0x3c RtccReadDate.o
-                  0x0030ee                  RtccReadDate
- .libperi         0x00312a         0x2e RtccWrOn.o
-                  0x00312a                  RtccWrOn
- .libperi         0x003158         0xd0 RtccWriteDate.o
-                  0x003158                  RtccWriteDate
- .libperi         0x003228         0xc8 RtccWriteTime.o
-                  0x003228                  RtccWriteTime
+ .libperi         0x00309c          0x8 uWatch-Main.o
+                  0x00309c                  OpenTimer1
+ .libperi         0x0030a4         0x22 RTCCInitClock.o
+                  0x0030a4                  RtccInitClock
+ .libperi         0x0030c6         0x34 RtccReadTime.o
+                  0x0030c6                  RtccReadTime
+ .libperi         0x0030fa         0x3c RtccReadDate.o
+                  0x0030fa                  RtccReadDate
+ .libperi         0x003136         0x2e RtccWrOn.o
+                  0x003136                  RtccWrOn
+ .libperi         0x003164         0xd0 RtccWriteDate.o
+                  0x003164                  RtccWriteDate
+ .libperi         0x003234         0xc8 RtccWriteTime.o
+                  0x003234                  RtccWriteTime
 
 __CONFIG2         0x00abfc          0x2
  *(__CONFIG2.sec)
@@ -959,260 +970,260 @@ __CONFIG1         0x00abfe          0x2
  *(.debug_aranges)
 
 .ivt              0x000004         0xfc
-                  0x000004          0x4 LONG 0x64e8 DEFINED (__ReservedTrap0)?<code 337> (__ReservedTrap0):<code 337> (__DefaultInterrupt)
-                  0x000006          0x4 LONG 0x64e8 DEFINED (__OscillatorFail)?<code 337> (__OscillatorFail):<code 337> (__DefaultInterrupt)
-                  0x000008          0x4 LONG 0x64e8 DEFINED (__AddressError)?<code 337> (__AddressError):<code 337> (__DefaultInterrupt)
-                  0x00000a          0x4 LONG 0x64e8 DEFINED (__StackError)?<code 337> (__StackError):<code 337> (__DefaultInterrupt)
-                  0x00000c          0x4 LONG 0x64e8 DEFINED (__MathError)?<code 337> (__MathError):<code 337> (__DefaultInterrupt)
-                  0x00000e          0x4 LONG 0x64e8 DEFINED (__ReservedTrap5)?<code 337> (__ReservedTrap5):<code 337> (__DefaultInterrupt)
-                  0x000010          0x4 LONG 0x64e8 DEFINED (__ReservedTrap6)?<code 337> (__ReservedTrap6):<code 337> (__DefaultInterrupt)
-                  0x000012          0x4 LONG 0x64e8 DEFINED (__ReservedTrap7)?<code 337> (__ReservedTrap7):<code 337> (__DefaultInterrupt)
-                  0x000014          0x4 LONG 0x64e8 DEFINED (__INT0Interrupt)?<code 337> (__INT0Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000016          0x4 LONG 0x64e8 DEFINED (__IC1Interrupt)?<code 337> (__IC1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000018          0x4 LONG 0x64e8 DEFINED (__OC1Interrupt)?<code 337> (__OC1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00001a          0x4 LONG 0x5b30 DEFINED (__T1Interrupt)?<code 337> (__T1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00001c          0x4 LONG 0x64e8 DEFINED (__Interrupt4)?<code 337> (__Interrupt4):<code 337> (__DefaultInterrupt)
-                  0x00001e          0x4 LONG 0x64e8 DEFINED (__IC2Interrupt)?<code 337> (__IC2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000020          0x4 LONG 0x64e8 DEFINED (__OC2Interrupt)?<code 337> (__OC2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000022          0x4 LONG 0x64e8 DEFINED (__T2Interrupt)?<code 337> (__T2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000024          0x4 LONG 0x64e8 DEFINED (__T3Interrupt)?<code 337> (__T3Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000026          0x4 LONG 0x64e8 DEFINED (__SPI1ErrInterrupt)?<code 337> (__SPI1ErrInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000028          0x4 LONG 0x64e8 DEFINED (__SPI1Interrupt)?<code 337> (__SPI1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00002a          0x4 LONG 0x64e8 DEFINED (__U1RXInterrupt)?<code 337> (__U1RXInterrupt):<code 337> (__DefaultInterrupt)
-                  0x00002c          0x4 LONG 0x64e8 DEFINED (__U1TXInterrupt)?<code 337> (__U1TXInterrupt):<code 337> (__DefaultInterrupt)
-                  0x00002e          0x4 LONG 0x64e8 DEFINED (__ADC1Interrupt)?<code 337> (__ADC1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000030          0x4 LONG 0x64e8 DEFINED (__Interrupt14)?<code 337> (__Interrupt14):<code 337> (__DefaultInterrupt)
-                  0x000032          0x4 LONG 0x64e8 DEFINED (__Interrupt15)?<code 337> (__Interrupt15):<code 337> (__DefaultInterrupt)
-                  0x000034          0x4 LONG 0x64e8 DEFINED (__SI2C1Interrupt)?<code 337> (__SI2C1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000036          0x4 LONG 0x64e8 DEFINED (__MI2C1Interrupt)?<code 337> (__MI2C1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000038          0x4 LONG 0x64e8 DEFINED (__CompInterrupt)?<code 337> (__CompInterrupt):<code 337> (__DefaultInterrupt)
-                  0x00003a          0x4 LONG 0x64e8 DEFINED (__CNInterrupt)?<code 337> (__CNInterrupt):<code 337> (__DefaultInterrupt)
-                  0x00003c          0x4 LONG 0x64e8 DEFINED (__INT1Interrupt)?<code 337> (__INT1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00003e          0x4 LONG 0x64e8 DEFINED (__Interrupt21)?<code 337> (__Interrupt21):<code 337> (__DefaultInterrupt)
-                  0x000040          0x4 LONG 0x64e8 DEFINED (__Interrupt22)?<code 337> (__Interrupt22):<code 337> (__DefaultInterrupt)
-                  0x000042          0x4 LONG 0x64e8 DEFINED (__Interrupt23)?<code 337> (__Interrupt23):<code 337> (__DefaultInterrupt)
-                  0x000044          0x4 LONG 0x64e8 DEFINED (__Interrupt24)?<code 337> (__Interrupt24):<code 337> (__DefaultInterrupt)
-                  0x000046          0x4 LONG 0x64e8 DEFINED (__OC3Interrupt)?<code 337> (__OC3Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000048          0x4 LONG 0x64e8 DEFINED (__OC4Interrupt)?<code 337> (__OC4Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00004a          0x4 LONG 0x64e8 DEFINED (__T4Interrupt)?<code 337> (__T4Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00004c          0x4 LONG 0x64e8 DEFINED (__T5Interrupt)?<code 337> (__T5Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00004e          0x4 LONG 0x64e8 DEFINED (__INT2Interrupt)?<code 337> (__INT2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000050          0x4 LONG 0x64e8 DEFINED (__U2RXInterrupt)?<code 337> (__U2RXInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000052          0x4 LONG 0x64e8 DEFINED (__U2TXInterrupt)?<code 337> (__U2TXInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000054          0x4 LONG 0x64e8 DEFINED (__SPI2ErrInterrupt)?<code 337> (__SPI2ErrInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000056          0x4 LONG 0x64e8 DEFINED (__SPI2Interrupt)?<code 337> (__SPI2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000058          0x4 LONG 0x64e8 DEFINED (__Interrupt34)?<code 337> (__Interrupt34):<code 337> (__DefaultInterrupt)
-                  0x00005a          0x4 LONG 0x64e8 DEFINED (__Interrupt35)?<code 337> (__Interrupt35):<code 337> (__DefaultInterrupt)
-                  0x00005c          0x4 LONG 0x64e8 DEFINED (__Interrupt36)?<code 337> (__Interrupt36):<code 337> (__DefaultInterrupt)
-                  0x00005e          0x4 LONG 0x64e8 DEFINED (__IC3Interrupt)?<code 337> (__IC3Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000060          0x4 LONG 0x64e8 DEFINED (__IC4Interrupt)?<code 337> (__IC4Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000062          0x4 LONG 0x64e8 DEFINED (__IC5Interrupt)?<code 337> (__IC5Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000064          0x4 LONG 0x64e8 DEFINED (__Interrupt40)?<code 337> (__Interrupt40):<code 337> (__DefaultInterrupt)
-                  0x000066          0x4 LONG 0x64e8 DEFINED (__OC5Interrupt)?<code 337> (__OC5Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000068          0x4 LONG 0x64e8 DEFINED (__Interrupt42)?<code 337> (__Interrupt42):<code 337> (__DefaultInterrupt)
-                  0x00006a          0x4 LONG 0x64e8 DEFINED (__Interrupt43)?<code 337> (__Interrupt43):<code 337> (__DefaultInterrupt)
-                  0x00006c          0x4 LONG 0x64e8 DEFINED (__Interrupt44)?<code 337> (__Interrupt44):<code 337> (__DefaultInterrupt)
-                  0x00006e          0x4 LONG 0x64e8 DEFINED (__PMPInterrupt)?<code 337> (__PMPInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000070          0x4 LONG 0x64e8 DEFINED (__Interrupt46)?<code 337> (__Interrupt46):<code 337> (__DefaultInterrupt)
-                  0x000072          0x4 LONG 0x64e8 DEFINED (__Interrupt47)?<code 337> (__Interrupt47):<code 337> (__DefaultInterrupt)
-                  0x000074          0x4 LONG 0x64e8 DEFINED (__Interrupt48)?<code 337> (__Interrupt48):<code 337> (__DefaultInterrupt)
-                  0x000076          0x4 LONG 0x64e8 DEFINED (__SI2C2Interrupt)?<code 337> (__SI2C2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000078          0x4 LONG 0x64e8 DEFINED (__MI2C2Interrupt)?<code 337> (__MI2C2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00007a          0x4 LONG 0x64e8 DEFINED (__Interrupt51)?<code 337> (__Interrupt51):<code 337> (__DefaultInterrupt)
-                  0x00007c          0x4 LONG 0x64e8 DEFINED (__Interrupt52)?<code 337> (__Interrupt52):<code 337> (__DefaultInterrupt)
-                  0x00007e          0x4 LONG 0x64e8 DEFINED (__Interrupt53)?<code 337> (__Interrupt53):<code 337> (__DefaultInterrupt)
-                  0x000080          0x4 LONG 0x64e8 DEFINED (__Interrupt54)?<code 337> (__Interrupt54):<code 337> (__DefaultInterrupt)
-                  0x000082          0x4 LONG 0x64e8 DEFINED (__Interrupt55)?<code 337> (__Interrupt55):<code 337> (__DefaultInterrupt)
-                  0x000084          0x4 LONG 0x64e8 DEFINED (__Interrupt56)?<code 337> (__Interrupt56):<code 337> (__DefaultInterrupt)
-                  0x000086          0x4 LONG 0x64e8 DEFINED (__Interrupt57)?<code 337> (__Interrupt57):<code 337> (__DefaultInterrupt)
-                  0x000088          0x4 LONG 0x64e8 DEFINED (__Interrupt58)?<code 337> (__Interrupt58):<code 337> (__DefaultInterrupt)
-                  0x00008a          0x4 LONG 0x64e8 DEFINED (__Interrupt59)?<code 337> (__Interrupt59):<code 337> (__DefaultInterrupt)
-                  0x00008c          0x4 LONG 0x64e8 DEFINED (__Interrupt60)?<code 337> (__Interrupt60):<code 337> (__DefaultInterrupt)
-                  0x00008e          0x4 LONG 0x64e8 DEFINED (__Interrupt61)?<code 337> (__Interrupt61):<code 337> (__DefaultInterrupt)
-                  0x000090          0x4 LONG 0x64e8 DEFINED (__RTCCInterrupt)?<code 337> (__RTCCInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000092          0x4 LONG 0x64e8 DEFINED (__Interrupt63)?<code 337> (__Interrupt63):<code 337> (__DefaultInterrupt)
-                  0x000094          0x4 LONG 0x64e8 DEFINED (__Interrupt64)?<code 337> (__Interrupt64):<code 337> (__DefaultInterrupt)
-                  0x000096          0x4 LONG 0x64e8 DEFINED (__U1ErrInterrupt)?<code 337> (__U1ErrInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000098          0x4 LONG 0x64e8 DEFINED (__U2ErrInterrupt)?<code 337> (__U2ErrInterrupt):<code 337> (__DefaultInterrupt)
-                  0x00009a          0x4 LONG 0x64e8 DEFINED (__CRCInterrupt)?<code 337> (__CRCInterrupt):<code 337> (__DefaultInterrupt)
-                  0x00009c          0x4 LONG 0x64e8 DEFINED (__Interrupt68)?<code 337> (__Interrupt68):<code 337> (__DefaultInterrupt)
-                  0x00009e          0x4 LONG 0x64e8 DEFINED (__Interrupt69)?<code 337> (__Interrupt69):<code 337> (__DefaultInterrupt)
-                  0x0000a0          0x4 LONG 0x64e8 DEFINED (__Interrupt70)?<code 337> (__Interrupt70):<code 337> (__DefaultInterrupt)
-                  0x0000a2          0x4 LONG 0x64e8 DEFINED (__Interrupt71)?<code 337> (__Interrupt71):<code 337> (__DefaultInterrupt)
-                  0x0000a4          0x4 LONG 0x64e8 DEFINED (__LVDInterrupt)?<code 337> (__LVDInterrupt):<code 337> (__DefaultInterrupt)
-                  0x0000a6          0x4 LONG 0x64e8 DEFINED (__Interrupt73)?<code 337> (__Interrupt73):<code 337> (__DefaultInterrupt)
-                  0x0000a8          0x4 LONG 0x64e8 DEFINED (__Interrupt74)?<code 337> (__Interrupt74):<code 337> (__DefaultInterrupt)
-                  0x0000aa          0x4 LONG 0x64e8 DEFINED (__Interrupt75)?<code 337> (__Interrupt75):<code 337> (__DefaultInterrupt)
-                  0x0000ac          0x4 LONG 0x64e8 DEFINED (__Interrupt76)?<code 337> (__Interrupt76):<code 337> (__DefaultInterrupt)
-                  0x0000ae          0x4 LONG 0x64e8 DEFINED (__Interrupt77)?<code 337> (__Interrupt77):<code 337> (__DefaultInterrupt)
-                  0x0000b0          0x4 LONG 0x64e8 DEFINED (__Interrupt78)?<code 337> (__Interrupt78):<code 337> (__DefaultInterrupt)
-                  0x0000b2          0x4 LONG 0x64e8 DEFINED (__Interrupt79)?<code 337> (__Interrupt79):<code 337> (__DefaultInterrupt)
-                  0x0000b4          0x4 LONG 0x64e8 DEFINED (__Interrupt80)?<code 337> (__Interrupt80):<code 337> (__DefaultInterrupt)
-                  0x0000b6          0x4 LONG 0x64e8 DEFINED (__Interrupt81)?<code 337> (__Interrupt81):<code 337> (__DefaultInterrupt)
-                  0x0000b8          0x4 LONG 0x64e8 DEFINED (__Interrupt82)?<code 337> (__Interrupt82):<code 337> (__DefaultInterrupt)
-                  0x0000ba          0x4 LONG 0x64e8 DEFINED (__Interrupt83)?<code 337> (__Interrupt83):<code 337> (__DefaultInterrupt)
-                  0x0000bc          0x4 LONG 0x64e8 DEFINED (__Interrupt84)?<code 337> (__Interrupt84):<code 337> (__DefaultInterrupt)
-                  0x0000be          0x4 LONG 0x64e8 DEFINED (__Interrupt85)?<code 337> (__Interrupt85):<code 337> (__DefaultInterrupt)
-                  0x0000c0          0x4 LONG 0x64e8 DEFINED (__Interrupt86)?<code 337> (__Interrupt86):<code 337> (__DefaultInterrupt)
-                  0x0000c2          0x4 LONG 0x64e8 DEFINED (__Interrupt87)?<code 337> (__Interrupt87):<code 337> (__DefaultInterrupt)
-                  0x0000c4          0x4 LONG 0x64e8 DEFINED (__Interrupt88)?<code 337> (__Interrupt88):<code 337> (__DefaultInterrupt)
-                  0x0000c6          0x4 LONG 0x64e8 DEFINED (__Interrupt89)?<code 337> (__Interrupt89):<code 337> (__DefaultInterrupt)
-                  0x0000c8          0x4 LONG 0x64e8 DEFINED (__Interrupt90)?<code 337> (__Interrupt90):<code 337> (__DefaultInterrupt)
-                  0x0000ca          0x4 LONG 0x64e8 DEFINED (__Interrupt91)?<code 337> (__Interrupt91):<code 337> (__DefaultInterrupt)
-                  0x0000cc          0x4 LONG 0x64e8 DEFINED (__Interrupt92)?<code 337> (__Interrupt92):<code 337> (__DefaultInterrupt)
-                  0x0000ce          0x4 LONG 0x64e8 DEFINED (__Interrupt93)?<code 337> (__Interrupt93):<code 337> (__DefaultInterrupt)
-                  0x0000d0          0x4 LONG 0x64e8 DEFINED (__Interrupt94)?<code 337> (__Interrupt94):<code 337> (__DefaultInterrupt)
-                  0x0000d2          0x4 LONG 0x64e8 DEFINED (__Interrupt95)?<code 337> (__Interrupt95):<code 337> (__DefaultInterrupt)
-                  0x0000d4          0x4 LONG 0x64e8 DEFINED (__Interrupt96)?<code 337> (__Interrupt96):<code 337> (__DefaultInterrupt)
-                  0x0000d6          0x4 LONG 0x64e8 DEFINED (__Interrupt97)?<code 337> (__Interrupt97):<code 337> (__DefaultInterrupt)
-                  0x0000d8          0x4 LONG 0x64e8 DEFINED (__Interrupt98)?<code 337> (__Interrupt98):<code 337> (__DefaultInterrupt)
-                  0x0000da          0x4 LONG 0x64e8 DEFINED (__Interrupt99)?<code 337> (__Interrupt99):<code 337> (__DefaultInterrupt)
-                  0x0000dc          0x4 LONG 0x64e8 DEFINED (__Interrupt100)?<code 337> (__Interrupt100):<code 337> (__DefaultInterrupt)
-                  0x0000de          0x4 LONG 0x64e8 DEFINED (__Interrupt101)?<code 337> (__Interrupt101):<code 337> (__DefaultInterrupt)
-                  0x0000e0          0x4 LONG 0x64e8 DEFINED (__Interrupt102)?<code 337> (__Interrupt102):<code 337> (__DefaultInterrupt)
-                  0x0000e2          0x4 LONG 0x64e8 DEFINED (__Interrupt103)?<code 337> (__Interrupt103):<code 337> (__DefaultInterrupt)
-                  0x0000e4          0x4 LONG 0x64e8 DEFINED (__Interrupt104)?<code 337> (__Interrupt104):<code 337> (__DefaultInterrupt)
-                  0x0000e6          0x4 LONG 0x64e8 DEFINED (__Interrupt105)?<code 337> (__Interrupt105):<code 337> (__DefaultInterrupt)
-                  0x0000e8          0x4 LONG 0x64e8 DEFINED (__Interrupt106)?<code 337> (__Interrupt106):<code 337> (__DefaultInterrupt)
-                  0x0000ea          0x4 LONG 0x64e8 DEFINED (__Interrupt107)?<code 337> (__Interrupt107):<code 337> (__DefaultInterrupt)
-                  0x0000ec          0x4 LONG 0x64e8 DEFINED (__Interrupt108)?<code 337> (__Interrupt108):<code 337> (__DefaultInterrupt)
-                  0x0000ee          0x4 LONG 0x64e8 DEFINED (__Interrupt109)?<code 337> (__Interrupt109):<code 337> (__DefaultInterrupt)
-                  0x0000f0          0x4 LONG 0x64e8 DEFINED (__Interrupt110)?<code 337> (__Interrupt110):<code 337> (__DefaultInterrupt)
-                  0x0000f2          0x4 LONG 0x64e8 DEFINED (__Interrupt111)?<code 337> (__Interrupt111):<code 337> (__DefaultInterrupt)
-                  0x0000f4          0x4 LONG 0x64e8 DEFINED (__Interrupt112)?<code 337> (__Interrupt112):<code 337> (__DefaultInterrupt)
-                  0x0000f6          0x4 LONG 0x64e8 DEFINED (__Interrupt113)?<code 337> (__Interrupt113):<code 337> (__DefaultInterrupt)
-                  0x0000f8          0x4 LONG 0x64e8 DEFINED (__Interrupt114)?<code 337> (__Interrupt114):<code 337> (__DefaultInterrupt)
-                  0x0000fa          0x4 LONG 0x64e8 DEFINED (__Interrupt115)?<code 337> (__Interrupt115):<code 337> (__DefaultInterrupt)
-                  0x0000fc          0x4 LONG 0x64e8 DEFINED (__Interrupt116)?<code 337> (__Interrupt116):<code 337> (__DefaultInterrupt)
-                  0x0000fe          0x4 LONG 0x64e8 DEFINED (__Interrupt117)?<code 337> (__Interrupt117):<code 337> (__DefaultInterrupt)
+                  0x000004          0x4 LONG 0x651c DEFINED (__ReservedTrap0)?<code 337> (__ReservedTrap0):<code 337> (__DefaultInterrupt)
+                  0x000006          0x4 LONG 0x651c DEFINED (__OscillatorFail)?<code 337> (__OscillatorFail):<code 337> (__DefaultInterrupt)
+                  0x000008          0x4 LONG 0x651c DEFINED (__AddressError)?<code 337> (__AddressError):<code 337> (__DefaultInterrupt)
+                  0x00000a          0x4 LONG 0x651c DEFINED (__StackError)?<code 337> (__StackError):<code 337> (__DefaultInterrupt)
+                  0x00000c          0x4 LONG 0x651c DEFINED (__MathError)?<code 337> (__MathError):<code 337> (__DefaultInterrupt)
+                  0x00000e          0x4 LONG 0x651c DEFINED (__ReservedTrap5)?<code 337> (__ReservedTrap5):<code 337> (__DefaultInterrupt)
+                  0x000010          0x4 LONG 0x651c DEFINED (__ReservedTrap6)?<code 337> (__ReservedTrap6):<code 337> (__DefaultInterrupt)
+                  0x000012          0x4 LONG 0x651c DEFINED (__ReservedTrap7)?<code 337> (__ReservedTrap7):<code 337> (__DefaultInterrupt)
+                  0x000014          0x4 LONG 0x651c DEFINED (__INT0Interrupt)?<code 337> (__INT0Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000016          0x4 LONG 0x651c DEFINED (__IC1Interrupt)?<code 337> (__IC1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000018          0x4 LONG 0x651c DEFINED (__OC1Interrupt)?<code 337> (__OC1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00001a          0x4 LONG 0x5b68 DEFINED (__T1Interrupt)?<code 337> (__T1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00001c          0x4 LONG 0x651c DEFINED (__Interrupt4)?<code 337> (__Interrupt4):<code 337> (__DefaultInterrupt)
+                  0x00001e          0x4 LONG 0x651c DEFINED (__IC2Interrupt)?<code 337> (__IC2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000020          0x4 LONG 0x651c DEFINED (__OC2Interrupt)?<code 337> (__OC2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000022          0x4 LONG 0x651c DEFINED (__T2Interrupt)?<code 337> (__T2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000024          0x4 LONG 0x651c DEFINED (__T3Interrupt)?<code 337> (__T3Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000026          0x4 LONG 0x651c DEFINED (__SPI1ErrInterrupt)?<code 337> (__SPI1ErrInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000028          0x4 LONG 0x651c DEFINED (__SPI1Interrupt)?<code 337> (__SPI1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00002a          0x4 LONG 0x651c DEFINED (__U1RXInterrupt)?<code 337> (__U1RXInterrupt):<code 337> (__DefaultInterrupt)
+                  0x00002c          0x4 LONG 0x651c DEFINED (__U1TXInterrupt)?<code 337> (__U1TXInterrupt):<code 337> (__DefaultInterrupt)
+                  0x00002e          0x4 LONG 0x651c DEFINED (__ADC1Interrupt)?<code 337> (__ADC1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000030          0x4 LONG 0x651c DEFINED (__Interrupt14)?<code 337> (__Interrupt14):<code 337> (__DefaultInterrupt)
+                  0x000032          0x4 LONG 0x651c DEFINED (__Interrupt15)?<code 337> (__Interrupt15):<code 337> (__DefaultInterrupt)
+                  0x000034          0x4 LONG 0x651c DEFINED (__SI2C1Interrupt)?<code 337> (__SI2C1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000036          0x4 LONG 0x651c DEFINED (__MI2C1Interrupt)?<code 337> (__MI2C1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000038          0x4 LONG 0x651c DEFINED (__CompInterrupt)?<code 337> (__CompInterrupt):<code 337> (__DefaultInterrupt)
+                  0x00003a          0x4 LONG 0x651c DEFINED (__CNInterrupt)?<code 337> (__CNInterrupt):<code 337> (__DefaultInterrupt)
+                  0x00003c          0x4 LONG 0x651c DEFINED (__INT1Interrupt)?<code 337> (__INT1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00003e          0x4 LONG 0x651c DEFINED (__Interrupt21)?<code 337> (__Interrupt21):<code 337> (__DefaultInterrupt)
+                  0x000040          0x4 LONG 0x651c DEFINED (__Interrupt22)?<code 337> (__Interrupt22):<code 337> (__DefaultInterrupt)
+                  0x000042          0x4 LONG 0x651c DEFINED (__Interrupt23)?<code 337> (__Interrupt23):<code 337> (__DefaultInterrupt)
+                  0x000044          0x4 LONG 0x651c DEFINED (__Interrupt24)?<code 337> (__Interrupt24):<code 337> (__DefaultInterrupt)
+                  0x000046          0x4 LONG 0x651c DEFINED (__OC3Interrupt)?<code 337> (__OC3Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000048          0x4 LONG 0x651c DEFINED (__OC4Interrupt)?<code 337> (__OC4Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00004a          0x4 LONG 0x651c DEFINED (__T4Interrupt)?<code 337> (__T4Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00004c          0x4 LONG 0x651c DEFINED (__T5Interrupt)?<code 337> (__T5Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00004e          0x4 LONG 0x651c DEFINED (__INT2Interrupt)?<code 337> (__INT2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000050          0x4 LONG 0x651c DEFINED (__U2RXInterrupt)?<code 337> (__U2RXInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000052          0x4 LONG 0x651c DEFINED (__U2TXInterrupt)?<code 337> (__U2TXInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000054          0x4 LONG 0x651c DEFINED (__SPI2ErrInterrupt)?<code 337> (__SPI2ErrInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000056          0x4 LONG 0x651c DEFINED (__SPI2Interrupt)?<code 337> (__SPI2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000058          0x4 LONG 0x651c DEFINED (__Interrupt34)?<code 337> (__Interrupt34):<code 337> (__DefaultInterrupt)
+                  0x00005a          0x4 LONG 0x651c DEFINED (__Interrupt35)?<code 337> (__Interrupt35):<code 337> (__DefaultInterrupt)
+                  0x00005c          0x4 LONG 0x651c DEFINED (__Interrupt36)?<code 337> (__Interrupt36):<code 337> (__DefaultInterrupt)
+                  0x00005e          0x4 LONG 0x651c DEFINED (__IC3Interrupt)?<code 337> (__IC3Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000060          0x4 LONG 0x651c DEFINED (__IC4Interrupt)?<code 337> (__IC4Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000062          0x4 LONG 0x651c DEFINED (__IC5Interrupt)?<code 337> (__IC5Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000064          0x4 LONG 0x651c DEFINED (__Interrupt40)?<code 337> (__Interrupt40):<code 337> (__DefaultInterrupt)
+                  0x000066          0x4 LONG 0x651c DEFINED (__OC5Interrupt)?<code 337> (__OC5Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000068          0x4 LONG 0x651c DEFINED (__Interrupt42)?<code 337> (__Interrupt42):<code 337> (__DefaultInterrupt)
+                  0x00006a          0x4 LONG 0x651c DEFINED (__Interrupt43)?<code 337> (__Interrupt43):<code 337> (__DefaultInterrupt)
+                  0x00006c          0x4 LONG 0x651c DEFINED (__Interrupt44)?<code 337> (__Interrupt44):<code 337> (__DefaultInterrupt)
+                  0x00006e          0x4 LONG 0x651c DEFINED (__PMPInterrupt)?<code 337> (__PMPInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000070          0x4 LONG 0x651c DEFINED (__Interrupt46)?<code 337> (__Interrupt46):<code 337> (__DefaultInterrupt)
+                  0x000072          0x4 LONG 0x651c DEFINED (__Interrupt47)?<code 337> (__Interrupt47):<code 337> (__DefaultInterrupt)
+                  0x000074          0x4 LONG 0x651c DEFINED (__Interrupt48)?<code 337> (__Interrupt48):<code 337> (__DefaultInterrupt)
+                  0x000076          0x4 LONG 0x651c DEFINED (__SI2C2Interrupt)?<code 337> (__SI2C2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000078          0x4 LONG 0x651c DEFINED (__MI2C2Interrupt)?<code 337> (__MI2C2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00007a          0x4 LONG 0x651c DEFINED (__Interrupt51)?<code 337> (__Interrupt51):<code 337> (__DefaultInterrupt)
+                  0x00007c          0x4 LONG 0x651c DEFINED (__Interrupt52)?<code 337> (__Interrupt52):<code 337> (__DefaultInterrupt)
+                  0x00007e          0x4 LONG 0x651c DEFINED (__Interrupt53)?<code 337> (__Interrupt53):<code 337> (__DefaultInterrupt)
+                  0x000080          0x4 LONG 0x651c DEFINED (__Interrupt54)?<code 337> (__Interrupt54):<code 337> (__DefaultInterrupt)
+                  0x000082          0x4 LONG 0x651c DEFINED (__Interrupt55)?<code 337> (__Interrupt55):<code 337> (__DefaultInterrupt)
+                  0x000084          0x4 LONG 0x651c DEFINED (__Interrupt56)?<code 337> (__Interrupt56):<code 337> (__DefaultInterrupt)
+                  0x000086          0x4 LONG 0x651c DEFINED (__Interrupt57)?<code 337> (__Interrupt57):<code 337> (__DefaultInterrupt)
+                  0x000088          0x4 LONG 0x651c DEFINED (__Interrupt58)?<code 337> (__Interrupt58):<code 337> (__DefaultInterrupt)
+                  0x00008a          0x4 LONG 0x651c DEFINED (__Interrupt59)?<code 337> (__Interrupt59):<code 337> (__DefaultInterrupt)
+                  0x00008c          0x4 LONG 0x651c DEFINED (__Interrupt60)?<code 337> (__Interrupt60):<code 337> (__DefaultInterrupt)
+                  0x00008e          0x4 LONG 0x651c DEFINED (__Interrupt61)?<code 337> (__Interrupt61):<code 337> (__DefaultInterrupt)
+                  0x000090          0x4 LONG 0x651c DEFINED (__RTCCInterrupt)?<code 337> (__RTCCInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000092          0x4 LONG 0x651c DEFINED (__Interrupt63)?<code 337> (__Interrupt63):<code 337> (__DefaultInterrupt)
+                  0x000094          0x4 LONG 0x651c DEFINED (__Interrupt64)?<code 337> (__Interrupt64):<code 337> (__DefaultInterrupt)
+                  0x000096          0x4 LONG 0x651c DEFINED (__U1ErrInterrupt)?<code 337> (__U1ErrInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000098          0x4 LONG 0x651c DEFINED (__U2ErrInterrupt)?<code 337> (__U2ErrInterrupt):<code 337> (__DefaultInterrupt)
+                  0x00009a          0x4 LONG 0x651c DEFINED (__CRCInterrupt)?<code 337> (__CRCInterrupt):<code 337> (__DefaultInterrupt)
+                  0x00009c          0x4 LONG 0x651c DEFINED (__Interrupt68)?<code 337> (__Interrupt68):<code 337> (__DefaultInterrupt)
+                  0x00009e          0x4 LONG 0x651c DEFINED (__Interrupt69)?<code 337> (__Interrupt69):<code 337> (__DefaultInterrupt)
+                  0x0000a0          0x4 LONG 0x651c DEFINED (__Interrupt70)?<code 337> (__Interrupt70):<code 337> (__DefaultInterrupt)
+                  0x0000a2          0x4 LONG 0x651c DEFINED (__Interrupt71)?<code 337> (__Interrupt71):<code 337> (__DefaultInterrupt)
+                  0x0000a4          0x4 LONG 0x651c DEFINED (__LVDInterrupt)?<code 337> (__LVDInterrupt):<code 337> (__DefaultInterrupt)
+                  0x0000a6          0x4 LONG 0x651c DEFINED (__Interrupt73)?<code 337> (__Interrupt73):<code 337> (__DefaultInterrupt)
+                  0x0000a8          0x4 LONG 0x651c DEFINED (__Interrupt74)?<code 337> (__Interrupt74):<code 337> (__DefaultInterrupt)
+                  0x0000aa          0x4 LONG 0x651c DEFINED (__Interrupt75)?<code 337> (__Interrupt75):<code 337> (__DefaultInterrupt)
+                  0x0000ac          0x4 LONG 0x651c DEFINED (__Interrupt76)?<code 337> (__Interrupt76):<code 337> (__DefaultInterrupt)
+                  0x0000ae          0x4 LONG 0x651c DEFINED (__Interrupt77)?<code 337> (__Interrupt77):<code 337> (__DefaultInterrupt)
+                  0x0000b0          0x4 LONG 0x651c DEFINED (__Interrupt78)?<code 337> (__Interrupt78):<code 337> (__DefaultInterrupt)
+                  0x0000b2          0x4 LONG 0x651c DEFINED (__Interrupt79)?<code 337> (__Interrupt79):<code 337> (__DefaultInterrupt)
+                  0x0000b4          0x4 LONG 0x651c DEFINED (__Interrupt80)?<code 337> (__Interrupt80):<code 337> (__DefaultInterrupt)
+                  0x0000b6          0x4 LONG 0x651c DEFINED (__Interrupt81)?<code 337> (__Interrupt81):<code 337> (__DefaultInterrupt)
+                  0x0000b8          0x4 LONG 0x651c DEFINED (__Interrupt82)?<code 337> (__Interrupt82):<code 337> (__DefaultInterrupt)
+                  0x0000ba          0x4 LONG 0x651c DEFINED (__Interrupt83)?<code 337> (__Interrupt83):<code 337> (__DefaultInterrupt)
+                  0x0000bc          0x4 LONG 0x651c DEFINED (__Interrupt84)?<code 337> (__Interrupt84):<code 337> (__DefaultInterrupt)
+                  0x0000be          0x4 LONG 0x651c DEFINED (__Interrupt85)?<code 337> (__Interrupt85):<code 337> (__DefaultInterrupt)
+                  0x0000c0          0x4 LONG 0x651c DEFINED (__Interrupt86)?<code 337> (__Interrupt86):<code 337> (__DefaultInterrupt)
+                  0x0000c2          0x4 LONG 0x651c DEFINED (__Interrupt87)?<code 337> (__Interrupt87):<code 337> (__DefaultInterrupt)
+                  0x0000c4          0x4 LONG 0x651c DEFINED (__Interrupt88)?<code 337> (__Interrupt88):<code 337> (__DefaultInterrupt)
+                  0x0000c6          0x4 LONG 0x651c DEFINED (__Interrupt89)?<code 337> (__Interrupt89):<code 337> (__DefaultInterrupt)
+                  0x0000c8          0x4 LONG 0x651c DEFINED (__Interrupt90)?<code 337> (__Interrupt90):<code 337> (__DefaultInterrupt)
+                  0x0000ca          0x4 LONG 0x651c DEFINED (__Interrupt91)?<code 337> (__Interrupt91):<code 337> (__DefaultInterrupt)
+                  0x0000cc          0x4 LONG 0x651c DEFINED (__Interrupt92)?<code 337> (__Interrupt92):<code 337> (__DefaultInterrupt)
+                  0x0000ce          0x4 LONG 0x651c DEFINED (__Interrupt93)?<code 337> (__Interrupt93):<code 337> (__DefaultInterrupt)
+                  0x0000d0          0x4 LONG 0x651c DEFINED (__Interrupt94)?<code 337> (__Interrupt94):<code 337> (__DefaultInterrupt)
+                  0x0000d2          0x4 LONG 0x651c DEFINED (__Interrupt95)?<code 337> (__Interrupt95):<code 337> (__DefaultInterrupt)
+                  0x0000d4          0x4 LONG 0x651c DEFINED (__Interrupt96)?<code 337> (__Interrupt96):<code 337> (__DefaultInterrupt)
+                  0x0000d6          0x4 LONG 0x651c DEFINED (__Interrupt97)?<code 337> (__Interrupt97):<code 337> (__DefaultInterrupt)
+                  0x0000d8          0x4 LONG 0x651c DEFINED (__Interrupt98)?<code 337> (__Interrupt98):<code 337> (__DefaultInterrupt)
+                  0x0000da          0x4 LONG 0x651c DEFINED (__Interrupt99)?<code 337> (__Interrupt99):<code 337> (__DefaultInterrupt)
+                  0x0000dc          0x4 LONG 0x651c DEFINED (__Interrupt100)?<code 337> (__Interrupt100):<code 337> (__DefaultInterrupt)
+                  0x0000de          0x4 LONG 0x651c DEFINED (__Interrupt101)?<code 337> (__Interrupt101):<code 337> (__DefaultInterrupt)
+                  0x0000e0          0x4 LONG 0x651c DEFINED (__Interrupt102)?<code 337> (__Interrupt102):<code 337> (__DefaultInterrupt)
+                  0x0000e2          0x4 LONG 0x651c DEFINED (__Interrupt103)?<code 337> (__Interrupt103):<code 337> (__DefaultInterrupt)
+                  0x0000e4          0x4 LONG 0x651c DEFINED (__Interrupt104)?<code 337> (__Interrupt104):<code 337> (__DefaultInterrupt)
+                  0x0000e6          0x4 LONG 0x651c DEFINED (__Interrupt105)?<code 337> (__Interrupt105):<code 337> (__DefaultInterrupt)
+                  0x0000e8          0x4 LONG 0x651c DEFINED (__Interrupt106)?<code 337> (__Interrupt106):<code 337> (__DefaultInterrupt)
+                  0x0000ea          0x4 LONG 0x651c DEFINED (__Interrupt107)?<code 337> (__Interrupt107):<code 337> (__DefaultInterrupt)
+                  0x0000ec          0x4 LONG 0x651c DEFINED (__Interrupt108)?<code 337> (__Interrupt108):<code 337> (__DefaultInterrupt)
+                  0x0000ee          0x4 LONG 0x651c DEFINED (__Interrupt109)?<code 337> (__Interrupt109):<code 337> (__DefaultInterrupt)
+                  0x0000f0          0x4 LONG 0x651c DEFINED (__Interrupt110)?<code 337> (__Interrupt110):<code 337> (__DefaultInterrupt)
+                  0x0000f2          0x4 LONG 0x651c DEFINED (__Interrupt111)?<code 337> (__Interrupt111):<code 337> (__DefaultInterrupt)
+                  0x0000f4          0x4 LONG 0x651c DEFINED (__Interrupt112)?<code 337> (__Interrupt112):<code 337> (__DefaultInterrupt)
+                  0x0000f6          0x4 LONG 0x651c DEFINED (__Interrupt113)?<code 337> (__Interrupt113):<code 337> (__DefaultInterrupt)
+                  0x0000f8          0x4 LONG 0x651c DEFINED (__Interrupt114)?<code 337> (__Interrupt114):<code 337> (__DefaultInterrupt)
+                  0x0000fa          0x4 LONG 0x651c DEFINED (__Interrupt115)?<code 337> (__Interrupt115):<code 337> (__DefaultInterrupt)
+                  0x0000fc          0x4 LONG 0x651c DEFINED (__Interrupt116)?<code 337> (__Interrupt116):<code 337> (__DefaultInterrupt)
+                  0x0000fe          0x4 LONG 0x651c DEFINED (__Interrupt117)?<code 337> (__Interrupt117):<code 337> (__DefaultInterrupt)
 
 .aivt             0x000104         0xfc
-                  0x000104          0x4 LONG 0x64e8 DEFINED (__AltReservedTrap0)?<code 337> (__AltReservedTrap0):DEFINED (__ReservedTrap0)?<code 337> (__ReservedTrap0):<code 337> (__DefaultInterrupt)
-                  0x000106          0x4 LONG 0x64e8 DEFINED (__AltOscillatorFail)?<code 337> (__AltOscillatorFail):DEFINED (__OscillatorFail)?<code 337> (__OscillatorFail):<code 337> (__DefaultInterrupt)
-                  0x000108          0x4 LONG 0x64e8 DEFINED (__AltAddressError)?<code 337> (__AltAddressError):DEFINED (__AddressError)?<code 337> (__AddressError):<code 337> (__DefaultInterrupt)
-                  0x00010a          0x4 LONG 0x64e8 DEFINED (__AltStackError)?<code 337> (__AltStackError):DEFINED (__StackError)?<code 337> (__StackError):<code 337> (__DefaultInterrupt)
-                  0x00010c          0x4 LONG 0x64e8 DEFINED (__AltMathError)?<code 337> (__AltMathError):DEFINED (__MathError)?<code 337> (__MathError):<code 337> (__DefaultInterrupt)
-                  0x00010e          0x4 LONG 0x64e8 DEFINED (__AltReservedTrap5)?<code 337> (__AltReservedTrap5):DEFINED (__ReservedTrap5)?<code 337> (__ReservedTrap5):<code 337> (__DefaultInterrupt)
-                  0x000110          0x4 LONG 0x64e8 DEFINED (__AltReservedTrap6)?<code 337> (__AltReservedTrap6):DEFINED (__ReservedTrap6)?<code 337> (__ReservedTrap6):<code 337> (__DefaultInterrupt)
-                  0x000112          0x4 LONG 0x64e8 DEFINED (__AltReservedTrap7)?<code 337> (__AltReservedTrap7):DEFINED (__ReservedTrap7)?<code 337> (__ReservedTrap7):<code 337> (__DefaultInterrupt)
-                  0x000114          0x4 LONG 0x64e8 DEFINED (__AltINT0Interrupt)?<code 337> (__AltINT0Interrupt):DEFINED (__INT0Interrupt)?<code 337> (__INT0Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000116          0x4 LONG 0x64e8 DEFINED (__AltIC1Interrupt)?<code 337> (__AltIC1Interrupt):DEFINED (__IC1Interrupt)?<code 337> (__IC1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000118          0x4 LONG 0x64e8 DEFINED (__AltOC1Interrupt)?<code 337> (__AltOC1Interrupt):DEFINED (__OC1Interrupt)?<code 337> (__OC1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00011a          0x4 LONG 0x5b30 DEFINED (__AltT1Interrupt)?<code 337> (__AltT1Interrupt):DEFINED (__T1Interrupt)?<code 337> (__T1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00011c          0x4 LONG 0x64e8 DEFINED (__AltInterrupt4)?<code 337> (__AltInterrupt4):DEFINED (__Interrupt4)?<code 337> (__Interrupt4):<code 337> (__DefaultInterrupt)
-                  0x00011e          0x4 LONG 0x64e8 DEFINED (__AltIC2Interrupt)?<code 337> (__AltIC2Interrupt):DEFINED (__IC2Interrupt)?<code 337> (__IC2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000120          0x4 LONG 0x64e8 DEFINED (__AltOC2Interrupt)?<code 337> (__AltOC2Interrupt):DEFINED (__OC2Interrupt)?<code 337> (__OC2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000122          0x4 LONG 0x64e8 DEFINED (__AltT2Interrupt)?<code 337> (__AltT2Interrupt):DEFINED (__T2Interrupt)?<code 337> (__T2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000124          0x4 LONG 0x64e8 DEFINED (__AltT3Interrupt)?<code 337> (__AltT3Interrupt):DEFINED (__T3Interrupt)?<code 337> (__T3Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000126          0x4 LONG 0x64e8 DEFINED (__AltSPI1ErrInterrupt)?<code 337> (__AltSPI1ErrInterrupt):DEFINED (__SPI1ErrInterrupt)?<code 337> (__SPI1ErrInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000128          0x4 LONG 0x64e8 DEFINED (__AltSPI1Interrupt)?<code 337> (__AltSPI1Interrupt):DEFINED (__SPI1Interrupt)?<code 337> (__SPI1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00012a          0x4 LONG 0x64e8 DEFINED (__AltU1RXInterrupt)?<code 337> (__AltU1RXInterrupt):DEFINED (__U1RXInterrupt)?<code 337> (__U1RXInterrupt):<code 337> (__DefaultInterrupt)
-                  0x00012c          0x4 LONG 0x64e8 DEFINED (__AltU1TXInterrupt)?<code 337> (__AltU1TXInterrupt):DEFINED (__U1TXInterrupt)?<code 337> (__U1TXInterrupt):<code 337> (__DefaultInterrupt)
-                  0x00012e          0x4 LONG 0x64e8 DEFINED (__AltADC1Interrupt)?<code 337> (__AltADC1Interrupt):DEFINED (__ADC1Interrupt)?<code 337> (__ADC1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000130          0x4 LONG 0x64e8 DEFINED (__AltInterrupt14)?<code 337> (__AltInterrupt14):DEFINED (__Interrupt14)?<code 337> (__Interrupt14):<code 337> (__DefaultInterrupt)
-                  0x000132          0x4 LONG 0x64e8 DEFINED (__AltInterrupt15)?<code 337> (__AltInterrupt15):DEFINED (__Interrupt15)?<code 337> (__Interrupt15):<code 337> (__DefaultInterrupt)
-                  0x000134          0x4 LONG 0x64e8 DEFINED (__AltSI2C1Interrupt)?<code 337> (__AltSI2C1Interrupt):DEFINED (__SI2C1Interrupt)?<code 337> (__SI2C1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000136          0x4 LONG 0x64e8 DEFINED (__AltMI2C1Interrupt)?<code 337> (__AltMI2C1Interrupt):DEFINED (__MI2C1Interrupt)?<code 337> (__MI2C1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000138          0x4 LONG 0x64e8 DEFINED (__AltCompInterrupt)?<code 337> (__AltCompInterrupt):DEFINED (__CompInterrupt)?<code 337> (__CompInterrupt):<code 337> (__DefaultInterrupt)
-                  0x00013a          0x4 LONG 0x64e8 DEFINED (__AltCNInterrupt)?<code 337> (__AltCNInterrupt):DEFINED (__CNInterrupt)?<code 337> (__CNInterrupt):<code 337> (__DefaultInterrupt)
-                  0x00013c          0x4 LONG 0x64e8 DEFINED (__AltINT1Interrupt)?<code 337> (__AltINT1Interrupt):DEFINED (__INT1Interrupt)?<code 337> (__INT1Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00013e          0x4 LONG 0x64e8 DEFINED (__AltInterrupt21)?<code 337> (__AltInterrupt21):DEFINED (__Interrupt21)?<code 337> (__Interrupt21):<code 337> (__DefaultInterrupt)
-                  0x000140          0x4 LONG 0x64e8 DEFINED (__AltInterrupt22)?<code 337> (__AltInterrupt22):DEFINED (__Interrupt22)?<code 337> (__Interrupt22):<code 337> (__DefaultInterrupt)
-                  0x000142          0x4 LONG 0x64e8 DEFINED (__AltInterrupt23)?<code 337> (__AltInterrupt23):DEFINED (__Interrupt23)?<code 337> (__Interrupt23):<code 337> (__DefaultInterrupt)
-                  0x000144          0x4 LONG 0x64e8 DEFINED (__AltInterrupt24)?<code 337> (__AltInterrupt24):DEFINED (__Interrupt24)?<code 337> (__Interrupt24):<code 337> (__DefaultInterrupt)
-                  0x000146          0x4 LONG 0x64e8 DEFINED (__AltOC3Interrupt)?<code 337> (__AltOC3Interrupt):DEFINED (__OC3Interrupt)?<code 337> (__OC3Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000148          0x4 LONG 0x64e8 DEFINED (__AltOC4Interrupt)?<code 337> (__AltOC4Interrupt):DEFINED (__OC4Interrupt)?<code 337> (__OC4Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00014a          0x4 LONG 0x64e8 DEFINED (__AltT4Interrupt)?<code 337> (__AltT4Interrupt):DEFINED (__T4Interrupt)?<code 337> (__T4Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00014c          0x4 LONG 0x64e8 DEFINED (__AltT5Interrupt)?<code 337> (__AltT5Interrupt):DEFINED (__T5Interrupt)?<code 337> (__T5Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00014e          0x4 LONG 0x64e8 DEFINED (__AltINT2Interrupt)?<code 337> (__AltINT2Interrupt):DEFINED (__INT2Interrupt)?<code 337> (__INT2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000150          0x4 LONG 0x64e8 DEFINED (__AltU2RXInterrupt)?<code 337> (__AltU2RXInterrupt):DEFINED (__U2RXInterrupt)?<code 337> (__U2RXInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000152          0x4 LONG 0x64e8 DEFINED (__AltU2TXInterrupt)?<code 337> (__AltU2TXInterrupt):DEFINED (__U2TXInterrupt)?<code 337> (__U2TXInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000154          0x4 LONG 0x64e8 DEFINED (__AltSPI2ErrInterrupt)?<code 337> (__AltSPI2ErrInterrupt):DEFINED (__SPI2ErrInterrupt)?<code 337> (__SPI2ErrInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000156          0x4 LONG 0x64e8 DEFINED (__AltSPI2Interrupt)?<code 337> (__AltSPI2Interrupt):DEFINED (__SPI2Interrupt)?<code 337> (__SPI2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000158          0x4 LONG 0x64e8 DEFINED (__AltInterrupt34)?<code 337> (__AltInterrupt34):DEFINED (__Interrupt34)?<code 337> (__Interrupt34):<code 337> (__DefaultInterrupt)
-                  0x00015a          0x4 LONG 0x64e8 DEFINED (__AltInterrupt35)?<code 337> (__AltInterrupt35):DEFINED (__Interrupt35)?<code 337> (__Interrupt35):<code 337> (__DefaultInterrupt)
-                  0x00015c          0x4 LONG 0x64e8 DEFINED (__AltInterrupt36)?<code 337> (__AltInterrupt36):DEFINED (__Interrupt36)?<code 337> (__Interrupt36):<code 337> (__DefaultInterrupt)
-                  0x00015e          0x4 LONG 0x64e8 DEFINED (__AltIC3Interrupt)?<code 337> (__AltIC3Interrupt):DEFINED (__IC3Interrupt)?<code 337> (__IC3Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000160          0x4 LONG 0x64e8 DEFINED (__AltIC4Interrupt)?<code 337> (__AltIC4Interrupt):DEFINED (__IC4Interrupt)?<code 337> (__IC4Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000162          0x4 LONG 0x64e8 DEFINED (__AltIC5Interrupt)?<code 337> (__AltIC5Interrupt):DEFINED (__IC5Interrupt)?<code 337> (__IC5Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000164          0x4 LONG 0x64e8 DEFINED (__AltInterrupt40)?<code 337> (__AltInterrupt40):DEFINED (__Interrupt40)?<code 337> (__Interrupt40):<code 337> (__DefaultInterrupt)
-                  0x000166          0x4 LONG 0x64e8 DEFINED (__AltOC5Interrupt)?<code 337> (__AltOC5Interrupt):DEFINED (__OC5Interrupt)?<code 337> (__OC5Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000168          0x4 LONG 0x64e8 DEFINED (__AltInterrupt42)?<code 337> (__AltInterrupt42):DEFINED (__Interrupt42)?<code 337> (__Interrupt42):<code 337> (__DefaultInterrupt)
-                  0x00016a          0x4 LONG 0x64e8 DEFINED (__AltInterrupt43)?<code 337> (__AltInterrupt43):DEFINED (__Interrupt43)?<code 337> (__Interrupt43):<code 337> (__DefaultInterrupt)
-                  0x00016c          0x4 LONG 0x64e8 DEFINED (__AltInterrupt44)?<code 337> (__AltInterrupt44):DEFINED (__Interrupt44)?<code 337> (__Interrupt44):<code 337> (__DefaultInterrupt)
-                  0x00016e          0x4 LONG 0x64e8 DEFINED (__AltPMPInterrupt)?<code 337> (__AltPMPInterrupt):DEFINED (__PMPInterrupt)?<code 337> (__PMPInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000170          0x4 LONG 0x64e8 DEFINED (__AltInterrupt46)?<code 337> (__AltInterrupt46):DEFINED (__Interrupt46)?<code 337> (__Interrupt46):<code 337> (__DefaultInterrupt)
-                  0x000172          0x4 LONG 0x64e8 DEFINED (__AltInterrupt47)?<code 337> (__AltInterrupt47):DEFINED (__Interrupt47)?<code 337> (__Interrupt47):<code 337> (__DefaultInterrupt)
-                  0x000174          0x4 LONG 0x64e8 DEFINED (__AltInterrupt48)?<code 337> (__AltInterrupt48):DEFINED (__Interrupt48)?<code 337> (__Interrupt48):<code 337> (__DefaultInterrupt)
-                  0x000176          0x4 LONG 0x64e8 DEFINED (__AltSI2C2Interrupt)?<code 337> (__AltSI2C2Interrupt):DEFINED (__SI2C2Interrupt)?<code 337> (__SI2C2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x000178          0x4 LONG 0x64e8 DEFINED (__AltMI2C2Interrupt)?<code 337> (__AltMI2C2Interrupt):DEFINED (__MI2C2Interrupt)?<code 337> (__MI2C2Interrupt):<code 337> (__DefaultInterrupt)
-                  0x00017a          0x4 LONG 0x64e8 DEFINED (__AltInterrupt51)?<code 337> (__AltInterrupt51):DEFINED (__Interrupt51)?<code 337> (__Interrupt51):<code 337> (__DefaultInterrupt)
-                  0x00017c          0x4 LONG 0x64e8 DEFINED (__AltInterrupt52)?<code 337> (__AltInterrupt52):DEFINED (__Interrupt52)?<code 337> (__Interrupt52):<code 337> (__DefaultInterrupt)
-                  0x00017e          0x4 LONG 0x64e8 DEFINED (__AltInterrupt53)?<code 337> (__AltInterrupt53):DEFINED (__Interrupt53)?<code 337> (__Interrupt53):<code 337> (__DefaultInterrupt)
-                  0x000180          0x4 LONG 0x64e8 DEFINED (__AltInterrupt54)?<code 337> (__AltInterrupt54):DEFINED (__Interrupt54)?<code 337> (__Interrupt54):<code 337> (__DefaultInterrupt)
-                  0x000182          0x4 LONG 0x64e8 DEFINED (__AltInterrupt55)?<code 337> (__AltInterrupt55):DEFINED (__Interrupt55)?<code 337> (__Interrupt55):<code 337> (__DefaultInterrupt)
-                  0x000184          0x4 LONG 0x64e8 DEFINED (__AltInterrupt56)?<code 337> (__AltInterrupt56):DEFINED (__Interrupt56)?<code 337> (__Interrupt56):<code 337> (__DefaultInterrupt)
-                  0x000186          0x4 LONG 0x64e8 DEFINED (__AltInterrupt57)?<code 337> (__AltInterrupt57):DEFINED (__Interrupt57)?<code 337> (__Interrupt57):<code 337> (__DefaultInterrupt)
-                  0x000188          0x4 LONG 0x64e8 DEFINED (__AltInterrupt58)?<code 337> (__AltInterrupt58):DEFINED (__Interrupt58)?<code 337> (__Interrupt58):<code 337> (__DefaultInterrupt)
-                  0x00018a          0x4 LONG 0x64e8 DEFINED (__AltInterrupt59)?<code 337> (__AltInterrupt59):DEFINED (__Interrupt59)?<code 337> (__Interrupt59):<code 337> (__DefaultInterrupt)
-                  0x00018c          0x4 LONG 0x64e8 DEFINED (__AltInterrupt60)?<code 337> (__AltInterrupt60):DEFINED (__Interrupt60)?<code 337> (__Interrupt60):<code 337> (__DefaultInterrupt)
-                  0x00018e          0x4 LONG 0x64e8 DEFINED (__AltInterrupt61)?<code 337> (__AltInterrupt61):DEFINED (__Interrupt61)?<code 337> (__Interrupt61):<code 337> (__DefaultInterrupt)
-                  0x000190          0x4 LONG 0x64e8 DEFINED (__AltRTCCInterrupt)?<code 337> (__AltRTCCInterrupt):DEFINED (__RTCCInterrupt)?<code 337> (__RTCCInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000192          0x4 LONG 0x64e8 DEFINED (__AltInterrupt63)?<code 337> (__AltInterrupt63):DEFINED (__Interrupt63)?<code 337> (__Interrupt63):<code 337> (__DefaultInterrupt)
-                  0x000194          0x4 LONG 0x64e8 DEFINED (__AltInterrupt64)?<code 337> (__AltInterrupt64):DEFINED (__Interrupt64)?<code 337> (__Interrupt64):<code 337> (__DefaultInterrupt)
-                  0x000196          0x4 LONG 0x64e8 DEFINED (__AltU1ErrInterrupt)?<code 337> (__AltU1ErrInterrupt):DEFINED (__U1ErrInterrupt)?<code 337> (__U1ErrInterrupt):<code 337> (__DefaultInterrupt)
-                  0x000198          0x4 LONG 0x64e8 DEFINED (__AltU2ErrInterrupt)?<code 337> (__AltU2ErrInterrupt):DEFINED (__U2ErrInterrupt)?<code 337> (__U2ErrInterrupt):<code 337> (__DefaultInterrupt)
-                  0x00019a          0x4 LONG 0x64e8 DEFINED (__AltCRCInterrupt)?<code 337> (__AltCRCInterrupt):DEFINED (__CRCInterrupt)?<code 337> (__CRCInterrupt):<code 337> (__DefaultInterrupt)
-                  0x00019c          0x4 LONG 0x64e8 DEFINED (__AltInterrupt68)?<code 337> (__AltInterrupt68):DEFINED (__Interrupt68)?<code 337> (__Interrupt68):<code 337> (__DefaultInterrupt)
-                  0x00019e          0x4 LONG 0x64e8 DEFINED (__AltInterrupt69)?<code 337> (__AltInterrupt69):DEFINED (__Interrupt69)?<code 337> (__Interrupt69):<code 337> (__DefaultInterrupt)
-                  0x0001a0          0x4 LONG 0x64e8 DEFINED (__AltInterrupt70)?<code 337> (__AltInterrupt70):DEFINED (__Interrupt70)?<code 337> (__Interrupt70):<code 337> (__DefaultInterrupt)
-                  0x0001a2          0x4 LONG 0x64e8 DEFINED (__AltInterrupt71)?<code 337> (__AltInterrupt71):DEFINED (__Interrupt71)?<code 337> (__Interrupt71):<code 337> (__DefaultInterrupt)
-                  0x0001a4          0x4 LONG 0x64e8 DEFINED (__AltLVDInterrupt)?<code 337> (__AltLVDInterrupt):DEFINED (__LVDInterrupt)?<code 337> (__LVDInterrupt):<code 337> (__DefaultInterrupt)
-                  0x0001a6          0x4 LONG 0x64e8 DEFINED (__AltInterrupt73)?<code 337> (__AltInterrupt73):DEFINED (__Interrupt73)?<code 337> (__Interrupt73):<code 337> (__DefaultInterrupt)
-                  0x0001a8          0x4 LONG 0x64e8 DEFINED (__AltInterrupt74)?<code 337> (__AltInterrupt74):DEFINED (__Interrupt74)?<code 337> (__Interrupt74):<code 337> (__DefaultInterrupt)
-                  0x0001aa          0x4 LONG 0x64e8 DEFINED (__AltInterrupt75)?<code 337> (__AltInterrupt75):DEFINED (__Interrupt75)?<code 337> (__Interrupt75):<code 337> (__DefaultInterrupt)
-                  0x0001ac          0x4 LONG 0x64e8 DEFINED (__AltInterrupt76)?<code 337> (__AltInterrupt76):DEFINED (__Interrupt76)?<code 337> (__Interrupt76):<code 337> (__DefaultInterrupt)
-                  0x0001ae          0x4 LONG 0x64e8 DEFINED (__AltInterrupt77)?<code 337> (__AltInterrupt77):DEFINED (__Interrupt77)?<code 337> (__Interrupt77):<code 337> (__DefaultInterrupt)
-                  0x0001b0          0x4 LONG 0x64e8 DEFINED (__AltInterrupt78)?<code 337> (__AltInterrupt78):DEFINED (__Interrupt78)?<code 337> (__Interrupt78):<code 337> (__DefaultInterrupt)
-                  0x0001b2          0x4 LONG 0x64e8 DEFINED (__AltInterrupt79)?<code 337> (__AltInterrupt79):DEFINED (__Interrupt79)?<code 337> (__Interrupt79):<code 337> (__DefaultInterrupt)
-                  0x0001b4          0x4 LONG 0x64e8 DEFINED (__AltInterrupt80)?<code 337> (__AltInterrupt80):DEFINED (__Interrupt80)?<code 337> (__Interrupt80):<code 337> (__DefaultInterrupt)
-                  0x0001b6          0x4 LONG 0x64e8 DEFINED (__AltInterrupt81)?<code 337> (__AltInterrupt81):DEFINED (__Interrupt81)?<code 337> (__Interrupt81):<code 337> (__DefaultInterrupt)
-                  0x0001b8          0x4 LONG 0x64e8 DEFINED (__AltInterrupt82)?<code 337> (__AltInterrupt82):DEFINED (__Interrupt82)?<code 337> (__Interrupt82):<code 337> (__DefaultInterrupt)
-                  0x0001ba          0x4 LONG 0x64e8 DEFINED (__AltInterrupt83)?<code 337> (__AltInterrupt83):DEFINED (__Interrupt83)?<code 337> (__Interrupt83):<code 337> (__DefaultInterrupt)
-                  0x0001bc          0x4 LONG 0x64e8 DEFINED (__AltInterrupt84)?<code 337> (__AltInterrupt84):DEFINED (__Interrupt84)?<code 337> (__Interrupt84):<code 337> (__DefaultInterrupt)
-                  0x0001be          0x4 LONG 0x64e8 DEFINED (__AltInterrupt85)?<code 337> (__AltInterrupt85):DEFINED (__Interrupt85)?<code 337> (__Interrupt85):<code 337> (__DefaultInterrupt)
-                  0x0001c0          0x4 LONG 0x64e8 DEFINED (__AltInterrupt86)?<code 337> (__AltInterrupt86):DEFINED (__Interrupt86)?<code 337> (__Interrupt86):<code 337> (__DefaultInterrupt)
-                  0x0001c2          0x4 LONG 0x64e8 DEFINED (__AltInterrupt87)?<code 337> (__AltInterrupt87):DEFINED (__Interrupt87)?<code 337> (__Interrupt87):<code 337> (__DefaultInterrupt)
-                  0x0001c4          0x4 LONG 0x64e8 DEFINED (__AltInterrupt88)?<code 337> (__AltInterrupt88):DEFINED (__Interrupt88)?<code 337> (__Interrupt88):<code 337> (__DefaultInterrupt)
-                  0x0001c6          0x4 LONG 0x64e8 DEFINED (__AltInterrupt89)?<code 337> (__AltInterrupt89):DEFINED (__Interrupt89)?<code 337> (__Interrupt89):<code 337> (__DefaultInterrupt)
-                  0x0001c8          0x4 LONG 0x64e8 DEFINED (__AltInterrupt90)?<code 337> (__AltInterrupt90):DEFINED (__Interrupt90)?<code 337> (__Interrupt90):<code 337> (__DefaultInterrupt)
-                  0x0001ca          0x4 LONG 0x64e8 DEFINED (__AltInterrupt91)?<code 337> (__AltInterrupt91):DEFINED (__Interrupt91)?<code 337> (__Interrupt91):<code 337> (__DefaultInterrupt)
-                  0x0001cc          0x4 LONG 0x64e8 DEFINED (__AltInterrupt92)?<code 337> (__AltInterrupt92):DEFINED (__Interrupt92)?<code 337> (__Interrupt92):<code 337> (__DefaultInterrupt)
-                  0x0001ce          0x4 LONG 0x64e8 DEFINED (__AltInterrupt93)?<code 337> (__AltInterrupt93):DEFINED (__Interrupt93)?<code 337> (__Interrupt93):<code 337> (__DefaultInterrupt)
-                  0x0001d0          0x4 LONG 0x64e8 DEFINED (__AltInterrupt94)?<code 337> (__AltInterrupt94):DEFINED (__Interrupt94)?<code 337> (__Interrupt94):<code 337> (__DefaultInterrupt)
-                  0x0001d2          0x4 LONG 0x64e8 DEFINED (__AltInterrupt95)?<code 337> (__AltInterrupt95):DEFINED (__Interrupt95)?<code 337> (__Interrupt95):<code 337> (__DefaultInterrupt)
-                  0x0001d4          0x4 LONG 0x64e8 DEFINED (__AltInterrupt96)?<code 337> (__AltInterrupt96):DEFINED (__Interrupt96)?<code 337> (__Interrupt96):<code 337> (__DefaultInterrupt)
-                  0x0001d6          0x4 LONG 0x64e8 DEFINED (__AltInterrupt97)?<code 337> (__AltInterrupt97):DEFINED (__Interrupt97)?<code 337> (__Interrupt97):<code 337> (__DefaultInterrupt)
-                  0x0001d8          0x4 LONG 0x64e8 DEFINED (__AltInterrupt98)?<code 337> (__AltInterrupt98):DEFINED (__Interrupt98)?<code 337> (__Interrupt98):<code 337> (__DefaultInterrupt)
-                  0x0001da          0x4 LONG 0x64e8 DEFINED (__AltInterrupt99)?<code 337> (__AltInterrupt99):DEFINED (__Interrupt99)?<code 337> (__Interrupt99):<code 337> (__DefaultInterrupt)
-                  0x0001dc          0x4 LONG 0x64e8 DEFINED (__AltInterrupt100)?<code 337> (__AltInterrupt100):DEFINED (__Interrupt100)?<code 337> (__Interrupt100):<code 337> (__DefaultInterrupt)
-                  0x0001de          0x4 LONG 0x64e8 DEFINED (__AltInterrupt101)?<code 337> (__AltInterrupt101):DEFINED (__Interrupt101)?<code 337> (__Interrupt101):<code 337> (__DefaultInterrupt)
-                  0x0001e0          0x4 LONG 0x64e8 DEFINED (__AltInterrupt102)?<code 337> (__AltInterrupt102):DEFINED (__Interrupt102)?<code 337> (__Interrupt102):<code 337> (__DefaultInterrupt)
-                  0x0001e2          0x4 LONG 0x64e8 DEFINED (__AltInterrupt103)?<code 337> (__AltInterrupt103):DEFINED (__Interrupt103)?<code 337> (__Interrupt103):<code 337> (__DefaultInterrupt)
-                  0x0001e4          0x4 LONG 0x64e8 DEFINED (__AltInterrupt104)?<code 337> (__AltInterrupt104):DEFINED (__Interrupt104)?<code 337> (__Interrupt104):<code 337> (__DefaultInterrupt)
-                  0x0001e6          0x4 LONG 0x64e8 DEFINED (__AltInterrupt105)?<code 337> (__AltInterrupt105):DEFINED (__Interrupt105)?<code 337> (__Interrupt105):<code 337> (__DefaultInterrupt)
-                  0x0001e8          0x4 LONG 0x64e8 DEFINED (__AltInterrupt106)?<code 337> (__AltInterrupt106):DEFINED (__Interrupt106)?<code 337> (__Interrupt106):<code 337> (__DefaultInterrupt)
-                  0x0001ea          0x4 LONG 0x64e8 DEFINED (__AltInterrupt107)?<code 337> (__AltInterrupt107):DEFINED (__Interrupt107)?<code 337> (__Interrupt107):<code 337> (__DefaultInterrupt)
-                  0x0001ec          0x4 LONG 0x64e8 DEFINED (__AltInterrupt108)?<code 337> (__AltInterrupt108):DEFINED (__Interrupt108)?<code 337> (__Interrupt108):<code 337> (__DefaultInterrupt)
-                  0x0001ee          0x4 LONG 0x64e8 DEFINED (__AltInterrupt109)?<code 337> (__AltInterrupt109):DEFINED (__Interrupt109)?<code 337> (__Interrupt109):<code 337> (__DefaultInterrupt)
-                  0x0001f0          0x4 LONG 0x64e8 DEFINED (__AltInterrupt110)?<code 337> (__AltInterrupt110):DEFINED (__Interrupt110)?<code 337> (__Interrupt110):<code 337> (__DefaultInterrupt)
-                  0x0001f2          0x4 LONG 0x64e8 DEFINED (__AltInterrupt111)?<code 337> (__AltInterrupt111):DEFINED (__Interrupt111)?<code 337> (__Interrupt111):<code 337> (__DefaultInterrupt)
-                  0x0001f4          0x4 LONG 0x64e8 DEFINED (__AltInterrupt112)?<code 337> (__AltInterrupt112):DEFINED (__Interrupt112)?<code 337> (__Interrupt112):<code 337> (__DefaultInterrupt)
-                  0x0001f6          0x4 LONG 0x64e8 DEFINED (__AltInterrupt113)?<code 337> (__AltInterrupt113):DEFINED (__Interrupt113)?<code 337> (__Interrupt113):<code 337> (__DefaultInterrupt)
-                  0x0001f8          0x4 LONG 0x64e8 DEFINED (__AltInterrupt114)?<code 337> (__AltInterrupt114):DEFINED (__Interrupt114)?<code 337> (__Interrupt114):<code 337> (__DefaultInterrupt)
-                  0x0001fa          0x4 LONG 0x64e8 DEFINED (__AltInterrupt115)?<code 337> (__AltInterrupt115):DEFINED (__Interrupt115)?<code 337> (__Interrupt115):<code 337> (__DefaultInterrupt)
-                  0x0001fc          0x4 LONG 0x64e8 DEFINED (__AltInterrupt116)?<code 337> (__AltInterrupt116):DEFINED (__Interrupt116)?<code 337> (__Interrupt116):<code 337> (__DefaultInterrupt)
-                  0x0001fe          0x4 LONG 0x64e8 DEFINED (__AltInterrupt117)?<code 337> (__AltInterrupt117):DEFINED (__Interrupt117)?<code 337> (__Interrupt117):<code 337> (__DefaultInterrupt)
+                  0x000104          0x4 LONG 0x651c DEFINED (__AltReservedTrap0)?<code 337> (__AltReservedTrap0):DEFINED (__ReservedTrap0)?<code 337> (__ReservedTrap0):<code 337> (__DefaultInterrupt)
+                  0x000106          0x4 LONG 0x651c DEFINED (__AltOscillatorFail)?<code 337> (__AltOscillatorFail):DEFINED (__OscillatorFail)?<code 337> (__OscillatorFail):<code 337> (__DefaultInterrupt)
+                  0x000108          0x4 LONG 0x651c DEFINED (__AltAddressError)?<code 337> (__AltAddressError):DEFINED (__AddressError)?<code 337> (__AddressError):<code 337> (__DefaultInterrupt)
+                  0x00010a          0x4 LONG 0x651c DEFINED (__AltStackError)?<code 337> (__AltStackError):DEFINED (__StackError)?<code 337> (__StackError):<code 337> (__DefaultInterrupt)
+                  0x00010c          0x4 LONG 0x651c DEFINED (__AltMathError)?<code 337> (__AltMathError):DEFINED (__MathError)?<code 337> (__MathError):<code 337> (__DefaultInterrupt)
+                  0x00010e          0x4 LONG 0x651c DEFINED (__AltReservedTrap5)?<code 337> (__AltReservedTrap5):DEFINED (__ReservedTrap5)?<code 337> (__ReservedTrap5):<code 337> (__DefaultInterrupt)
+                  0x000110          0x4 LONG 0x651c DEFINED (__AltReservedTrap6)?<code 337> (__AltReservedTrap6):DEFINED (__ReservedTrap6)?<code 337> (__ReservedTrap6):<code 337> (__DefaultInterrupt)
+                  0x000112          0x4 LONG 0x651c DEFINED (__AltReservedTrap7)?<code 337> (__AltReservedTrap7):DEFINED (__ReservedTrap7)?<code 337> (__ReservedTrap7):<code 337> (__DefaultInterrupt)
+                  0x000114          0x4 LONG 0x651c DEFINED (__AltINT0Interrupt)?<code 337> (__AltINT0Interrupt):DEFINED (__INT0Interrupt)?<code 337> (__INT0Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000116          0x4 LONG 0x651c DEFINED (__AltIC1Interrupt)?<code 337> (__AltIC1Interrupt):DEFINED (__IC1Interrupt)?<code 337> (__IC1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000118          0x4 LONG 0x651c DEFINED (__AltOC1Interrupt)?<code 337> (__AltOC1Interrupt):DEFINED (__OC1Interrupt)?<code 337> (__OC1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00011a          0x4 LONG 0x5b68 DEFINED (__AltT1Interrupt)?<code 337> (__AltT1Interrupt):DEFINED (__T1Interrupt)?<code 337> (__T1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00011c          0x4 LONG 0x651c DEFINED (__AltInterrupt4)?<code 337> (__AltInterrupt4):DEFINED (__Interrupt4)?<code 337> (__Interrupt4):<code 337> (__DefaultInterrupt)
+                  0x00011e          0x4 LONG 0x651c DEFINED (__AltIC2Interrupt)?<code 337> (__AltIC2Interrupt):DEFINED (__IC2Interrupt)?<code 337> (__IC2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000120          0x4 LONG 0x651c DEFINED (__AltOC2Interrupt)?<code 337> (__AltOC2Interrupt):DEFINED (__OC2Interrupt)?<code 337> (__OC2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000122          0x4 LONG 0x651c DEFINED (__AltT2Interrupt)?<code 337> (__AltT2Interrupt):DEFINED (__T2Interrupt)?<code 337> (__T2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000124          0x4 LONG 0x651c DEFINED (__AltT3Interrupt)?<code 337> (__AltT3Interrupt):DEFINED (__T3Interrupt)?<code 337> (__T3Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000126          0x4 LONG 0x651c DEFINED (__AltSPI1ErrInterrupt)?<code 337> (__AltSPI1ErrInterrupt):DEFINED (__SPI1ErrInterrupt)?<code 337> (__SPI1ErrInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000128          0x4 LONG 0x651c DEFINED (__AltSPI1Interrupt)?<code 337> (__AltSPI1Interrupt):DEFINED (__SPI1Interrupt)?<code 337> (__SPI1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00012a          0x4 LONG 0x651c DEFINED (__AltU1RXInterrupt)?<code 337> (__AltU1RXInterrupt):DEFINED (__U1RXInterrupt)?<code 337> (__U1RXInterrupt):<code 337> (__DefaultInterrupt)
+                  0x00012c          0x4 LONG 0x651c DEFINED (__AltU1TXInterrupt)?<code 337> (__AltU1TXInterrupt):DEFINED (__U1TXInterrupt)?<code 337> (__U1TXInterrupt):<code 337> (__DefaultInterrupt)
+                  0x00012e          0x4 LONG 0x651c DEFINED (__AltADC1Interrupt)?<code 337> (__AltADC1Interrupt):DEFINED (__ADC1Interrupt)?<code 337> (__ADC1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000130          0x4 LONG 0x651c DEFINED (__AltInterrupt14)?<code 337> (__AltInterrupt14):DEFINED (__Interrupt14)?<code 337> (__Interrupt14):<code 337> (__DefaultInterrupt)
+                  0x000132          0x4 LONG 0x651c DEFINED (__AltInterrupt15)?<code 337> (__AltInterrupt15):DEFINED (__Interrupt15)?<code 337> (__Interrupt15):<code 337> (__DefaultInterrupt)
+                  0x000134          0x4 LONG 0x651c DEFINED (__AltSI2C1Interrupt)?<code 337> (__AltSI2C1Interrupt):DEFINED (__SI2C1Interrupt)?<code 337> (__SI2C1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000136          0x4 LONG 0x651c DEFINED (__AltMI2C1Interrupt)?<code 337> (__AltMI2C1Interrupt):DEFINED (__MI2C1Interrupt)?<code 337> (__MI2C1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000138          0x4 LONG 0x651c DEFINED (__AltCompInterrupt)?<code 337> (__AltCompInterrupt):DEFINED (__CompInterrupt)?<code 337> (__CompInterrupt):<code 337> (__DefaultInterrupt)
+                  0x00013a          0x4 LONG 0x651c DEFINED (__AltCNInterrupt)?<code 337> (__AltCNInterrupt):DEFINED (__CNInterrupt)?<code 337> (__CNInterrupt):<code 337> (__DefaultInterrupt)
+                  0x00013c          0x4 LONG 0x651c DEFINED (__AltINT1Interrupt)?<code 337> (__AltINT1Interrupt):DEFINED (__INT1Interrupt)?<code 337> (__INT1Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00013e          0x4 LONG 0x651c DEFINED (__AltInterrupt21)?<code 337> (__AltInterrupt21):DEFINED (__Interrupt21)?<code 337> (__Interrupt21):<code 337> (__DefaultInterrupt)
+                  0x000140          0x4 LONG 0x651c DEFINED (__AltInterrupt22)?<code 337> (__AltInterrupt22):DEFINED (__Interrupt22)?<code 337> (__Interrupt22):<code 337> (__DefaultInterrupt)
+                  0x000142          0x4 LONG 0x651c DEFINED (__AltInterrupt23)?<code 337> (__AltInterrupt23):DEFINED (__Interrupt23)?<code 337> (__Interrupt23):<code 337> (__DefaultInterrupt)
+                  0x000144          0x4 LONG 0x651c DEFINED (__AltInterrupt24)?<code 337> (__AltInterrupt24):DEFINED (__Interrupt24)?<code 337> (__Interrupt24):<code 337> (__DefaultInterrupt)
+                  0x000146          0x4 LONG 0x651c DEFINED (__AltOC3Interrupt)?<code 337> (__AltOC3Interrupt):DEFINED (__OC3Interrupt)?<code 337> (__OC3Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000148          0x4 LONG 0x651c DEFINED (__AltOC4Interrupt)?<code 337> (__AltOC4Interrupt):DEFINED (__OC4Interrupt)?<code 337> (__OC4Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00014a          0x4 LONG 0x651c DEFINED (__AltT4Interrupt)?<code 337> (__AltT4Interrupt):DEFINED (__T4Interrupt)?<code 337> (__T4Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00014c          0x4 LONG 0x651c DEFINED (__AltT5Interrupt)?<code 337> (__AltT5Interrupt):DEFINED (__T5Interrupt)?<code 337> (__T5Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00014e          0x4 LONG 0x651c DEFINED (__AltINT2Interrupt)?<code 337> (__AltINT2Interrupt):DEFINED (__INT2Interrupt)?<code 337> (__INT2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000150          0x4 LONG 0x651c DEFINED (__AltU2RXInterrupt)?<code 337> (__AltU2RXInterrupt):DEFINED (__U2RXInterrupt)?<code 337> (__U2RXInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000152          0x4 LONG 0x651c DEFINED (__AltU2TXInterrupt)?<code 337> (__AltU2TXInterrupt):DEFINED (__U2TXInterrupt)?<code 337> (__U2TXInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000154          0x4 LONG 0x651c DEFINED (__AltSPI2ErrInterrupt)?<code 337> (__AltSPI2ErrInterrupt):DEFINED (__SPI2ErrInterrupt)?<code 337> (__SPI2ErrInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000156          0x4 LONG 0x651c DEFINED (__AltSPI2Interrupt)?<code 337> (__AltSPI2Interrupt):DEFINED (__SPI2Interrupt)?<code 337> (__SPI2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000158          0x4 LONG 0x651c DEFINED (__AltInterrupt34)?<code 337> (__AltInterrupt34):DEFINED (__Interrupt34)?<code 337> (__Interrupt34):<code 337> (__DefaultInterrupt)
+                  0x00015a          0x4 LONG 0x651c DEFINED (__AltInterrupt35)?<code 337> (__AltInterrupt35):DEFINED (__Interrupt35)?<code 337> (__Interrupt35):<code 337> (__DefaultInterrupt)
+                  0x00015c          0x4 LONG 0x651c DEFINED (__AltInterrupt36)?<code 337> (__AltInterrupt36):DEFINED (__Interrupt36)?<code 337> (__Interrupt36):<code 337> (__DefaultInterrupt)
+                  0x00015e          0x4 LONG 0x651c DEFINED (__AltIC3Interrupt)?<code 337> (__AltIC3Interrupt):DEFINED (__IC3Interrupt)?<code 337> (__IC3Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000160          0x4 LONG 0x651c DEFINED (__AltIC4Interrupt)?<code 337> (__AltIC4Interrupt):DEFINED (__IC4Interrupt)?<code 337> (__IC4Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000162          0x4 LONG 0x651c DEFINED (__AltIC5Interrupt)?<code 337> (__AltIC5Interrupt):DEFINED (__IC5Interrupt)?<code 337> (__IC5Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000164          0x4 LONG 0x651c DEFINED (__AltInterrupt40)?<code 337> (__AltInterrupt40):DEFINED (__Interrupt40)?<code 337> (__Interrupt40):<code 337> (__DefaultInterrupt)
+                  0x000166          0x4 LONG 0x651c DEFINED (__AltOC5Interrupt)?<code 337> (__AltOC5Interrupt):DEFINED (__OC5Interrupt)?<code 337> (__OC5Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000168          0x4 LONG 0x651c DEFINED (__AltInterrupt42)?<code 337> (__AltInterrupt42):DEFINED (__Interrupt42)?<code 337> (__Interrupt42):<code 337> (__DefaultInterrupt)
+                  0x00016a          0x4 LONG 0x651c DEFINED (__AltInterrupt43)?<code 337> (__AltInterrupt43):DEFINED (__Interrupt43)?<code 337> (__Interrupt43):<code 337> (__DefaultInterrupt)
+                  0x00016c          0x4 LONG 0x651c DEFINED (__AltInterrupt44)?<code 337> (__AltInterrupt44):DEFINED (__Interrupt44)?<code 337> (__Interrupt44):<code 337> (__DefaultInterrupt)
+                  0x00016e          0x4 LONG 0x651c DEFINED (__AltPMPInterrupt)?<code 337> (__AltPMPInterrupt):DEFINED (__PMPInterrupt)?<code 337> (__PMPInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000170          0x4 LONG 0x651c DEFINED (__AltInterrupt46)?<code 337> (__AltInterrupt46):DEFINED (__Interrupt46)?<code 337> (__Interrupt46):<code 337> (__DefaultInterrupt)
+                  0x000172          0x4 LONG 0x651c DEFINED (__AltInterrupt47)?<code 337> (__AltInterrupt47):DEFINED (__Interrupt47)?<code 337> (__Interrupt47):<code 337> (__DefaultInterrupt)
+                  0x000174          0x4 LONG 0x651c DEFINED (__AltInterrupt48)?<code 337> (__AltInterrupt48):DEFINED (__Interrupt48)?<code 337> (__Interrupt48):<code 337> (__DefaultInterrupt)
+                  0x000176          0x4 LONG 0x651c DEFINED (__AltSI2C2Interrupt)?<code 337> (__AltSI2C2Interrupt):DEFINED (__SI2C2Interrupt)?<code 337> (__SI2C2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x000178          0x4 LONG 0x651c DEFINED (__AltMI2C2Interrupt)?<code 337> (__AltMI2C2Interrupt):DEFINED (__MI2C2Interrupt)?<code 337> (__MI2C2Interrupt):<code 337> (__DefaultInterrupt)
+                  0x00017a          0x4 LONG 0x651c DEFINED (__AltInterrupt51)?<code 337> (__AltInterrupt51):DEFINED (__Interrupt51)?<code 337> (__Interrupt51):<code 337> (__DefaultInterrupt)
+                  0x00017c          0x4 LONG 0x651c DEFINED (__AltInterrupt52)?<code 337> (__AltInterrupt52):DEFINED (__Interrupt52)?<code 337> (__Interrupt52):<code 337> (__DefaultInterrupt)
+                  0x00017e          0x4 LONG 0x651c DEFINED (__AltInterrupt53)?<code 337> (__AltInterrupt53):DEFINED (__Interrupt53)?<code 337> (__Interrupt53):<code 337> (__DefaultInterrupt)
+                  0x000180          0x4 LONG 0x651c DEFINED (__AltInterrupt54)?<code 337> (__AltInterrupt54):DEFINED (__Interrupt54)?<code 337> (__Interrupt54):<code 337> (__DefaultInterrupt)
+                  0x000182          0x4 LONG 0x651c DEFINED (__AltInterrupt55)?<code 337> (__AltInterrupt55):DEFINED (__Interrupt55)?<code 337> (__Interrupt55):<code 337> (__DefaultInterrupt)
+                  0x000184          0x4 LONG 0x651c DEFINED (__AltInterrupt56)?<code 337> (__AltInterrupt56):DEFINED (__Interrupt56)?<code 337> (__Interrupt56):<code 337> (__DefaultInterrupt)
+                  0x000186          0x4 LONG 0x651c DEFINED (__AltInterrupt57)?<code 337> (__AltInterrupt57):DEFINED (__Interrupt57)?<code 337> (__Interrupt57):<code 337> (__DefaultInterrupt)
+                  0x000188          0x4 LONG 0x651c DEFINED (__AltInterrupt58)?<code 337> (__AltInterrupt58):DEFINED (__Interrupt58)?<code 337> (__Interrupt58):<code 337> (__DefaultInterrupt)
+                  0x00018a          0x4 LONG 0x651c DEFINED (__AltInterrupt59)?<code 337> (__AltInterrupt59):DEFINED (__Interrupt59)?<code 337> (__Interrupt59):<code 337> (__DefaultInterrupt)
+                  0x00018c          0x4 LONG 0x651c DEFINED (__AltInterrupt60)?<code 337> (__AltInterrupt60):DEFINED (__Interrupt60)?<code 337> (__Interrupt60):<code 337> (__DefaultInterrupt)
+                  0x00018e          0x4 LONG 0x651c DEFINED (__AltInterrupt61)?<code 337> (__AltInterrupt61):DEFINED (__Interrupt61)?<code 337> (__Interrupt61):<code 337> (__DefaultInterrupt)
+                  0x000190          0x4 LONG 0x651c DEFINED (__AltRTCCInterrupt)?<code 337> (__AltRTCCInterrupt):DEFINED (__RTCCInterrupt)?<code 337> (__RTCCInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000192          0x4 LONG 0x651c DEFINED (__AltInterrupt63)?<code 337> (__AltInterrupt63):DEFINED (__Interrupt63)?<code 337> (__Interrupt63):<code 337> (__DefaultInterrupt)
+                  0x000194          0x4 LONG 0x651c DEFINED (__AltInterrupt64)?<code 337> (__AltInterrupt64):DEFINED (__Interrupt64)?<code 337> (__Interrupt64):<code 337> (__DefaultInterrupt)
+                  0x000196          0x4 LONG 0x651c DEFINED (__AltU1ErrInterrupt)?<code 337> (__AltU1ErrInterrupt):DEFINED (__U1ErrInterrupt)?<code 337> (__U1ErrInterrupt):<code 337> (__DefaultInterrupt)
+                  0x000198          0x4 LONG 0x651c DEFINED (__AltU2ErrInterrupt)?<code 337> (__AltU2ErrInterrupt):DEFINED (__U2ErrInterrupt)?<code 337> (__U2ErrInterrupt):<code 337> (__DefaultInterrupt)
+                  0x00019a          0x4 LONG 0x651c DEFINED (__AltCRCInterrupt)?<code 337> (__AltCRCInterrupt):DEFINED (__CRCInterrupt)?<code 337> (__CRCInterrupt):<code 337> (__DefaultInterrupt)
+                  0x00019c          0x4 LONG 0x651c DEFINED (__AltInterrupt68)?<code 337> (__AltInterrupt68):DEFINED (__Interrupt68)?<code 337> (__Interrupt68):<code 337> (__DefaultInterrupt)
+                  0x00019e          0x4 LONG 0x651c DEFINED (__AltInterrupt69)?<code 337> (__AltInterrupt69):DEFINED (__Interrupt69)?<code 337> (__Interrupt69):<code 337> (__DefaultInterrupt)
+                  0x0001a0          0x4 LONG 0x651c DEFINED (__AltInterrupt70)?<code 337> (__AltInterrupt70):DEFINED (__Interrupt70)?<code 337> (__Interrupt70):<code 337> (__DefaultInterrupt)
+                  0x0001a2          0x4 LONG 0x651c DEFINED (__AltInterrupt71)?<code 337> (__AltInterrupt71):DEFINED (__Interrupt71)?<code 337> (__Interrupt71):<code 337> (__DefaultInterrupt)
+                  0x0001a4          0x4 LONG 0x651c DEFINED (__AltLVDInterrupt)?<code 337> (__AltLVDInterrupt):DEFINED (__LVDInterrupt)?<code 337> (__LVDInterrupt):<code 337> (__DefaultInterrupt)
+                  0x0001a6          0x4 LONG 0x651c DEFINED (__AltInterrupt73)?<code 337> (__AltInterrupt73):DEFINED (__Interrupt73)?<code 337> (__Interrupt73):<code 337> (__DefaultInterrupt)
+                  0x0001a8          0x4 LONG 0x651c DEFINED (__AltInterrupt74)?<code 337> (__AltInterrupt74):DEFINED (__Interrupt74)?<code 337> (__Interrupt74):<code 337> (__DefaultInterrupt)
+                  0x0001aa          0x4 LONG 0x651c DEFINED (__AltInterrupt75)?<code 337> (__AltInterrupt75):DEFINED (__Interrupt75)?<code 337> (__Interrupt75):<code 337> (__DefaultInterrupt)
+                  0x0001ac          0x4 LONG 0x651c DEFINED (__AltInterrupt76)?<code 337> (__AltInterrupt76):DEFINED (__Interrupt76)?<code 337> (__Interrupt76):<code 337> (__DefaultInterrupt)
+                  0x0001ae          0x4 LONG 0x651c DEFINED (__AltInterrupt77)?<code 337> (__AltInterrupt77):DEFINED (__Interrupt77)?<code 337> (__Interrupt77):<code 337> (__DefaultInterrupt)
+                  0x0001b0          0x4 LONG 0x651c DEFINED (__AltInterrupt78)?<code 337> (__AltInterrupt78):DEFINED (__Interrupt78)?<code 337> (__Interrupt78):<code 337> (__DefaultInterrupt)
+                  0x0001b2          0x4 LONG 0x651c DEFINED (__AltInterrupt79)?<code 337> (__AltInterrupt79):DEFINED (__Interrupt79)?<code 337> (__Interrupt79):<code 337> (__DefaultInterrupt)
+                  0x0001b4          0x4 LONG 0x651c DEFINED (__AltInterrupt80)?<code 337> (__AltInterrupt80):DEFINED (__Interrupt80)?<code 337> (__Interrupt80):<code 337> (__DefaultInterrupt)
+                  0x0001b6          0x4 LONG 0x651c DEFINED (__AltInterrupt81)?<code 337> (__AltInterrupt81):DEFINED (__Interrupt81)?<code 337> (__Interrupt81):<code 337> (__DefaultInterrupt)
+                  0x0001b8          0x4 LONG 0x651c DEFINED (__AltInterrupt82)?<code 337> (__AltInterrupt82):DEFINED (__Interrupt82)?<code 337> (__Interrupt82):<code 337> (__DefaultInterrupt)
+                  0x0001ba          0x4 LONG 0x651c DEFINED (__AltInterrupt83)?<code 337> (__AltInterrupt83):DEFINED (__Interrupt83)?<code 337> (__Interrupt83):<code 337> (__DefaultInterrupt)
+                  0x0001bc          0x4 LONG 0x651c DEFINED (__AltInterrupt84)?<code 337> (__AltInterrupt84):DEFINED (__Interrupt84)?<code 337> (__Interrupt84):<code 337> (__DefaultInterrupt)
+                  0x0001be          0x4 LONG 0x651c DEFINED (__AltInterrupt85)?<code 337> (__AltInterrupt85):DEFINED (__Interrupt85)?<code 337> (__Interrupt85):<code 337> (__DefaultInterrupt)
+                  0x0001c0          0x4 LONG 0x651c DEFINED (__AltInterrupt86)?<code 337> (__AltInterrupt86):DEFINED (__Interrupt86)?<code 337> (__Interrupt86):<code 337> (__DefaultInterrupt)
+                  0x0001c2          0x4 LONG 0x651c DEFINED (__AltInterrupt87)?<code 337> (__AltInterrupt87):DEFINED (__Interrupt87)?<code 337> (__Interrupt87):<code 337> (__DefaultInterrupt)
+                  0x0001c4          0x4 LONG 0x651c DEFINED (__AltInterrupt88)?<code 337> (__AltInterrupt88):DEFINED (__Interrupt88)?<code 337> (__Interrupt88):<code 337> (__DefaultInterrupt)
+                  0x0001c6          0x4 LONG 0x651c DEFINED (__AltInterrupt89)?<code 337> (__AltInterrupt89):DEFINED (__Interrupt89)?<code 337> (__Interrupt89):<code 337> (__DefaultInterrupt)
+                  0x0001c8          0x4 LONG 0x651c DEFINED (__AltInterrupt90)?<code 337> (__AltInterrupt90):DEFINED (__Interrupt90)?<code 337> (__Interrupt90):<code 337> (__DefaultInterrupt)
+                  0x0001ca          0x4 LONG 0x651c DEFINED (__AltInterrupt91)?<code 337> (__AltInterrupt91):DEFINED (__Interrupt91)?<code 337> (__Interrupt91):<code 337> (__DefaultInterrupt)
+                  0x0001cc          0x4 LONG 0x651c DEFINED (__AltInterrupt92)?<code 337> (__AltInterrupt92):DEFINED (__Interrupt92)?<code 337> (__Interrupt92):<code 337> (__DefaultInterrupt)
+                  0x0001ce          0x4 LONG 0x651c DEFINED (__AltInterrupt93)?<code 337> (__AltInterrupt93):DEFINED (__Interrupt93)?<code 337> (__Interrupt93):<code 337> (__DefaultInterrupt)
+                  0x0001d0          0x4 LONG 0x651c DEFINED (__AltInterrupt94)?<code 337> (__AltInterrupt94):DEFINED (__Interrupt94)?<code 337> (__Interrupt94):<code 337> (__DefaultInterrupt)
+                  0x0001d2          0x4 LONG 0x651c DEFINED (__AltInterrupt95)?<code 337> (__AltInterrupt95):DEFINED (__Interrupt95)?<code 337> (__Interrupt95):<code 337> (__DefaultInterrupt)
+                  0x0001d4          0x4 LONG 0x651c DEFINED (__AltInterrupt96)?<code 337> (__AltInterrupt96):DEFINED (__Interrupt96)?<code 337> (__Interrupt96):<code 337> (__DefaultInterrupt)
+                  0x0001d6          0x4 LONG 0x651c DEFINED (__AltInterrupt97)?<code 337> (__AltInterrupt97):DEFINED (__Interrupt97)?<code 337> (__Interrupt97):<code 337> (__DefaultInterrupt)
+                  0x0001d8          0x4 LONG 0x651c DEFINED (__AltInterrupt98)?<code 337> (__AltInterrupt98):DEFINED (__Interrupt98)?<code 337> (__Interrupt98):<code 337> (__DefaultInterrupt)
+                  0x0001da          0x4 LONG 0x651c DEFINED (__AltInterrupt99)?<code 337> (__AltInterrupt99):DEFINED (__Interrupt99)?<code 337> (__Interrupt99):<code 337> (__DefaultInterrupt)
+                  0x0001dc          0x4 LONG 0x651c DEFINED (__AltInterrupt100)?<code 337> (__AltInterrupt100):DEFINED (__Interrupt100)?<code 337> (__Interrupt100):<code 337> (__DefaultInterrupt)
+                  0x0001de          0x4 LONG 0x651c DEFINED (__AltInterrupt101)?<code 337> (__AltInterrupt101):DEFINED (__Interrupt101)?<code 337> (__Interrupt101):<code 337> (__DefaultInterrupt)
+                  0x0001e0          0x4 LONG 0x651c DEFINED (__AltInterrupt102)?<code 337> (__AltInterrupt102):DEFINED (__Interrupt102)?<code 337> (__Interrupt102):<code 337> (__DefaultInterrupt)
+                  0x0001e2          0x4 LONG 0x651c DEFINED (__AltInterrupt103)?<code 337> (__AltInterrupt103):DEFINED (__Interrupt103)?<code 337> (__Interrupt103):<code 337> (__DefaultInterrupt)
+                  0x0001e4          0x4 LONG 0x651c DEFINED (__AltInterrupt104)?<code 337> (__AltInterrupt104):DEFINED (__Interrupt104)?<code 337> (__Interrupt104):<code 337> (__DefaultInterrupt)
+                  0x0001e6          0x4 LONG 0x651c DEFINED (__AltInterrupt105)?<code 337> (__AltInterrupt105):DEFINED (__Interrupt105)?<code 337> (__Interrupt105):<code 337> (__DefaultInterrupt)
+                  0x0001e8          0x4 LONG 0x651c DEFINED (__AltInterrupt106)?<code 337> (__AltInterrupt106):DEFINED (__Interrupt106)?<code 337> (__Interrupt106):<code 337> (__DefaultInterrupt)
+                  0x0001ea          0x4 LONG 0x651c DEFINED (__AltInterrupt107)?<code 337> (__AltInterrupt107):DEFINED (__Interrupt107)?<code 337> (__Interrupt107):<code 337> (__DefaultInterrupt)
+                  0x0001ec          0x4 LONG 0x651c DEFINED (__AltInterrupt108)?<code 337> (__AltInterrupt108):DEFINED (__Interrupt108)?<code 337> (__Interrupt108):<code 337> (__DefaultInterrupt)
+                  0x0001ee          0x4 LONG 0x651c DEFINED (__AltInterrupt109)?<code 337> (__AltInterrupt109):DEFINED (__Interrupt109)?<code 337> (__Interrupt109):<code 337> (__DefaultInterrupt)
+                  0x0001f0          0x4 LONG 0x651c DEFINED (__AltInterrupt110)?<code 337> (__AltInterrupt110):DEFINED (__Interrupt110)?<code 337> (__Interrupt110):<code 337> (__DefaultInterrupt)
+                  0x0001f2          0x4 LONG 0x651c DEFINED (__AltInterrupt111)?<code 337> (__AltInterrupt111):DEFINED (__Interrupt111)?<code 337> (__Interrupt111):<code 337> (__DefaultInterrupt)
+                  0x0001f4          0x4 LONG 0x651c DEFINED (__AltInterrupt112)?<code 337> (__AltInterrupt112):DEFINED (__Interrupt112)?<code 337> (__Interrupt112):<code 337> (__DefaultInterrupt)
+                  0x0001f6          0x4 LONG 0x651c DEFINED (__AltInterrupt113)?<code 337> (__AltInterrupt113):DEFINED (__Interrupt113)?<code 337> (__Interrupt113):<code 337> (__DefaultInterrupt)
+                  0x0001f8          0x4 LONG 0x651c DEFINED (__AltInterrupt114)?<code 337> (__AltInterrupt114):DEFINED (__Interrupt114)?<code 337> (__Interrupt114):<code 337> (__DefaultInterrupt)
+                  0x0001fa          0x4 LONG 0x651c DEFINED (__AltInterrupt115)?<code 337> (__AltInterrupt115):DEFINED (__Interrupt115)?<code 337> (__Interrupt115):<code 337> (__DefaultInterrupt)
+                  0x0001fc          0x4 LONG 0x651c DEFINED (__AltInterrupt116)?<code 337> (__AltInterrupt116):DEFINED (__Interrupt116)?<code 337> (__Interrupt116):<code 337> (__DefaultInterrupt)
+                  0x0001fe          0x4 LONG 0x651c DEFINED (__AltInterrupt117)?<code 337> (__AltInterrupt117):DEFINED (__Interrupt117)?<code 337> (__Interrupt117):<code 337> (__DefaultInterrupt)
                     0x0000                  WREG0 = 0x0
                     0x0000                  _WREG0 = 0x0
                     0x0002                  WREG1 = 0x2
@@ -1899,103 +1910,104 @@ LOAD default_isr
 .data               0x0b9e          0x2
  .data              0x0b9e          0x2 c:/mplab/bin/bin/../../lib\libc-coff.a(div.o)
 
-.const              0xb2f0        0x5da load address 0x0032f0  
- .const             0xb2f0        0x5da uWatch-Main.o
+.const              0xb2fc        0x5ec load address 0x0032fc  
+ .const             0xb2fc        0x5ec uWatch-Main.o
 
-.text             0x0038ca       0x2a5e
- .text            0x0038ca       0x2442 uWatch-Main.o
-                  0x0038ca                  opPrec
-                  0x0038fc                  DelayMs
-                  0x003910                  Clock1MHz
-                  0x003918                  Clock4MHz
-                  0x003920                  Clock250KHz
-                  0x003928                  Clock125KHz
-                  0x003930                  Clock32KHz
-                  0x003938                  LCD_STROBE
-                  0x00393e                  SetLCDdata
-                  0x00394c                  lcd_write
-                  0x00395c                  lcd_clear
-                  0x003964                  lcd_puts
-                  0x00397c                  lcd_goto
-                  0x003986                  lcd_init
-                  0x0039a8                  UpdateLCDline1
-                  0x0039d2                  UpdateLCDline2
-                  0x0039fc                  ClearAllRegs
-                  0x003a9c                  i2c_high_sda
-                  0x003aa0                  i2c_low_sda
-                  0x003aa4                  i2c_high_scl
-                  0x003aa8                  i2c_low_scl
-                  0x003aac                  i2c_in_byte
-                  0x003ad0                  i2c_out_byte
-                  0x003af0                  i2c_nack
-                  0x003af8                  i2c_ack
-                  0x003b02                  i2c_start
-                  0x003b0e                  i2c_stop
-                  0x003b18                  I2CmemoryWRITE
-                  0x003b46                  I2CmemoryREAD
-                  0x003b78                  KeystrokeReplay
-                  0x003b96                  KeystrokeRecord
-                  0x003bbc                  KeyScan
-                  0x003d2a                  BCDtoDEC
-                  0x003d34                  DECtoBCD
-                  0x003d4a                  itochar
-                  0x003d58                  mjd
-                  0x003e18                  DriveMenu
-                  0x003e68                  ReturnNumber
-                  0x003eaa                  DriveMenu2
-                  0x003f38                  GetNumBCD
-                  0x003f5a                  Push
-                  0x003f7c                  PushStackUp
-                  0x003f82                  DropStack
-                  0x003f9a                  RtoP
-                  0x00400c                  PtoR
-                  0x004076                  hms
-                  0x0040e4                  hr
-                  0x004152                  Drop
-                  0x004176                  Operation
-                  0x00450e                  Operate
-                  0x004520                  ProcessNumberKey
-                  0x00455c                  EnterNumber
-                  0x004626                  UpdateDisplayRegs
-                  0x0048ca                  Factorial
-                  0x00498a                  CompleteXreg
-                  0x0049a0                  UpdateXregDisplay
-                  0x0049c0                  UpdateYregDisplay
-                  0x0049e0                  ResetFlags
-                  0x0049f2                  StoreRecall
-                  0x004a52                  SignKey
-                  0x004b02                  KeyRecord
-                  0x004b58                  KeyReplay
-                  0x004ba4                  HexEntry
-                  0x004c36                  Conversions
-                  0x004db4                  RPNcalculator
-                  0x004f08                  ProcessXYoperator
-                  0x004f10                  ALGcalculator
-                  0x005174                  SetTimeBCD
-                  0x0051a0                  SetDateBCD
-                  0x0051d8                  SetDateBCDandUpdate
-                  0x0051f6                  OneLineNumberEntry
-                  0x00522e                  SetupMode
-                  0x005642                  RTCCunlock
-                  0x005654                  LCDon
-                  0x00565e                  LCDoff
-                  0x00566c                  IdleI2C1
-                  0x00568c                  moonPhase
-                  0x0057c6                  inDST
-                  0x005830                  caldati
-                  0x0058e2                  AdjustDateTime
-                  0x0059a4                  TimeDateDisplay
-                  0x005b1a                  BacklightON
-                  0x005b28                  BacklightOFF
-                  0x005b30                  _T1Interrupt
-                  0x005ba8                  ProgramInit
-                  0x005c9a                  main
- .text            0x005d0c        0x61c uWatch-astro.o
-                  0x0062c6                  CalcRiseAndSet
+.text             0x0038e8       0x2a74
+ .text            0x0038e8       0x2458 uWatch-Main.o
+                  0x0038e8                  opPrec
+                  0x00391a                  DelayMs
+                  0x00392e                  Clock1MHz
+                  0x003936                  Clock4MHz
+                  0x00393e                  Clock250KHz
+                  0x003946                  Clock125KHz
+                  0x00394e                  Clock32KHz
+                  0x003956                  LCD_STROBE
+                  0x00395c                  SetLCDdata
+                  0x00396a                  lcd_write
+                  0x00397a                  lcd_clear
+                  0x003982                  lcd_puts
+                  0x00399a                  lcd_goto
+                  0x0039a4                  lcd_init
+                  0x0039c6                  UpdateLCD
+                  0x0039f4                  UpdateLCDline1
+                  0x003a08                  UpdateLCDline2
+                  0x003a1c                  ClearAllRegs
+                  0x003abc                  i2c_high_sda
+                  0x003ac0                  i2c_low_sda
+                  0x003ac4                  i2c_high_scl
+                  0x003ac8                  i2c_low_scl
+                  0x003acc                  i2c_in_byte
+                  0x003af0                  i2c_out_byte
+                  0x003b10                  i2c_nack
+                  0x003b18                  i2c_ack
+                  0x003b22                  i2c_start
+                  0x003b2e                  i2c_stop
+                  0x003b38                  I2CmemoryWRITE
+                  0x003b66                  I2CmemoryREAD
+                  0x003b98                  KeystrokeReplay
+                  0x003bb6                  KeystrokeRecord
+                  0x003bdc                  KeyScan
+                  0x003d4a                  BCDtoDEC
+                  0x003d54                  DECtoBCD
+                  0x003d6a                  itochar
+                  0x003d78                  mjd
+                  0x003e38                  DriveMenu
+                  0x003e88                  ReturnNumber
+                  0x003eca                  DriveMenu2
+                  0x003f58                  GetNumBCD
+                  0x003f7a                  Push
+                  0x003f9c                  PushStackUp
+                  0x003fa2                  DropStack
+                  0x003fba                  RtoP
+                  0x00402c                  PtoR
+                  0x004096                  hms
+                  0x004104                  hr
+                  0x004172                  Drop
+                  0x004196                  Operation
+                  0x00454c                  Operate
+                  0x00455e                  ProcessNumberKey
+                  0x00459a                  EnterNumber
+                  0x004664                  UpdateDisplayRegs
+                  0x004908                  Factorial
+                  0x0049c8                  CompleteXreg
+                  0x0049de                  UpdateXregDisplay
+                  0x0049fe                  UpdateYregDisplay
+                  0x004a1e                  ResetFlags
+                  0x004a30                  StoreRecall
+                  0x004a90                  SignKey
+                  0x004b3a                  KeyRecord
+                  0x004b90                  KeyReplay
+                  0x004bdc                  HexEntry
+                  0x004c6e                  Conversions
+                  0x004dec                  RPNcalculator
+                  0x004f40                  ProcessXYoperator
+                  0x004f48                  ALGcalculator
+                  0x0051ac                  SetTimeBCD
+                  0x0051d8                  SetDateBCD
+                  0x005210                  SetDateBCDandUpdate
+                  0x00522e                  OneLineNumberEntry
+                  0x005266                  SetupMode
+                  0x00567a                  RTCCunlock
+                  0x00568c                  LCDon
+                  0x005696                  LCDoff
+                  0x0056a4                  IdleI2C1
+                  0x0056c4                  moonPhase
+                  0x0057fe                  inDST
+                  0x005868                  caldati
+                  0x00591a                  AdjustDateTime
+                  0x0059dc                  TimeDateDisplay
+                  0x005b52                  BacklightON
+                  0x005b60                  BacklightOFF
+                  0x005b68                  _T1Interrupt
+                  0x005bdc                  ProgramInit
+                  0x005cce                  main
+ .text            0x005d40        0x61c uWatch-astro.o
+                  0x0062fa                  CalcRiseAndSet
 
-.dinit            0x006328        0x1c0
- .dinit           0x006328        0x1c0 data_init
+.dinit            0x00635c        0x1c0
+ .dinit           0x00635c        0x1c0 data_init
 
-.isr              0x0064e8          0x2
- .isr             0x0064e8          0x2 default_isr
-                  0x0064e8                  _DefaultInterrupt
+.isr              0x00651c          0x2
+ .isr             0x00651c          0x2 default_isr
+                  0x00651c                  _DefaultInterrupt
