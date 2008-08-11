@@ -40,7 +40,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #include <ports.h>
 #include <string.h>
 
-#define RevString   "Rev 1.3.3"
+#define RevString   "Rev 1.3.5"
 
 //define all the I/O pins
 #define Row1        _RB10
