@@ -217,7 +217,7 @@ void SetupMode(void)
                     c2++;
                     if (c2>=100)    
                     {
-                        sprintf(s,"%5i of 65535",c);    
+                        sprintf(s,"%5u of 65535",c);    
                         UpdateLCDline2(s);
                         c2=0;
                     }
