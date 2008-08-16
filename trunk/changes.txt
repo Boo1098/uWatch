@@ -69,6 +69,7 @@ uWatch Revisions:
 
 1.3.5
 - eprom erase should use unsigned to display number.
+- moon phase correction.
 
 
 

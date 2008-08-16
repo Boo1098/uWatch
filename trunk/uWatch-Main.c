@@ -1176,7 +1176,7 @@ static const char days[8][4]={"   ","Sun","Mon","Tue", "Wed", "Thu", "Fri", "Sat
 static const char mphase[8] = "NCQWFwqc";
 
 
-int moonPhase(int year, int month, int day)
+int moonPhase(int year,int month,int day)
 {
     /*
       Calculates the moon phase (0-7), accurate to 1 segment.
@@ -1186,18 +1186,23 @@ int moonPhase(int year, int month, int day)
       NOTE: integer math.
     */
     
-    int d = 0,g,e;
-    if (month == 2) d = 31;
-    else if (month > 2)
+    int g, e;
+
+    if (month == 1) --day;
+    else if (month == 2) day += 30;
+    else // m >= 3
     {
-        d = 59+((month-3)*306 + 5)/10;
-        if (year%400 && !year%4) d++;
+        day += 28 + (month-2)*3059/100;
+
+        // adjust for leap years
+        if (!(year & 3)) ++day;
+        if ((year%100) == 0) --day;
     }
-    d--;
+    
     g = (year-1900)%19 + 1;
     e = (11*g + 18) % 30;
     if ((e == 25 && g > 11) || e == 24) e++;
-    return ((((d+ e + day)*6+11)%177)/22 & 7);
+    return ((((e + day)*6+11)%177)/22 & 7);
 }
 
 static BOOL beforeWhenTest(DstWhen w, TimeZone* tz, int* gap)
