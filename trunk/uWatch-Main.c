@@ -40,7 +40,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #include <ports.h>
 #include <string.h>
 
-#define RevString   "Rev 1.3.5"
+#define RevString   "Rev 1.3.6"
 
 //define all the I/O pins
 #define Row1        _RB10
@@ -221,6 +221,9 @@ int OperatorsXY[7], OperatorsYZ[7];
 
 double Yregs[6], Zregs[6];
 
+#define WATCH_MODE_TIME         0
+#define WATCH_MODE_CALC         1
+#define WATCH_MODE_SETUP        2
 
 char WatchMode;             //0=time mode, 1=calc mode, 2=setup mode
 
@@ -261,6 +264,8 @@ double Sreg[10];                //the storage registers. Contents retained when 
 #define CALC_OP_MINUS           32
 #define CALC_OP_MULT            33
 #define CALC_OP_DIVIDE          34
+#define CALC_OP_BASE			35
+
 
 int opPrec(int op)
 {
@@ -356,7 +361,7 @@ CalcMenuInfo MainMenus[] =
 
     { // menu 3 (no 2nd page yet!)
         {" Rec  Play Conv ",   
-         " //             ", 
+         " //   Base      ", 
          0, 0
         },
 
@@ -364,7 +369,7 @@ CalcMenuInfo MainMenus[] =
           CALC_OP_PLAY,
           CALC_OP_CONV,
           CALC_OP_PARALLEL,
-          CALC_OP_NULL,
+          CALC_OP_BASE,
           CALC_OP_NULL,
           CALC_OP_NULL,
           CALC_OP_NULL,
@@ -383,6 +388,8 @@ char LCDhistory2[MaxLCDdigits+1];   //holds a copy of the LCD data for when the 
 BOOL NextMode;          //TRUE if MODE button switches to next mode. FALSE returns to Time/Date mode.
 BOOL TwelveHour;        //TRUE if 12 hour mode
 BOOL RPNmode;           //TRUE if RPN mode, otherwise Algebraic
+
+char CalcDisplayBase;   //2-binary, 10-decimal, 16 decimal
 
 //programming mode variables
 BOOL ProgPlay;          //TRUE if keystroke playback mode is on
@@ -1604,7 +1611,7 @@ void __attribute__((__interrupt__)) _T1Interrupt( void )
     i2c_high_sda();
 
     //restore the previous display contents, except time mode
-    if (WatchMode!=0)
+    if (WatchMode!=WATCH_MODE_TIME)
     {
         UpdateLCD(LCDhistory1, 0);
         UpdateLCD(LCDhistory1, 0); // twice!
@@ -1728,8 +1735,9 @@ void ProgramInit(void)
     ProgPlay=FALSE;         //turn off keystroke playback
     ProgRec=FALSE;          //turn off keystroke record
     DegreesMode=FALSE;      //default is radians mode
-
-    // greenwich, UK
+	CalcDisplayBase=10;     //default is decimal
+    
+	// greenwich, UK
     Longitude = 0;
     Latitude = 51.5; 
 }
@@ -1774,7 +1782,7 @@ int main(void)
 
         do {
             TimeDateDisplay();
-            WatchMode=0;
+            WatchMode=WATCH_MODE_TIME;
             for(c=0;c<50;c++)
             {
                 Key=KeyScan();
@@ -1798,7 +1806,7 @@ int main(void)
                 
         } while (Key!=KeyMode); //loop until a key has been pressed
 
-        WatchMode=1;    
+        WatchMode=WATCH_MODE_CALC;    
         if (RPNmode)
         { 
             RPNcalculator();
@@ -1811,7 +1819,7 @@ int main(void)
         //user did something in the calc mode, so return to time/date
         if (NextMode==FALSE) continue; 
     
-        WatchMode=2;
+        WatchMode=WATCH_MODE_SETUP;
         SetupMode();
     }
 }

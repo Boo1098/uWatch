@@ -45,7 +45,7 @@ extern void KeyReplay(void);
 extern long mjd(int y, int m, int d);
 extern void caldati(long mjd,
                     unsigned int* y, unsigned int* m, unsigned int* d);
-
+extern void BaseMode(void);
 void Push(void)
 {
     Treg=Zreg;
@@ -253,6 +253,9 @@ void Operation(int op, int level)
         *rp=rp[1]/(*rp);		//perform DIVIDE operation
         Drop(level);
         break;
+	case CALC_OP_BASE:
+        BaseMode();
+        break;
     }
 }
 
@@ -267,23 +270,24 @@ void Operate(int op)
 
 void ProcessNumberKey(int digit)
 {
-    unsigned int l = strlen(DisplayXreg);
+  	unsigned int l = strlen(DisplayXreg);
+ 
+	//if this is the first digit pressed
+ 	if (ValueEntered==TRUE)
+    {
+    	//check to see if we don't have to overwrite the Xreg
+        if (EnableXregOverwrite==FALSE)
+        {
+        	PushStackUp(); //push the stck up for the first key entry, i.e. *don't* overwrite the Xreg
+            UpdateLCDline1(DisplayYreg);
+        }
+            
+        l = 0;
+        EnableXregOverwrite=FALSE;	//disable overwriting the Xreg for future key presses
+    }
+
     if (l<MaxLCDdigits)
     {
- 	//if this is the first digit pressed
-        if (ValueEntered==TRUE)
-        {
-            //check to see if we don't have to overwrite the Xreg
-            if (EnableXregOverwrite==FALSE)
-            {
-                PushStackUp(); //push the stck up for the first key entry, i.e. *don't* overwrite the Xreg
-                UpdateLCDline1(DisplayYreg);
-            }
-            
-            l = 0;
-            EnableXregOverwrite=FALSE;	//disable overwriting the Xreg for future key presses
-        }
-        
         DisplayXreg[l] = digit;
         DisplayXreg[l+1] = 0;  // ensure termination
 
@@ -300,6 +304,13 @@ int EnterNumber(int Key)
     int c = ReturnNumber(Key);
     if (c >= 0)
     {
+        // ignore anything but 0 & 1 in binary mode
+		if (CalcDisplayBase == 2)
+		{
+			if (c > 1)
+              return 0;
+		}
+
         // key is 0 to 9
         ProcessNumberKey('0' + c);
         Key = 0; 
@@ -329,16 +340,24 @@ int EnterNumber(int Key)
         break;
     case KeyEXP: 
         Key = 0;
-        if (!ExponentIncluded)	//can't add exponent twice
-        {
-            ExponentIncluded=TRUE;
-            
-            // EXP is first key pressed, so add a 1 to the front
-            if (ValueEntered==TRUE) strcpy(DisplayXreg,"1e");
-            else strcat(DisplayXreg,"e");		
-            ValueEntered=FALSE;	
-            UpdateLCDline2(DisplayXreg);		//update the display
-        }
+
+		if ( CalcDisplayBase == 16 )
+		{
+			HexEntry();
+		}
+		else
+		{
+	        if (!ExponentIncluded)	//can't add exponent twice
+	        {
+	            ExponentIncluded=TRUE;
+	            
+	            // EXP is first key pressed, so add a 1 to the front
+	            if (ValueEntered==TRUE) strcpy(DisplayXreg,"1e");
+	            else strcat(DisplayXreg,"e");		
+	            ValueEntered=FALSE;	
+	            UpdateLCDline2(DisplayXreg);		//update the display
+	        }
+		}
         break;
     case KeySign: 
         //changes the sign of the mantissa or exponent
@@ -360,6 +379,129 @@ int EnterNumber(int Key)
     return Key;
 }
 
+
+void FormatValue( char* destination, double value, int precision )
+{
+    strcpy(destination,"                ");		//blank the string first
+
+	char base = (WatchMode == WATCH_MODE_CALC) ? CalcDisplayBase : 10;
+
+	int index=0;
+    int p=0;
+	unsigned int uval=0;
+	unsigned long long ulVal=0;
+	switch ( base )
+	{
+		case 2:
+		{	
+			char tmp[17];
+			memset( tmp, 0, 17 );
+
+			if ( (value > 32767) || (value < -32768) ) 
+			{
+				strcpy( destination, "  * OVERFLOW *" );
+			}
+			else
+			{
+				if ( value < 0 )
+				{
+					uval  = (unsigned int)(-1 * value);
+					uval  = ~uval + 1;
+				}
+				else 
+	 				uval = value;
+
+				if ( uval == 0 )
+				{
+					sprintf( destination, "%ib", 0 );
+				}
+				else 
+				{
+					p = 15;
+		
+	
+					for ( index=0; (index < 16) && uval; index++ )
+					{
+						if ( uval & 1  )
+							tmp[p--] = '1';
+						else
+							tmp[p--] = '0';
+	
+						uval = (uval >> 1);				
+					}
+					
+					strcpy( destination, tmp+(p+1) );
+	
+					if ( index < 15 )
+					{
+						destination[index] = 'b';
+						destination[index+1] = 0;
+					}
+				}
+			}
+		}
+		break;
+
+		case 10:
+			    sprintf(destination,"%.10g", value);
+			break;
+		case 16:
+		{
+			double max = pow( 2, 64 );
+			if ( fabs(value) > max )
+			{
+				strcpy( destination, "  * OVERFLOW *" );
+			}
+			else 
+			{
+				if ( value < 0 )
+				{
+					ulVal  = (unsigned long long)(-1 * value);
+					ulVal  = ~ulVal + 1;
+				}
+				else 
+	 				ulVal = value;
+	
+	
+				if ( ulVal )
+				{			
+					char tmp[17];
+					memset( tmp, 0, 17 );
+					p=15;
+					for( index=0; (index < 16) && ulVal; index++ )
+					{
+						int d = ulVal % 16;
+				
+						char c=0;
+				
+						if ( d < 10 )
+							c = '0' + d;
+						else
+							c = 'A' + (d-10);
+						
+						tmp[p--] = c;
+				
+						ulVal = ulVal >> 4;
+					}
+		
+					strcpy( destination, tmp+(p+1) );
+
+					if ( index < 15 )
+					{
+						destination[index] = 'h';
+						destination[index+1] = 0;
+					}
+				}
+				else
+				{
+					strcpy( destination, "0h" );
+				}
+			}
+
+		}
+		break;
+	}
+} 
 //***********************************
 //Converts both X&Y regs from real numbers into display strings and then displays them
 //Also displays the current algebraic operator
@@ -489,6 +631,71 @@ double Factorial(double num)
     }
 }
 
+int xtio( char c )
+{
+	if ( (c >= '0') && (c <= '9') )
+	{
+		char digit[2];
+		digit[1] = 0;
+		digit[0] = c;
+
+		return atoi( digit );
+	}
+	else
+	{
+		if ( (c >= 'A') && (c <= 'F') )
+		{
+			return ( c - 'A') + 10;
+		}
+	}
+	return 0;
+}
+
+
+double ConvertDisplay( char* DisplayString )
+{
+	double result = 0.0;
+	char base = (WatchMode == WATCH_MODE_CALC) ? CalcDisplayBase : 10;
+	int i=0;
+	double h=0.0;
+	int length=strlen(DisplayString);
+	switch ( base )
+	{
+		case 2:
+           
+			for( ; i < length; i++ )
+			{
+				if ( DisplayString[(length-1)-i] == '1' )
+				{
+					h += (int)pow(2, i);
+				}	
+			}
+			result = h;	
+			break;
+		case 10:
+			result = atof( DisplayString );	
+			break;
+		case 16:
+		{
+			int len = strlen( DisplayString );
+		
+			double val=0;
+			int i;
+			for( i=0; i < len; i++ )
+			{
+				int d = xtio( DisplayString[(len-1)-i] );
+				
+				double power = pow( 16, i); 
+				val += (power * d);
+			}
+
+			result = val;
+		}
+		break;
+	}
+	return result;
+}
+
 //***********************************
 // Checks to see if the Xreg has been ENTERed onto the stack
 // If not then it it adds the value to the stack
@@ -498,7 +705,7 @@ void CompleteXreg(void)
     //if ENTER has not been pressed then do it for them
     if (ValueEntered==FALSE)
     {
-        Xreg=atof(DisplayXreg); //convert display string to number
+		Xreg=ConvertDisplay(DisplayXreg);
         ResetFlags();
     }
 }
@@ -507,16 +714,14 @@ void CompleteXreg(void)
 // Converts the Xreg double value into a string for the DisplayXreg
 void UpdateXregDisplay(void)
 {
-    strcpy(DisplayXreg,"                ");		//blank the string first
-    sprintf(DisplayXreg,"%.10g",Xreg);
-    }
+	FormatValue( DisplayXreg, Xreg, 10 );
+}
 
 //***********************************
 // Converts the Yreg double value into a string for the DisplayYreg
 void UpdateYregDisplay(void)
 {
-    strcpy(DisplayYreg,"                ");		//blank the string first
-    sprintf(DisplayYreg,"%.9g",Yreg);
+	FormatValue( DisplayYreg, Yreg, 9 );
 }
 
 
@@ -724,17 +929,7 @@ void HexEntry(void)
 		
     if (strlen(DisplayXreg)<MaxLCDdigits)
     {
-        if (ValueEntered==TRUE) 	//if this is the first digit pressed
-        {
-            if (EnableXregOverwrite==FALSE)	//check to see if we don't have to overwrite the Xreg
-                DisplayXreg[0] = 0;
-            EnableXregOverwrite=FALSE;	//disable overwriting the Xreg for future key presses
-        }
-        digit[1] = 0;
-        strcat(DisplayXreg,digit);
-
-        ValueEntered=FALSE;
-        //MenuMode=FALSE;					//flag that a number has been entered
+		ProcessNumberKey( digit[0] );
         UpdateLCDline1(DisplayYreg);
         UpdateLCDline2(DisplayXreg);
     }
@@ -860,4 +1055,25 @@ void Conversions(void)
     }
 } 
 
-
+void BaseMode(void)
+{
+    int KeyPress2;
+    UpdateLCDline1(" Bin  Dec  Hex  ");
+    UpdateLCDline2("                ");
+    do KeyPress2=KeyScan(); while(KeyPress2==0);
+    switch(KeyPress2)
+    {
+    case Key7: {CalcDisplayBase = 2; break;}
+    case Key8: {CalcDisplayBase =10; break;}
+    case Key9: {CalcDisplayBase =16; break;}
+    default:
+        {
+            UpdateLCDline1(DisplayYreg);
+            UpdateLCDline2(DisplayXreg);
+            return;			
+        }
+    }
+		
+	CompleteXreg();
+	return;
+}
