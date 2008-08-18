@@ -71,7 +71,11 @@ uWatch Revisions:
 - eprom erase should use unsigned to display number.
 - moon phase correction.
 
-
-
-
+1.3.6 (merged with Rob F's code)
+- Branch for base display modes ( binary, decimal, hex )
+- Added a "Base" menu option to select base display mode
+- displays up to 16 bit binary numbers
+- displays up to 64 bit hex numbers
+- non decimal modes are truncated for display; internal representation is untouched.
+- EXP key in hex mode shows hex key menu
 
