@@ -33,7 +33,7 @@ This program is free software: you can redistribute it and/or modify
 
 void ProcessXYoperator(void)
 {
-    Operation(OperatorXY, 0);
+    Operation(OperatorXY);
 }
 
 //***********************************
@@ -47,10 +47,7 @@ void ALGcalculator(void)
     DisplayXreg[0] = 0;
     DisplayYreg[0] = 0;
     DecimalIncluded=FALSE;
-    MinusIncluded=FALSE;    
-    MinusIncludedInExponent=FALSE;
     ExponentIncluded=FALSE;
-    //InverseKey=FALSE;
     HYPkey=FALSE;
     CurrentMenu=0;
     ValueEntered=TRUE;
