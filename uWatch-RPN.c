@@ -37,17 +37,13 @@ This program is free software: you can redistribute it and/or modify
 void RPNcalculator(void)
 {
     unsigned int Key; //keypress variables
-    double TEMPreg; //temp register for calculations
+    double TEMPreg, iTEMPreg; //temp register for calculations
     int c;
 
     DisplayXreg[0] = 0;
     DisplayYreg[0] = 0;
-    DecimalIncluded=FALSE;
-    MinusIncluded=FALSE;	
-    MinusIncludedInExponent=FALSE;
-    ExponentIncluded=FALSE;
+    ResetFlags();
     CurrentMenu=0;
-    ValueEntered=TRUE;
     UpdateXregDisplay();
     UpdateYregDisplay();
     UpdateLCDline1(DisplayYreg);
@@ -60,8 +56,8 @@ void RPNcalculator(void)
         while (!(Key = KeyScan())) ;
 		
         ResetSleepTimer();		
-        //start to process the keypress
 
+        //start to process the keypress
         // mode key was pressed, exit calc mode
         if (Key==KeyMode)
         {
@@ -71,7 +67,6 @@ void RPNcalculator(void)
 
         //user pressed some key other than MODE, so ensure that when exit we go back to the time/date display
         NextMode=FALSE;		
-        ResetSleepTimer();
 
         // common menu mode or not
         while (Key == KeyMenu)
@@ -112,7 +107,9 @@ void RPNcalculator(void)
                 CompleteXreg();
                 PushStackUp();
                 ResetFlags();
-                EnableXregOverwrite=TRUE;	//overwite the flag and force the Xreg to be overwritten on the next entry
+
+                //overwite the flag and force the Xreg to be overwritten on the next entry
+                EnableXregOverwrite=TRUE;	
                 UpdateDisplayRegs();
             }
             break;
@@ -129,29 +126,30 @@ void RPNcalculator(void)
             Operate(CALC_OP_DIVIDE);
             break;
         case KeyClear: //user has pressed the CLEAR key
-            Xreg=Yreg; //drop X reg from the stack
-            DropStack();
-            Treg=0;
+            PopStack();
             UpdateDisplayRegs();
             ResetFlags();
+            EnableXregOverwrite=TRUE;
             break;
         case KeyXY: 
             {
                 CompleteXreg();		//enter value on stack if needed
-                TEMPreg=Xreg;			
-                Xreg=Yreg;			//swap and X and Y regs
-                Yreg=TEMPreg;
+
+		//swap and X and Y regs
+                TEMPreg=Xreg; iTEMPreg = iXreg;			
+                Xreg=Yreg; iXreg = iYreg;
+                Yreg=TEMPreg; iYreg = iTEMPreg;
+
                 UpdateDisplayRegs();	//update display again
             }
             break;
         case KeyLP:  // ROLL
             {
                 CompleteXreg();		//enter value on stack if needed
-                TEMPreg=Xreg;			
-                Xreg=Yreg;			// roll the stack DOWN
-                Yreg=Zreg;
-                Zreg=Treg;
-                Treg=TEMPreg;
+                TEMPreg=Xreg; iTEMPreg = iXreg;
+                PopStack();
+                Treg=TEMPreg; iTreg = iTEMPreg;
+
                 UpdateDisplayRegs();	//update display again
             }
             break;

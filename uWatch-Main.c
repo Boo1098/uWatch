@@ -40,7 +40,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #include <ports.h>
 #include <string.h>
 
-#define RevString   "Rev 1.3.6"
+#define RevString   "Rev 1.3.7"
 
 //define all the I/O pins
 #define Row1        _RB10
@@ -98,6 +98,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 
 #define KeyDelay        150     //250ms key delay
 #define MaxLCDdigits    16
+#define XBufSize        32
 
 #define OR0  1          //OR function bit masks
 #define OR1  2
@@ -194,24 +195,27 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 int  CurrentMenu;               // The number of the currently active menu line. 0 to MaxRPNmenuItems
 char ExponentIncluded;          //FLAG, TRUE if Exponent has already been entered
 char DecimalIncluded;           //FLAG, TRUE if decimal point has already been entered
-char MinusIncluded;             //FLAG, TRUE if minus sign already included
-char MinusIncludedInExponent;   //FLAG, TRUE if minus sign already included in exponent
+char ComplexIncluded;           // entering +i
 //char InverseKey;                //FLAG, TRUE if the inverse key has been pressed
 char HYPkey;                    //FLAG, TRUE if the HYP key has been pressed
 char DegreesMode;               //FLAG, TRUE if degres mode is on, otherwise radians
-char DisplayXreg[MaxLCDdigits+1];   //holds the value currently being entered by the user, or the Xreg
-char DisplayYreg[MaxLCDdigits+1];   //holds the value currently in Yreg
+char DisplayXreg[XBufSize+1];   //holds the value currently being entered by the user, or the Xreg
+char DisplayYreg[XBufSize+1];   //holds the value currently in Yreg
 char ValueEntered;              //FLAG, TRUE if value has been entered by using the ENTER key
 //char MenuMode;                  //FLAG, TRUE is the menu if switched on.
 int  EnableXregOverwrite;       //FLAG, TRUE if the Xreg will be automatically overwritten on first key press (the ENTER key enables this for example)
 
 
 //the working registers (Treg not used for Algebraic)
-double Regs[4];
+double Regs[4], iRegs[4];
 #define Xreg Regs[0]
 #define Yreg Regs[1]
 #define Zreg Regs[2]
 #define Treg Regs[3]
+#define iXreg iRegs[0]
+#define iYreg iRegs[1]
+#define iZreg iRegs[2]
+#define iTreg iRegs[3]
 
 //algebraic operators
 int OperatorsXY[7], OperatorsYZ[7];
@@ -227,7 +231,8 @@ double Yregs[6], Zregs[6];
 
 char WatchMode;             //0=time mode, 1=calc mode, 2=setup mode
 
-double Sreg[10];                //the storage registers. Contents retained when calc mode is exited.
+//the storage registers. Contents retained when calc mode is exited.
+double Sreg[10], iSreg[10];
 
 #define CALC_OP_NULL            0
 #define CALC_OP_RECIPROCAL      1
@@ -545,9 +550,12 @@ void UpdateLCD(const char* s, int line)
     if (line) c = 40;
     lcd_goto(c);
 
-    lcd_puts(s);
-    for (c=strlen(s);c<MaxLCDdigits;c++)
+    c = lcd_puts(s, MaxLCDdigits);
+    while (c < MaxLCDdigits)
+    {
         lcd_write(' ');     //blank the rest of the line
+        ++c;
+    }
 
     // sleep time ok from now on.
     StartSleepTimer();
@@ -574,6 +582,8 @@ void UpdateLCDline2(const char* s)
 void ClearAllRegs(void)
 {
     memset(Regs, 0, 4*sizeof(Regs[0]));
+    memset(iRegs, 0, 4*sizeof(iRegs[0]));
+
     memset(Yregs, 0, 6*sizeof(Yregs[0]));
     memset(Zregs, 0, 6*sizeof(Zregs[0]));
     memset(OperatorsXY, 0, 7*sizeof(OperatorsXY[0]));
@@ -1442,7 +1452,7 @@ void TimeDateDisplay(void)
     // if time not changed, we're done
     if (tt.l == Time.l)
     {
-        // might reduce LCD flicker.
+        // no need to update
         return;
     }
 
@@ -1471,12 +1481,14 @@ void TimeDateDisplay(void)
             dayHasChanged(); // possible that the day changes
     }
 
-    pm = Time.f.hour>0x12;
-
     temp=BCDtoDEC(Time.f.hour);
 
     if (TwelveHour)
-        if (temp > 12) temp -= 12;
+    {
+        pm = (temp >= 12);
+        if (temp > 12) 
+            temp -= 12;
+    }
 
     // blank string then overwrite
     memset(s, ' ', MaxLCDdigits);

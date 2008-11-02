@@ -56,11 +56,17 @@ void lcd_clear(void)
 }
 
 // write a string to the LCD
-void lcd_puts(const char * s)
- {
-	SetLCD_RS;			// write characters
-	while(*s)
-		lcd_write(*s++);
+int lcd_puts(const char * s, int lmax)
+{
+    SetLCD_RS; // write characters
+
+    int i = 0;
+    while(s[i])
+    {
+        if (i == lmax) break;
+        lcd_write(s[i++]);
+    }
+    return i;
 }
 
 // move cursor to a specified position
