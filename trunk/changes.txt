@@ -98,6 +98,8 @@ uWatch Revisions:
 - entry of complex number using repeated '.' ie a second '.' is re-interpreted
   as the start of the imaginary part, unless an exponent exists, in which case
   a single '.' starts the i part.
+- added REAL, IMAG, CONJ to third menu 2nd page.
+
 
 
 

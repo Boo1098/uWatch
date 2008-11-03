@@ -271,6 +271,9 @@ double Sreg[10], iSreg[10];
 #define CALC_OP_DIVIDE          34
 #define CALC_OP_BASE		35
 #define CALC_OP_ABS             36
+#define CALC_OP_REAL_PART       37
+#define CALC_OP_IMAG_PART       38
+#define CALC_OP_CONJUGATE       39
 
 
 int opPrec(int op)
@@ -306,10 +309,10 @@ CalcMenuInfo MainMenus[] =
 {
 
     { // menu 0
-        {" 1/x  x^2   Sqrt ",   
-         " 2nd  y^x   Exp  ", 
-         " Abs  Log10 10^x ", 
-         " 2nd  y^1/x Ln   "
+        {" 1/x  x^2   Sqrt",   
+         " 2nd  y^x   Exp ", 
+         " Abs  Log10 10^x", 
+         " 2nd  y^1/x Ln  "
         },
 
         { CALC_OP_RECIPROCAL, 
@@ -365,20 +368,22 @@ CalcMenuInfo MainMenus[] =
         }
     },
 
-    { // menu 3 (no 2nd page yet!)
+    { // menu 3
         {" Rec  Play Conv ",   
-         " //   Base      ", 
-         0, 0
+         " 2nd  Base //   ", 
+         " Real Imag Conj ", 
+         " 2nd            ", 
         },
 
         { CALC_OP_RECORD,
           CALC_OP_PLAY,
           CALC_OP_CONV,
-          CALC_OP_PARALLEL,
           CALC_OP_BASE,
-          CALC_OP_NULL,
-          CALC_OP_NULL,
-          CALC_OP_NULL,
+          CALC_OP_PARALLEL,
+
+          CALC_OP_REAL_PART,
+          CALC_OP_IMAG_PART,
+          CALC_OP_CONJUGATE,
           CALC_OP_NULL,
           CALC_OP_NULL,
         }

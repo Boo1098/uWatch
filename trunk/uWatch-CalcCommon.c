@@ -30,6 +30,7 @@ This program is free software: you can redistribute it and/or modify
 
 #include <ctype.h>
 #include "uWatch-astro.h"
+#include "uWatch-dp.h"
 
 extern void Conversions(void);
 extern void HexEntry(void);
@@ -366,10 +367,26 @@ void Operation(int op)
         break;
     case CALC_OP_MULT:        //perform MULTIPLY operation
         {
+#if 0
+            double drp[2], dirp[2];
+            double t[2], u[2];
+
+            drp[0] = 0; drp[1] = *rp;
+            dirp[0] = 0; dirp[1] = *irp;
+
+            MulDpSp(drp, rp[1], t);     // t = rp * rp1
+            MulDpSp(dirp, irp[1], u);   // u = irp * irp1
+            SubDpDp(t, u, t);           // t = t - u;
+
+            *irp = (*rp)*irp[1] + (*irp)*rp[1];
+            *rp = t[1]; 
+
+#else
             // XX single precision version only
             double x = (*rp)*rp[1] - (*irp)*irp[1];
             *irp = (*rp)*irp[1] + (*irp)*rp[1];
             *rp = x;
+#endif
         }
         Drop();
         break;
@@ -422,6 +439,16 @@ void Operation(int op)
             *rp = fabsC(rp, irp);
             *irp = 0;
         }
+        break;
+    case CALC_OP_REAL_PART:
+        *irp = 0;
+        break;
+    case CALC_OP_IMAG_PART:
+        *rp = *irp;
+        *irp = 0;
+        break;
+    case CALC_OP_CONJUGATE:
+        *irp = -*irp;
         break;
     }
 }
