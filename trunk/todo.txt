@@ -43,15 +43,7 @@
 * epsilon fix for IEEE754, eg 2+.2+.2+.2+.2+.2-3 != 0
 * nPr and nCr to not use Factorial directly!
 * AM/PM wrong at noon! [FIXED?]
-* the +/- key does not properly negate a negative result from a previous calculation
-* recalling values from storage registers overwrites the x register.
-
-[FIXED?]
-* stack lift is disabled after the following sequence: key in a value, press
-  enter, then press any arithmetic operator, which operates properly on the
-  two values.  Now begin keying in a new value.  Stack lift is disabled, the
-  result of the previous calcualtion will be over-written.
-
+* autoscroll number entry too long for display.
 
 
 

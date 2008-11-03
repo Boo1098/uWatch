@@ -89,10 +89,12 @@ uWatch Revisions:
 - fixed after OP then clear +/- shows -0
 - fixed: recalling values from storage registers overwrites the x register.
 - removed delays from STO/RCL to avoid slowing down macro programs.
+- added ABS function to menu.
 
 -- Experimental complex number support
 - base 4 ops
-- complex; X<>Y, ROLL, STO, RCL, 1/x, x^2, PI
+- complex; X<>Y, ROLL, STO, RCL, 1/x, x^2, PI, ABS, SQRT
+- complex: LOG, EXP
 - entry of complex number using repeated '.' ie a second '.' is re-interpreted
   as the start of the imaginary part, unless an exponent exists, in which case
   a single '.' starts the i part.

@@ -1,0 +1,29 @@
+
+*** Here are the user instructions and technical info for complex number
+    support in the uWatch.
+
+There is no complex mode! the uwatch can perform complex number operations
+when present and does not need to be set into a special mode for this. The
+calculator's internal functions test for the presence of an ipart in order to
+perform the best calculation. importantly, then there is no ipart, the
+calculation is xsimpler, fast and in some cases more stable numerically. So
+there is no loss of efficiency and precision by not having a mode.
+
+However, the lack of a dedicated mode means that some real number calculations
+can result in a complex answer. for example sqrt(-2) and acos(1.2).
+
+** Entry Method:
+
+Enter numbers in the usual way, and initiate the entry of an ipart by pressing
+"." either once or twice. When a decimal dot or exponent is already present,
+pressing "." will initate the ipart entry. the screen will change to, for
+example, "1.2+i" waiting for the ipart entry.
+
+If there is no decimal place already, two "."s are required, for example, to
+enter 1+i, enter "1..", you can leave it as +i or enter 1 if you like, both
+are acceptable.
+
+
+
+
+
