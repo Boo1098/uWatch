@@ -269,7 +269,8 @@ double Sreg[10], iSreg[10];
 #define CALC_OP_MINUS           32
 #define CALC_OP_MULT            33
 #define CALC_OP_DIVIDE          34
-#define CALC_OP_BASE			35
+#define CALC_OP_BASE		35
+#define CALC_OP_ABS             36
 
 
 int opPrec(int op)
@@ -307,7 +308,7 @@ CalcMenuInfo MainMenus[] =
     { // menu 0
         {" 1/x  x^2   Sqrt ",   
          " 2nd  y^x   Exp  ", 
-         " 1/x  Log10 10^x ", 
+         " Abs  Log10 10^x ", 
          " 2nd  y^1/x Ln   "
         },
 
@@ -316,7 +317,7 @@ CalcMenuInfo MainMenus[] =
           CALC_OP_SQRT,
           CALC_OP_NPOW,
           CALC_OP_EXP,
-          CALC_OP_RECIPROCAL, 
+          CALC_OP_ABS,
           CALC_OP_LN10,
           CALC_OP_10X,
           CALC_OP_NROOT,
@@ -383,9 +384,6 @@ CalcMenuInfo MainMenus[] =
         }
     },
 };
-
-char LCDline1[MaxLCDdigits+1];  //holds data for the first LCD display line
-char LCDline2[MaxLCDdigits+1];  //holds data for the second LCD display line
 
 char LCDhistory1[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
 char LCDhistory2[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
@@ -541,6 +539,11 @@ void Clock32KHz(void)
 void UpdateLCD(const char* s, int line)
 {
     int c;
+    char* p = s;
+
+    int l = strlen(s);
+    if (l > MaxLCDdigits)
+        p = s + l - MaxLCDdigits;
 
     // prevent the sleep timer going off when we write to the
     // screen, so that the interrupt doesnt happen.
@@ -550,7 +553,7 @@ void UpdateLCD(const char* s, int line)
     if (line) c = 40;
     lcd_goto(c);
 
-    c = lcd_puts(s, MaxLCDdigits);
+    c = lcd_puts(p, MaxLCDdigits);
     while (c < MaxLCDdigits)
     {
         lcd_write(' ');     //blank the rest of the line
@@ -566,7 +569,8 @@ void UpdateLCD(const char* s, int line)
 // on top line of the LCD display
 void UpdateLCDline1(const char* s)
 {
-    strcpy(LCDhistory1,s);      //make a backup copy of the display
+    //make a backup copy of the display
+    strncpy(LCDhistory1,s, MaxLCDdigits);
     UpdateLCD(s, 0);
 }
 
@@ -575,7 +579,8 @@ void UpdateLCDline1(const char* s)
 // on bottom line of the LCD display
 void UpdateLCDline2(const char* s)
 {
-    strcpy(LCDhistory2,s);      //make a backup copy of the display
+    //make a backup copy of the display
+    strncpy(LCDhistory2,s, MaxLCDdigits);
     UpdateLCD(s, 1);
 }
 
@@ -963,7 +968,7 @@ int DriveMenu(const char* title, const char** Menu, int n)
 
         while ((key = KeyScan()) == 0) ;
 
-        ResetSleepTimer();		
+        ResetSleepTimer();
         //start to process the keypress
 
         // clear key was pressed, exit  mode
@@ -1747,9 +1752,9 @@ void ProgramInit(void)
     ProgPlay=FALSE;         //turn off keystroke playback
     ProgRec=FALSE;          //turn off keystroke record
     DegreesMode=FALSE;      //default is radians mode
-	CalcDisplayBase=10;     //default is decimal
+    CalcDisplayBase=10;     //default is decimal
     
-	// greenwich, UK
+    // greenwich, UK
     Longitude = 0;
     Latitude = 51.5; 
 }

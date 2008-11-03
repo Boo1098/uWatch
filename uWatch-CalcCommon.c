@@ -114,6 +114,31 @@ void Drop()
     OperatorYZ = 0;
 }
 
+// complex fabs
+static double fabsC(double* a, double* b)
+{
+    // use numerically stable method, Numerical Recipies 3rd p226
+    double fa, fb;
+
+    fa = fabs(*a);
+    fb = fabs(*b);
+
+    if (!*a) return fb;
+    if (!*b) return fa;
+
+    if (fa >= fb)
+        return fa*sqrt((*b)/(*a)+1.0);
+    else
+        return fb*sqrt((*a)/(*b)+1.0);
+}
+
+static void sinandcos(double v, double* sa, double* ca)
+{
+    // need to find a more efficient way to calculate both sin and cos
+    *sa = sin(v);
+    *ca = cos(v);
+}
+
 // Raw operation
 void Operation(int op)
 {
@@ -122,15 +147,20 @@ void Operation(int op)
     switch(op)
     {
     case CALC_OP_RECIPROCAL:
+        if (!*irp)
+            *rp = 1.0/(*rp);
+        else
         {
-            // 1 / (c + i d) = 
-            // c / (c*c + d*d) - i d / (c*c + d*d)
+            // 1 / (c + i d) = c / (c*c + d*d) - i d / (c*c + d*d)
             double d = (*rp)*(*rp) + (*irp)*(*irp);
             *rp = (*rp)/d;
             *irp = -(*irp)/d;
         }
         break;
     case CALC_OP_SQUARE:
+        if (!*irp)
+            *rp *= (*rp);
+        else
         {
             double x = (*rp)*(*rp) - (*irp)*(*irp);
             *irp = 2*(*rp)*(*irp);
@@ -139,23 +169,77 @@ void Operation(int op)
         break;
     case CALC_OP_SQRT:
         {
-            // TODO: proper complex root
             if (!*irp)
             {
                 if (*rp < 0)
                 {
+                    double x = sqrt(-*rp);
                     *rp = 0;
-                    *irp = sqrt(-*rp);
+                    *irp = x;
                 }
                 else *rp=sqrt(*rp);
+            }
+            else 
+            {
+                // see Numerical Recipes, 3rd, p226
+                double fc = fabs(*rp);
+                double fd = fabs(*irp);
+                double w;
+                if (fc >= fd)
+                {
+                    double t = (*irp)/(*rp);
+                    w = sqrt(fc)*sqrt((sqrt(1.0 + t*t) + 1.0)/2.0);
+                }
+                else
+                {
+                    double t = (*rp)/(*irp);
+                    w = sqrt(fd)*sqrt((fabs(t) + sqrt(1.0 + t*t))/2.0);
+                }
+
+                if (!w)
+                {
+                    *rp = 0;
+                    *irp = 0;
+                }
+                else if (*rp >= 0)
+                {
+                    *rp = w;
+                    *irp = (*irp)/(2*w);
+                }
+                else 
+                {
+                    *rp = fd/(2*w);
+                    if (*irp >= 0)
+                        *irp = w;
+                    else
+                        *irp = -w;
+                }
             }
         }
         break;
     case CALC_OP_LN:
-        *rp=log(*rp);           
+        if (*rp >= 0 && !*irp)
+        {
+            *rp=log(*rp);           
+        }
+        else
+        {
+            double r = fabsC(rp, irp);
+            *irp = atan2(*irp, *rp);
+            *rp = log(r);
+        }
         break;
     case CALC_OP_EXP:
-        *rp=exp(*rp);
+        if (!*irp)
+            *rp=exp(*rp);
+        else
+        {
+            double t = exp(*rp);
+            double sb, cb;
+            sinandcos(*irp, &sb, &cb);
+            *rp = t*cb;
+            *irp = t*sb;
+        }
         break;
     case CALC_OP_NPOW:
         *rp=pow(rp[1],*rp);         
@@ -280,8 +364,7 @@ void Operation(int op)
         *irp= irp[1] - *irp;
         Drop();
         break;
-    case CALC_OP_MULT:
-        //perform MULTIPLY operation
+    case CALC_OP_MULT:        //perform MULTIPLY operation
         {
             // XX single precision version only
             double x = (*rp)*rp[1] - (*irp)*irp[1];
@@ -290,22 +373,55 @@ void Operation(int op)
         }
         Drop();
         break;
-    case CALC_OP_DIVIDE:
-        //perform DIVIDE operation
+    case CALC_OP_DIVIDE:        //perform DIVIDE operation
+
+        if (!*irp)
+        {
+            double x = rp[1]/(*rp);
+            *irp = irp[1]/(*rp);
+            *rp = x;
+        }
+        else if (!*rp)
+        {
+            double x = irp[1]/(*irp);
+            *irp = -rp[1]/(*irp);
+            *rp = x;
+        }
+        else
         {
             // (a + i b) / (c + i d) = 
             // (a*c + b*d) / (c*c + d*d) + i (b*c – a*d) / (c*c + d*d)
 
-            // XX single precision version only
-            double d = (*rp)*(*rp) + (*irp)*(*irp);
-            double x = ((*rp)*rp[1] + (*irp)*irp[1])/d; 
-            *irp = (irp[1]*(*rp) - rp[1]*(*irp))/d;
-            *rp = x;
+            // see Numerical recipes, 3rd p226
+            double t, s;
+            if (fabs(*rp) >= fabs(*irp))
+            {
+                t = (*irp)/(*rp);                       // d/c
+                s = (*rp + (*irp)*t);                   // c + d(*d/c)
+                *rp = (rp[1]+irp[1]*t)/s;               // (a + b*t)/s
+                *irp = (irp[1]-rp[1]*t)/s;              // (b-a*t)/s
+            }
+            else
+            {
+                t = (*rp)/(*irp);                       // c/d
+                s = (*rp)*t+(*irp);                     // c*t+d
+                *rp = (rp[1]*t + irp[1])/s;             // (a*t + b)/s
+                *irp = (irp[1]*t - rp[1])/s;            // (b*t - a)/s
+            }
         }
         Drop();
         break;
     case CALC_OP_BASE:
         BaseMode();
+        break;
+    case CALC_OP_ABS:
+        if (!*irp)
+            *rp = fabs(*irp);
+        else
+        {
+            *rp = fabsC(rp, irp);
+            *irp = 0;
+        }
         break;
     }
 }
@@ -488,6 +604,30 @@ int EnterNumber(int Key)
     return Key;
 }
 
+// tidy as many unnecessary chars as possible from a sci number
+static void tidyNumber(char* p)
+{
+    p = strchr(p, 'e'); // exponent?
+    if (p)
+    {
+        char* q;
+        char* p0;
+        ++p;
+        p0 = p;
+        if (*p == '+')
+        {
+            q = p++;
+            while ((*q++ = *p++) != 0);
+        }
+        if (*p0 == '-') ++p0; // '-' allowed
+
+        if (*p0 == '0') // leading zero in exponent
+        {
+            q = p0++;
+            while ((*q++ = *p0++) != 0);
+        }
+    }
+}
 
 void FormatValue(char* dest,
                  double value, double ivalue,
@@ -570,6 +710,10 @@ void FormatValue(char* dest,
 
                     // textify the real part
                     sprintf(dest,"%.6g", value);
+
+                    // tidy to save precious chars
+                    tidyNumber(dest);
+                    
                     l = strlen(dest);                        
                     dest[l++] = c;
                     dest[l++] = 'i';
@@ -581,6 +725,8 @@ void FormatValue(char* dest,
                         do
                         {
                             sprintf(dest + l,"%.*g", id--, ivalue);
+                            tidyNumber(dest+l);
+                            if (!id) break; // fail safe!
                         } while (strlen(dest) > MaxLCDdigits);
                     }
                 }
@@ -957,7 +1103,7 @@ void SignKey(void)
     q = strchr(DisplayXreg, 'i');
     
     //do this if there is an exponent already
-    if (p && q < p)
+    if (!ValueEntered && (p && q < p))
     {
         ++p; // to sign
 
@@ -981,7 +1127,7 @@ void SignKey(void)
     else 
     {
         // complex?
-        if (q)
+        if (!ValueEntered && q)
         {
             --q; // to sign
             if (*q == '+') *q = '-';
