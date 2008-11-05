@@ -49,6 +49,8 @@ digits (NOTE: you cannot currently scroll back before entry).
 * memory ops: RCL, STO
 * 1/X, X^2, SQRT, ABS (modulus)
 * LN, EXP
+* SIN, COS, TAN
+* ASIN, ACOS, ATAN
 * complex specific;
 
   R,i = split complex into X, Y registers
@@ -60,8 +62,6 @@ digits (NOTE: you cannot currently scroll back before entry).
 
 * Y^X, Y^(1/X)
 * LN10, 10^X
-* SIN, COS, TAN
-* ASIN, ACOS, ATAN
 
 ** Functions not operating on complex numbers
 
@@ -76,6 +76,17 @@ Trig functions of complex numbers only makes sense in radians, but since there
 is no complex mode, the angular mode cannot be ignored. consequently, a trig
 function in DEG mode will apply to a complex number by converting it to
 radians.
+
+Since we are modeless, R>P and P>R cannot perform special case operations for
+complex numbers (eg working with polar complex), so instead there are "r,i"
+and "r+i" split and combine operations which separate a complex number into
+two stack levels x & y and the reverse. like this, the complex number can be
+operated as polar by performing; R,i R>P r+i
+
+Also, the split is a useful way to see a complex number at full precision
+(then use combine to put it back).
+
+
 
 
 

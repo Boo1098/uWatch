@@ -1217,7 +1217,7 @@ BOOL StoreRecall(void)
             Push();
 
             //restore the Xreg value from the Sreg
-            Xreg=Sreg[num]; iXreg = Sreg[num];
+            Xreg=Sreg[num]; iXreg = iSreg[num];
             ValueEntered=TRUE;
             //UpdateLCDline1(" VALUE RECALLED ");
             //DelayMs(100);           //small visual delay
