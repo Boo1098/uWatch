@@ -48,8 +48,13 @@ digits (NOTE: you cannot currently scroll back before entry).
 * stack ops; ROLL, X<>Y, ENTER
 * memory ops: RCL, STO
 * 1/X, X^2, SQRT, ABS (modulus)
-* complex specific; REAL, IMAG, CONJ
 * LN, EXP
+* complex specific;
+
+  R,i = split complex into X, Y registers
+  R+i = combine X+iY into complex
+  CONJ = complex conjugate.
+  REAL = real part.
 
 ** Functions planned for v1.3.7 (ie ones im doing now!)
 
@@ -58,18 +63,20 @@ digits (NOTE: you cannot currently scroll back before entry).
 * SIN, COS, TAN
 * ASIN, ACOS, ATAN
 
-** Functions not planned for 1.3.7
+** Functions not operating on complex numbers
 
+* R->P, P->R  (always set ipart to 0) useful with R,i and R+i
 * Factorial (gamma)
 * complex BASE mode (!)
-
-** Functions that we might want to implement special behaviour
-
-* R->P, P->R
-  should these be used to support complex angular mode?
-
 * // (parallel), should this do something clever with power etc?
-  
+
+*** NOTES
+
+Trig functions of complex numbers only makes sense in radians, but since there
+is no complex mode, the angular mode cannot be ignored. consequently, a trig
+function in DEG mode will apply to a complex number by converting it to
+radians.
+
 
 
 

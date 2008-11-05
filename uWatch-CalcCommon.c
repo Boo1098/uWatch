@@ -80,24 +80,6 @@ void PushStackUp(void)
 }
 
 
-void RtoP(void)
-{
-    double temp;
-    temp=sqrt((Yreg*Yreg)+(Xreg*Xreg));
-    Xreg=atan(Xreg/Yreg);
-    if (DegreesMode) Xreg *= RAD;
-    Yreg=temp;
-}
-
-void PtoR(void)
-{
-    double temp;
-    if (DegreesMode) Xreg /= RAD;
-    temp=Yreg*cos(Xreg);
-    Xreg=Yreg*sin(Xreg);
-    Yreg=temp;
-}
-
 double hms(double h)
 {
     return (90*h+100*(int)(h)+(int)(60*h))/250;
@@ -119,7 +101,7 @@ void Drop()
 static double fabsC(double* a, double* b)
 {
     // use numerically stable method, Numerical Recipies 3rd p226
-    double fa, fb;
+    double fa, fb, t;
 
     fa = fabs(*a);
     fb = fabs(*b);
@@ -128,9 +110,15 @@ static double fabsC(double* a, double* b)
     if (!*b) return fa;
 
     if (fa >= fb)
-        return fa*sqrt((*b)/(*a)+1.0);
+    {
+        t = (*b)/(*a);
+        return fa*sqrt(t*t+1.0);
+    }
     else
-        return fb*sqrt((*a)/(*b)+1.0);
+    {
+        t = (*a)/(*b);
+        return fb*sqrt(t*t+1.0);
+    }
 }
 
 static void sinandcos(double v, double* sa, double* ca)
@@ -138,6 +126,29 @@ static void sinandcos(double v, double* sa, double* ca)
     // need to find a more efficient way to calculate both sin and cos
     *sa = sin(v);
     *ca = cos(v);
+}
+
+static void sinhandcosh(double v, double* sha, double* cha)
+{
+    double t = exp(v);
+    double t1 = 1/t;
+    *sha = (t - t1)/2;
+    *cha = (t + t1)/2;
+}
+
+static void RtoP(double* x, double* y)
+{
+    double t = fabsC(x, y);
+    *y=atan2(*y, *x);
+    *x = t;
+}
+
+static void PtoR(double* x, double* y)
+{
+    double s, c;
+    sinandcos(*y, &s, &c);
+    *y = (*x)*s;
+    *x = (*x)*c;
 }
 
 // Raw operation
@@ -220,14 +231,11 @@ void Operation(int op)
         break;
     case CALC_OP_LN:
         if (*rp >= 0 && !*irp)
-        {
             *rp=log(*rp);           
-        }
         else
         {
-            double r = fabsC(rp, irp);
-            *irp = atan2(*irp, *rp);
-            *rp = log(r);
+            RtoP(rp, irp);
+            *rp = log(*rp);
         }
         break;
     case CALC_OP_EXP:
@@ -257,28 +265,119 @@ void Operation(int op)
         *rp = pow(10, *rp);
         break;
     case CALC_OP_SIN:
-        if (DegreesMode) *rp /= RAD;
-        *rp=sin(*rp);
+        if (DegreesMode) { *rp /= RAD;  *irp /= RAD; }
+        if (!*irp)
+            *rp=sin(*rp);
+        else
+        {
+            // sin(a + ib) = sin(a)cosh(b) + i cos(a)sinh(b)
+            double sa, ca;
+            double shb, chb;
+            sinandcos(*rp, &sa, &ca);
+            sinhandcosh(*irp, &shb, &chb);
+            *rp = sa*chb;
+            *irp = ca*shb;
+        }
         break;
     case CALC_OP_COS:
-        if (DegreesMode) *rp /= RAD;
-        *rp=cos(*rp);
+        if (DegreesMode) { *rp /= RAD;  *irp /= RAD; }
+        if (!*irp)
+            *rp=cos(*rp);
+        else
+        {
+            // cos(a + ib) = cos(a)cosh(b) - i sin(a)sinh(b)
+            double sa, ca;
+            double shb, chb;
+            sinandcos(*rp, &sa, &ca);
+            sinhandcosh(*irp, &shb, &chb);
+            *rp = ca*chb;
+            *irp = -sa*shb;
+        }
         break;
     case CALC_OP_TAN:
-        if (DegreesMode) *rp /= RAD;
-        *rp=tan(*rp);
+        if (DegreesMode) { *rp /= RAD;  *irp /= RAD; }
+        if (!*irp)
+            *rp=tan(*rp);
+        else
+        {
+            // tan(a + ib) = (sin(2a) + i sinh(2b))/(cos(2a) + cosh(2b))
+
+            double sa, ca;
+            double shb, chb;
+            double d;
+            sinandcos((*rp)*2, &sa, &ca);
+            sinhandcosh((*irp)*2, &shb, &chb);
+            d = ca + chb;
+            *rp = sa/d;
+            *irp = shb/d;
+        }
         break;
     case CALC_OP_ASIN:
-        *rp=asin(*rp);
-        if (DegreesMode) *rp *= RAD;
+        if (!*irp && *rp >= -1 && *rp <= 1)
+            *rp=asin(*rp);
+        else
+        {
+            // XX unstable?
+            double t = *rp + 1;
+            double u = *rp - 1;
+            double v = (*irp)*(*irp);
+            double w1 = sqrt(t*t + v);
+            double w2 = sqrt(u*u + v);
+            double al = (w1 + w2)/2;
+            double be = (w1 - w2)/2;
+
+            t = asin(be);
+            u = log(al + sqrt(al*al - 1));
+            
+            // choose branch cut
+            *rp = t;
+            *irp = (*irp < 0) ? -u : u;
+            
+        }
+        if (DegreesMode) { *rp *= RAD; *irp *= RAD; }
         break;
     case CALC_OP_ACOS:
-        *rp=acos(*rp);
-        if (DegreesMode) *rp *= RAD;
+        if (!*irp && *rp >= -1 && *rp <= 1)
+            *rp=acos(*rp);
+        else
+        {
+            // XX unstable?
+            double t = *rp + 1;
+            double u = *rp - 1;
+            double v = (*irp)*(*irp);
+            double w1 = sqrt(t*t + v);
+            double w2 = sqrt(u*u + v);
+            double al = (w1 + w2)/2;
+            double be = (w1 - w2)/2;
+
+            t = acos(be);
+            u = log(al + sqrt(al*al - 1));
+            
+            // choose branch cut
+            *rp = t;
+            *irp = (*irp < 0) ? u : -u;
+        }
+        if (DegreesMode) { *rp *= RAD; *irp *= RAD; }
         break;
     case CALC_OP_ATAN:
-        *rp=atan(*rp);
-        if (DegreesMode) *rp *= RAD;
+        if (!*irp)
+            *rp=atan(*rp);
+        else
+        {
+            double t = (*rp)*(*rp);
+            double u = (*irp)*(*irp);
+            double w1 = (atan2(2*(*rp), 1-t-u))/2;
+            double w2, v;
+
+            u = (*irp)+1; 
+            v = (*irp)-1; 
+
+            w2 = log((t + u*u)/(t + v*v))/4;
+            
+            *rp = w1;
+            *irp = w2;
+        }
+        if (DegreesMode) { *rp *= RAD; *irp *= RAD; }
         break;
     case CALC_OP_MODEDEG:
         DegreesMode = TRUE;
@@ -295,10 +394,12 @@ void Operation(int op)
         *rp = hms(*rp);
         break;
     case CALC_OP_R2P:
-        RtoP();
+        *irp = 0;
+        irp[1] = 0;
+        RtoP(rp, rp + 1);
+        if (DegreesMode) rp[1] *= RAD;
         break;
     case CALC_OP_FACTORIAL:
-        // XX needs complex factorial
         *rp = Factorial(*rp);
         *irp = 0;
         break;
@@ -313,7 +414,10 @@ void Operation(int op)
         *rp = hr(*rp);
         break;
     case CALC_OP_P2R:
-        PtoR();
+        *irp = 0;
+        irp[1] = 0;
+        if (DegreesMode) rp[1] /= RAD;
+        PtoR(rp, rp + 1);
         break;
     case CALC_OP_SUNSET:
         {
@@ -440,15 +544,21 @@ void Operation(int op)
             *irp = 0;
         }
         break;
-    case CALC_OP_REAL_PART:
+    case CALC_OP_COMPLEX_SPLIT:
+        Push();
+        rp[1] = *irp;
+        irp[1] = 0;
         *irp = 0;
         break;
-    case CALC_OP_IMAG_PART:
-        *rp = *irp;
-        *irp = 0;
+    case CALC_OP_COMPLEX_JOIN:
+        *irp = rp[1];
+        Drop();
         break;
     case CALC_OP_CONJUGATE:
         *irp = -*irp;
+        break;
+    case CALC_OP_REAL_PART:
+        *irp = 0;
         break;
     }
 }

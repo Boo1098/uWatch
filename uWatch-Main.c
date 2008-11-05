@@ -271,9 +271,10 @@ double Sreg[10], iSreg[10];
 #define CALC_OP_DIVIDE          34
 #define CALC_OP_BASE		35
 #define CALC_OP_ABS             36
-#define CALC_OP_REAL_PART       37
-#define CALC_OP_IMAG_PART       38
+#define CALC_OP_COMPLEX_SPLIT   37
+#define CALC_OP_COMPLEX_JOIN    38
 #define CALC_OP_CONJUGATE       39
+#define CALC_OP_REAL_PART       40
 
 
 int opPrec(int op)
@@ -332,7 +333,7 @@ CalcMenuInfo MainMenus[] =
         {" Sin  Cos  Tan  ",   
          " 2nd  Pi   Deg  ", 
          " aSin aCos aTan ", 
-         " 2nd       Rad   "
+         " 2nd       Rad  "
         },
 
         { CALC_OP_SIN,
@@ -369,22 +370,22 @@ CalcMenuInfo MainMenus[] =
     },
 
     { // menu 3
-        {" Rec  Play Conv ",   
+        {" Play R,i  Conv ",   
          " 2nd  Base //   ", 
-         " Real Imag Conj ", 
-         " 2nd            ", 
+         " Rec  R+i  Conj ", 
+         " 2nd  Real      ", 
         },
 
-        { CALC_OP_RECORD,
-          CALC_OP_PLAY,
+        { CALC_OP_PLAY,
+          CALC_OP_COMPLEX_SPLIT,
           CALC_OP_CONV,
           CALC_OP_BASE,
           CALC_OP_PARALLEL,
 
-          CALC_OP_REAL_PART,
-          CALC_OP_IMAG_PART,
+          CALC_OP_RECORD,
+          CALC_OP_COMPLEX_JOIN,
           CALC_OP_CONJUGATE,
-          CALC_OP_NULL,
+          CALC_OP_REAL_PART,
           CALC_OP_NULL,
         }
     },
@@ -544,7 +545,7 @@ void Clock32KHz(void)
 void UpdateLCD(const char* s, int line)
 {
     int c;
-    char* p = s;
+    const char* p = s;
 
     int l = strlen(s);
     if (l > MaxLCDdigits)

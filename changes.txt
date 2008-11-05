@@ -90,6 +90,7 @@ uWatch Revisions:
 - fixed: recalling values from storage registers overwrites the x register.
 - removed delays from STO/RCL to avoid slowing down macro programs.
 - added ABS function to menu.
+- changed R>P and P>R so that X is the angle and Y is the arg.
 
 -- Experimental complex number support
 - base 4 ops
@@ -98,7 +99,8 @@ uWatch Revisions:
 - entry of complex number using repeated '.' ie a second '.' is re-interpreted
   as the start of the imaginary part, unless an exponent exists, in which case
   a single '.' starts the i part.
-- added REAL, IMAG, CONJ to third menu 2nd page.
+- added REAL, (R,I), R+i, CONJ to third menu 2nd page; real-part,
+  split, join and conjugate.
 
 
 
