@@ -48,7 +48,6 @@ void ALGcalculator(void)
     DisplayYreg[0] = 0;
     DecimalIncluded=FALSE;
     ExponentIncluded=FALSE;
-    HYPkey=FALSE;
     CurrentMenu=0;
     ValueEntered=TRUE;
     UpdateXregDisplay();
