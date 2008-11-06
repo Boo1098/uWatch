@@ -39,6 +39,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #include <pwrmgnt.h>
 #include <ports.h>
 #include <string.h>
+#include "uWatch-op.h"
 
 #define RevString   "Rev 1.3.7"
 
@@ -187,23 +188,24 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #define ClearRow6       _TRISA7=1
 #define ClearRow7       _TRISB14=1
 
-#define PI              3.14159265358979
-#define RAD             (180.0/PI)
 
 #define DIM(_x) (sizeof(_x)/sizeof((_x)[0]))
 
-int  CurrentMenu;               // The number of the currently active menu line. 0 to MaxRPNmenuItems
-char ExponentIncluded;          //FLAG, TRUE if Exponent has already been entered
-char DecimalIncluded;           //FLAG, TRUE if decimal point has already been entered
-char ComplexIncluded;           // entering +i
-//char InverseKey;                //FLAG, TRUE if the inverse key has been pressed
-char HYPkey;                    //FLAG, TRUE if the HYP key has been pressed
-char DegreesMode;               //FLAG, TRUE if degres mode is on, otherwise radians
+// these flags were "char" except that makes bigger code!
+int CurrentMenu;               // The number of the currently active menu line. 0 to MaxRPNmenuItems
+int ExponentIncluded;          //FLAG, TRUE if Exponent has already been entered
+int DecimalIncluded;           //FLAG, TRUE if decimal point has already been entered
+int ComplexIncluded;           // entering +i
+int DegreesMode;               //FLAG, TRUE if degres mode is on, otherwise radians
+int ValueEntered;              //FLAG, TRUE if value has been entered by using the ENTER key
+int  EnableXregOverwrite;       //FLAG, TRUE if the Xreg will be automatically overwritten on first key press (the ENTER key enables this for example)
+int WatchMode;             //0=time mode, 1=calc mode, 2=setup mode
+
 char DisplayXreg[XBufSize+1];   //holds the value currently being entered by the user, or the Xreg
 char DisplayYreg[XBufSize+1];   //holds the value currently in Yreg
-char ValueEntered;              //FLAG, TRUE if value has been entered by using the ENTER key
-//char MenuMode;                  //FLAG, TRUE is the menu if switched on.
-int  EnableXregOverwrite;       //FLAG, TRUE if the Xreg will be automatically overwritten on first key press (the ENTER key enables this for example)
+
+// decls
+BOOL inDST(int* gap);
 
 
 //the working registers (Treg not used for Algebraic)
@@ -229,53 +231,8 @@ double Yregs[6], Zregs[6];
 #define WATCH_MODE_CALC         1
 #define WATCH_MODE_SETUP        2
 
-char WatchMode;             //0=time mode, 1=calc mode, 2=setup mode
-
 //the storage registers. Contents retained when calc mode is exited.
 double Sreg[10], iSreg[10];
-
-#define CALC_OP_NULL            0
-#define CALC_OP_RECIPROCAL      1
-#define CALC_OP_SQUARE          2
-#define CALC_OP_SQRT            3
-#define CALC_OP_LN              4
-#define CALC_OP_EXP             5
-#define CALC_OP_NPOW            6
-#define CALC_OP_NROOT           7
-#define CALC_OP_LN10            8
-#define CALC_OP_10X             9
-#define CALC_OP_SIN             10
-#define CALC_OP_COS             11
-#define CALC_OP_TAN             12
-#define CALC_OP_ASIN            13
-#define CALC_OP_ACOS            14
-#define CALC_OP_ATAN            15
-#define CALC_OP_MODEDEG         16
-#define CALC_OP_MODERAD         17
-#define CALC_OP_PI              18
-#define CALC_OP_HMS             19
-#define CALC_OP_R2P             20
-#define CALC_OP_FACTORIAL       21
-#define CALC_OP_DMY             22
-#define CALC_OP_HOURS           23
-#define CALC_OP_P2R             24
-#define CALC_OP_SUNSET          25
-#define CALC_OP_DAYS            26
-#define CALC_OP_RECORD          27
-#define CALC_OP_PLAY            28
-#define CALC_OP_CONV            29
-#define CALC_OP_PARALLEL        30
-#define CALC_OP_PLUS            31
-#define CALC_OP_MINUS           32
-#define CALC_OP_MULT            33
-#define CALC_OP_DIVIDE          34
-#define CALC_OP_BASE		35
-#define CALC_OP_ABS             36
-#define CALC_OP_COMPLEX_SPLIT   37
-#define CALC_OP_COMPLEX_JOIN    38
-#define CALC_OP_CONJUGATE       39
-#define CALC_OP_REAL_PART       40
-
 
 int opPrec(int op)
 {
@@ -370,9 +327,9 @@ CalcMenuInfo MainMenus[] =
     },
 
     { // menu 3
-        {" Play R,i  Conv ",   
+        {" Play C>R  Conv ",   
          " 2nd  Base //   ", 
-         " Rec  R+i  Conj ", 
+         " Rec  R>C  Conj ", 
          " 2nd  Real      ", 
         },
 
@@ -398,7 +355,7 @@ BOOL NextMode;          //TRUE if MODE button switches to next mode. FALSE retur
 BOOL TwelveHour;        //TRUE if 12 hour mode
 BOOL RPNmode;           //TRUE if RPN mode, otherwise Algebraic
 
-char CalcDisplayBase;   //2-binary, 10-decimal, 16 decimal
+int CalcDisplayBase;   //2-binary, 10-decimal, 16 decimal
 
 //programming mode variables
 BOOL ProgPlay;          //TRUE if keystroke playback mode is on
@@ -407,9 +364,9 @@ unsigned int MemPointer;    //current EEPROM memory location
 
 rtccTime Time;                  //typedef that contains the time
 rtccDate Date;                  //typedef that contains the date
-unsigned char MoonPhase;
+int MoonPhase;
 BOOL DST; // are we in daylight saving time?
-char dstRegion = 0; // index into TimeZone table
+int dstRegion = 0; // index into TimeZone table
 
 long MJD; // modified julian date (days since 200)
 
@@ -417,7 +374,7 @@ long MJD; // modified julian date (days since 200)
 unsigned int Year;
 unsigned int Month;
 unsigned int Day;
-unsigned char DayOfWeek;
+int DayOfWeek;
 double Longitude;
 double Latitude;
 
@@ -896,11 +853,6 @@ unsigned int KeyScan(void)
     return(k);      
 }
 
-// decls
-int moonPhase(int year, int month, int day);
-BOOL inDST(int*);
-
-
 //***********************************
 // converts 2 digit BCD to integer
 unsigned int BCDtoDEC(unsigned int num)
@@ -923,19 +875,6 @@ unsigned char itochar(int i)
     return '*';
 }
 
-long mjd(int y, int m, int d)
-{
-    // here is the new Hodges' version 2008
-    // rebased to 2000/1/1 (add back 51544 for old version)
-
-    int a = (14-m)/12;
-    m += 12*a+1;
-    y += 4800-a;
-    return d+(153*m)/5+365L*y+y/4-y/100+y/400-2483712L;
-}
-
-// 0=sunday, 1=monday etc.
-#define DAYOFWEEK(_x)    (((_x)+6)%7)
 
 /* called when we read a date and the day has changed from last read
  * perform calculations based on day here.
@@ -1203,36 +1142,6 @@ static const char days[8][4]={"   ","Sun","Mon","Tue", "Wed", "Thu", "Fri", "Sat
 // N(ew),C(rescent),Q(uarter),W(axing),F(ull),w(aning),q(uarter),c(rescent)
 static const char mphase[8] = "NCQWFwqc";
 
-
-int moonPhase(int year,int month,int day)
-{
-    /*
-      Calculates the moon phase (0-7), accurate to 1 segment.
-      0 = > new moon.
-      4 => Full moon.
-
-      NOTE: integer math.
-    */
-    
-    int g, e;
-
-    if (month == 1) --day;
-    else if (month == 2) day += 30;
-    else // m >= 3
-    {
-        day += 28 + (month-2)*3059/100;
-
-        // adjust for leap years
-        if (!(year & 3)) ++day;
-        if ((year%100) == 0) --day;
-    }
-    
-    g = (year-1900)%19 + 1;
-    e = (11*g + 18) % 30;
-    if ((e == 25 && g > 11) || e == 24) e++;
-    return ((((e + day)*6+11)%177)/22 & 7);
-}
-
 static BOOL beforeWhenTest(DstWhen w, TimeZone* tz, int* gap)
 {
     unsigned int t = 0;
@@ -1345,27 +1254,6 @@ BOOL inDST(int* gap)
     return res;
 }
 
-void caldati(long mjd,
-             unsigned int* y, unsigned int* m, unsigned int* d)
-{
-    // here is the new Hodges' version 2008
-    // this is the inverse of mjd
-
-    long td = mjd + 2520114L;
-    unsigned int ty;
-    unsigned int c, a;
-    unsigned int tm;
-
-    ty= (td<<2)/146097L;
-    td -= (146097L*ty+3)>>2;
-    c = (99*(td+1))/36160L;
-    td -= ((1461L*c)>>2)-31;
-    tm = (5*td)/153;
-    a = tm/11;
-    *d= td-(367L*tm)/12;
-    *m= tm-12*a+2;
-    *y= 100*(ty-49)+c+a;
-}
 
 void AdjustDateTime(int dh)
 {

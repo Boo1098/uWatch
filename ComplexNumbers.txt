@@ -53,8 +53,8 @@ digits (NOTE: you cannot currently scroll back before entry).
 * ASIN, ACOS, ATAN
 * complex specific;
 
-  R,i = split complex into X, Y registers
-  R+i = combine X+iY into complex
+  C>R = split complex into X, Y registers
+  R>C = combine X+iY into complex
   CONJ = complex conjugate.
   REAL = real part.
 
@@ -65,7 +65,7 @@ digits (NOTE: you cannot currently scroll back before entry).
 
 ** Functions not operating on complex numbers
 
-* R->P, P->R  (always set ipart to 0) useful with R,i and R+i
+* R->P, P->R  (always set ipart to 0) useful with C>R and R>C
 * Factorial (gamma)
 * complex BASE mode (!)
 * // (parallel), should this do something clever with power etc?
@@ -78,13 +78,60 @@ function in DEG mode will apply to a complex number by converting it to
 radians.
 
 Since we are modeless, R>P and P>R cannot perform special case operations for
-complex numbers (eg working with polar complex), so instead there are "r,i"
-and "r+i" split and combine operations which separate a complex number into
+complex numbers (eg working with polar complex), so instead there are C>R
+and R>C split and combine operations which separate a complex number into
 two stack levels x & y and the reverse. like this, the complex number can be
-operated as polar by performing; R,i R>P r+i
+operated as polar by performing; C>R R>P R>C
 
 Also, the split is a useful way to see a complex number at full precision
 (then use combine to put it back).
+
+**** Philosophy behind the complex number support
+
+Some of the way in which the uWatch complex numbers work is different from
+that on HP calculators. The calculators tend to have a complex number mode in
+which some operations (eg P->R and R->P) work differently.
+
+For the uWatch, i didnt want the complex number implementation to any way
+interfere with the normal numeric operations. This is because complex numbers
+are an advanced feature which many users will be unaware of, especially at
+first.
+
+The amount of time i read users posting on forum saying their 15c has a little
+"c" on the screen and has gone into a mode where things work differently,
+means that modes are confusing. It's really, really annoying when your
+calculator/pda/phone etc. goes into a funny mode which works in a differnt way
+and you're out in the field and dont have the manual and you dont know how to
+get it back to normal. You wind up resetting the unit as a last resort!
+
+There is also an argument that DEG/RAD should not be a mode. being in the
+wrong angle mode has had me over in the past and i would guess it has been the
+same for everyone else. However, the DEG/RAD mode is so ingrained and expected
+that it would be wrong not to support it.
+
+not having a complex mode creates a few problems. The uWatch cannot simply
+look at the number to see if it has an ipart because the ipart may just happen
+to be zero and it would be a mistake to operate with the number in different
+way.
+
+For example, the 15c R->P function converts a complex number into its angular
+form when in complex mode, but operates on X & Y stack registers
+otherwise. The uWatch cannot mimic this, so instead it offers functions to
+split a complex into the X & Y registers (and another to combine them). In
+this way P->R and R->P can always perform the same operation. To this effect,
+they reset any residual ipart on X & Y.
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
