@@ -47,8 +47,9 @@ digits (NOTE: you cannot currently scroll back before entry).
 * base 4 ops (+ - * /)
 * stack ops; ROLL, X<>Y, ENTER
 * memory ops: RCL, STO
-* 1/X, X^2, SQRT, ABS (modulus)
+* 1/X, X^2, SQRT, ABS (modulus), Y^X, Y^(1/X)
 * LN, EXP
+* LN10, 10^X
 * SIN, COS, TAN
 * ASIN, ACOS, ATAN
 * complex specific;
@@ -57,11 +58,6 @@ digits (NOTE: you cannot currently scroll back before entry).
   R>C = combine X+iY into complex
   CONJ = complex conjugate.
   REAL = real part.
-
-** Functions planned for v1.3.7 (ie ones im doing now!)
-
-* Y^X, Y^(1/X)
-* LN10, 10^X
 
 ** Functions not operating on complex numbers
 

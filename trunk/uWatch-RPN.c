@@ -74,6 +74,9 @@ void RPNcalculator(void)
             int mi;
             CalcMenuInfo* mifo;
 
+            // pressing menu completes.
+            CompleteXreg();
+
             mifo = MainMenus + CurrentMenu;
             mi = DriveMenu2(mifo->lines[0], mifo->lines[1],
                             mifo->lines[2], mifo->lines[3]);
@@ -92,7 +95,15 @@ void RPNcalculator(void)
                 // retrieve key pressed
                 Key = -mi;
                 if (Key == KeyMenu)
+                {
                     if (++CurrentMenu>=DIM(MainMenus)) CurrentMenu=0;
+                }
+                else
+                {
+                    // escape from menu
+                    Key = 0;
+                    UpdateDisplayRegs();
+                }
             }
         }
 

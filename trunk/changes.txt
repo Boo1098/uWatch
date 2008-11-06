@@ -91,11 +91,12 @@ uWatch Revisions:
 - removed delays from STO/RCL to avoid slowing down macro programs.
 - added ABS function to menu.
 - changed R>P and P>R so that X is the angle and Y is the arg.
+- fixed: C or mode escapes from menu
 
 -- Experimental complex number support
 - base 4 ops
-- complex; X<>Y, ROLL, STO, RCL, 1/x, x^2, PI, ABS, SQRT
-- complex: LOG, LOG10, EXP
+- complex; X<>Y, ROLL, STO, RCL, 1/x, x^2, PI, ABS, SQRT, Y^X, Y^(1/X)
+- complex: LOG, EXP, LOG10, 10^X
 - complex: SIN, COS, TAN, ASIN, ACOS, ATAN
 - entry of complex number using repeated '.' ie a second '.' is re-interpreted
   as the start of the imaginary part, unless an exponent exists, in which case
