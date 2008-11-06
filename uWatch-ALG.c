@@ -116,7 +116,16 @@ void ALGcalculator(void)
                 // retrieve key pressed
                 Key = -mi;
                 if (Key == KeyMenu)
+                {
                     if (++CurrentMenu>=DIM(MainMenus)) CurrentMenu=0;
+                }
+                else
+                {
+                    // escape from menu
+                    Key = 0;
+                    UpdateDisplayRegs();
+                }
+
             }
         }
 

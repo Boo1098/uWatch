@@ -21,6 +21,8 @@
  * 
  */
 
+/* implementation of the main calculator functions */
+
 #include <stdlib.h>
 #include <math.h>
 #include "uWatch-op.h"
@@ -155,17 +157,6 @@ static void PtoR(double* x, double* y)
     *x = (*x)*c;
 }
 
-static void opLn(double* rp, double* irp)
-{
-    if (*rp >= 0 && !*irp)
-        *rp=log(*rp);           
-    else
-    {
-        RtoP(rp, irp);
-        *rp = log(*rp);
-    }
-}
-
 static double dgamma(double x)
 {
     /// gamma function baked for IEEE754
@@ -229,6 +220,146 @@ static double factorial(double num)
     }
 }
 
+static void opLn(double* rp, double* irp)
+{
+    if (*rp >= 0 && !*irp)
+        *rp=log(*rp);           
+    else
+    {
+        RtoP(rp, irp);
+        *rp = log(*rp);
+    }
+}
+
+#define MULC(_a, _b, _c, _d)                    \
+{                                               \
+    double t = (_a)*(_c) - (_b)*(_d);           \
+    _b = (_a)*(_d) - (_b)*(_c);                 \
+    _a = t;                                     \
+}
+
+#define SQUAREC(_a, _b)                         \
+{                                               \
+    double t = (_a)*(_a) - (_b)*(_b);           \
+    _b = 2*(_a)*(_b);                           \
+    _a = t;                                     \
+}
+
+static void opInv(double* rp, double* irp)
+{
+    if (!*irp)
+        *rp = 1.0/(*rp);
+    else
+    {
+        // 1 / (c + i d) = c / (c*c + d*d) - i d / (c*c + d*d)
+        double d = (*rp)*(*rp) + (*irp)*(*irp);
+        *rp = (*rp)/d;
+        *irp = -(*irp)/d;
+    }
+}
+
+static void powInt(double* rp, double* irp, unsigned long m)
+{
+    // assume m > 0
+
+    double x, y;
+
+    x = 1;
+    
+    /* Use binary exponentiation */
+    if (!*irp)
+    {
+        for (;;)
+        {
+            if (m & 1) x *= (*rp);
+            m >>= 1;
+            if (!m) break;
+            (*rp) *= (*rp);
+        }
+    }
+    else
+    {
+        y = 0;
+        for (;;)
+        {
+            if (m & 1) MULC(x, y, *rp, *irp);
+            m >>= 1;
+            if (!m) break;
+            SQUAREC(*rp, *irp);
+        }
+        *irp = y;
+    }
+    
+    *rp = x;
+}
+
+static void powC(double* rp, double* irp, double a, double b)
+{
+    double x, y;
+
+    if (!b)
+    {
+        unsigned long ni;
+
+        if (a == 1) return;
+        if (!a)
+        {
+            if (!*rp && !*irp)
+            {
+                // 0^0 = nan
+                *rp = 0.0/0.0;
+            }
+            else *rp = 1;
+            *irp = 0;
+            return;
+        }
+
+        if (a < 0)
+        {
+            // power the inverse
+            opInv(rp, irp);
+            a = -a;
+        }
+
+        // convert to int and see if we have the same number.
+        ni = (unsigned long)a;
+
+        // if we have an integer that fits in a long, use ladder
+        if (ni == a)
+        {
+            powInt(rp, irp, ni);
+            return;
+        }
+
+        if (!*irp)
+        {
+            if (!*rp) return; // 0^positive-real = 0
+            if (*rp > 0)
+            {
+                *rp=pow(*rp, a);
+                return;
+            }
+        }
+    }
+
+    // general case
+
+    RtoP(rp, irp);
+    x = pow(*rp, a);
+    y = a * (*irp);
+
+    if (b)
+    {
+        x *= exp(-b*(*irp));
+        y += b*log(*rp);
+    }
+
+    *rp = x;
+    *irp = y;
+    
+    PtoR(rp, irp);
+}
+
 // Raw operation
 void Operation(int op)
 {
@@ -237,25 +368,13 @@ void Operation(int op)
     switch(op)
     {
     case CALC_OP_RECIPROCAL:
-        if (!*irp)
-            *rp = 1.0/(*rp);
-        else
-        {
-            // 1 / (c + i d) = c / (c*c + d*d) - i d / (c*c + d*d)
-            double d = (*rp)*(*rp) + (*irp)*(*irp);
-            *rp = (*rp)/d;
-            *irp = -(*irp)/d;
-        }
+        opInv(rp, irp);
         break;
     case CALC_OP_SQUARE:
         if (!*irp)
             *rp *= (*rp);
         else
-        {
-            double x = (*rp)*(*rp) - (*irp)*(*irp);
-            *irp = 2*(*rp)*(*irp);
-            *rp=x;
-        }
+            SQUAREC(*rp, *irp);
         break;
     case CALC_OP_SQRT:
         {
@@ -322,12 +441,14 @@ void Operation(int op)
             *irp = t*sb;
         }
         break;
-    case CALC_OP_NPOW:
-        *rp=pow(rp[1],*rp);         
-        Drop();
-        break;
     case CALC_OP_NROOT:
-        *rp=pow(rp[1],1.0/(*rp));                   
+        opInv(rp, irp);
+        
+        // Fall through to POW
+    case CALC_OP_NPOW:
+        powC(rp + 1, irp + 1, *rp, *irp);
+        *rp = rp[1];
+        *irp = irp[1];
         Drop();
         break;
     case CALC_OP_LN10:
@@ -336,7 +457,13 @@ void Operation(int op)
         *irp /= LN10;
         break;
     case CALC_OP_10X:
-        *rp = pow(10, *rp);
+        {
+            double x = 10;
+            double y = 0;
+            powC(&x, &y, *rp, *irp);
+            *rp = x;
+            *irp = y;
+        }
         break;
     case CALC_OP_SIN:
         if (DegreesMode) { *rp /= RAD;  *irp /= RAD; }
@@ -497,7 +624,7 @@ void Operation(int op)
         {
             Push();
             Push();
-            CalcRiseAndSet(rp + 1, &*rp);
+            CalcRiseAndSet(rp + 1, rp);
             irp[1] = 0;
             *irp = 0;
         }
@@ -531,15 +658,16 @@ void Operation(int op)
         break;
     case CALC_OP_PARALLEL:
         *rp=(rp[1]*(*rp))/(rp[1]+(*rp));
+        *irp = 0;
         Drop();
         break;
     case CALC_OP_PLUS:
-        *rp= *rp + rp[1];        //perform PLUS operation
-        *irp= *irp + irp[1];
+        *rp += rp[1];        //perform PLUS operation
+        *irp += irp[1];
         Drop();
         break;
     case CALC_OP_MINUS:
-        *rp= rp[1] - *rp;            //perform MINUS operation
+        *rp = rp[1] - *rp;            //perform MINUS operation
         *irp= irp[1] - *irp;
         Drop();
         break;
@@ -560,10 +688,7 @@ void Operation(int op)
             *rp = t[1]; 
 
 #else
-            // XX single precision version only
-            double x = (*rp)*rp[1] - (*irp)*irp[1];
-            *irp = (*rp)*irp[1] + (*irp)*rp[1];
-            *rp = x;
+            MULC(*rp, *irp, rp[1], irp[1]);
 #endif
         }
         Drop();

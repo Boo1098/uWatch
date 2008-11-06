@@ -484,7 +484,7 @@ void UpdateDisplayRegs(void)
             }
         }
 
-    //replace NULL with space
+        //replace NULL with space
         for(i=0; i<MaxLCDdigits; i++)
             if (!DisplayYreg[i]) DisplayYreg[i]=' ';
 
