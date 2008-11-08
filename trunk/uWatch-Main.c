@@ -207,7 +207,6 @@ char DisplayYreg[XBufSize+1];   //holds the value currently in Yreg
 // decls
 BOOL inDST(int* gap);
 
-
 //the working registers (Treg not used for Algebraic)
 double Regs[4], iRegs[4];
 #define Xreg Regs[0]
@@ -219,13 +218,19 @@ double Regs[4], iRegs[4];
 #define iZreg iRegs[2]
 #define iTreg iRegs[3]
 
+#define PAREN_LEVELS 4
+
 //algebraic operators
-int OperatorsXY[7], OperatorsYZ[7];
+int OperatorsXY[PAREN_LEVELS+1];
+int OperatorsYZ[PAREN_LEVELS+1];
+int OperatorsZT[PAREN_LEVELS+1];
 
 #define OperatorXY OperatorsXY[0]
 #define OperatorYZ OperatorsYZ[0]
+#define OperatorZT OperatorsZT[0]
 
-double Yregs[6], Zregs[6];
+double Yregs[PAREN_LEVELS], Zregs[PAREN_LEVELS], Tregs[PAREN_LEVELS];
+double iYregs[PAREN_LEVELS], iZregs[PAREN_LEVELS], iTregs[PAREN_LEVELS];
 
 #define WATCH_MODE_TIME         0
 #define WATCH_MODE_CALC         1
@@ -365,10 +370,9 @@ unsigned int MemPointer;    //current EEPROM memory location
 rtccTime Time;                  //typedef that contains the time
 rtccDate Date;                  //typedef that contains the date
 int MoonPhase;
-BOOL DST; // are we in daylight saving time?
-int dstRegion = 0; // index into TimeZone table
-
-long MJD; // modified julian date (days since 200)
+BOOL DST;               // are we in daylight saving time?
+int dstRegion = 0;      // index into TimeZone table
+long MJD;               // modified julian date (days since 200)
 
 // updated when day changes
 unsigned int Year;
@@ -547,15 +551,32 @@ void UpdateLCDline2(const char* s)
     UpdateLCD(s, 1);
 }
 
-void ClearAllRegs(void)
+void ClearCurrentRegs()
 {
     memset(Regs, 0, 4*sizeof(Regs[0]));
     memset(iRegs, 0, 4*sizeof(iRegs[0]));
 
-    memset(Yregs, 0, 6*sizeof(Yregs[0]));
-    memset(Zregs, 0, 6*sizeof(Zregs[0]));
-    memset(OperatorsXY, 0, 7*sizeof(OperatorsXY[0]));
-    memset(OperatorsYZ, 0, 7*sizeof(OperatorsYZ[0]));
+    OperatorXY = 0;
+    OperatorYZ = 0;
+    OperatorZT = 0;
+}
+
+void ClearAllRegs(void)
+{
+
+    ClearCurrentRegs();
+
+    memset(Yregs, 0, PAREN_LEVELS*sizeof(Yregs[0]));
+    memset(Zregs, 0, PAREN_LEVELS*sizeof(Zregs[0]));
+    memset(Tregs, 0, PAREN_LEVELS*sizeof(iTregs[0]));
+
+    memset(iYregs, 0, PAREN_LEVELS*sizeof(iYregs[0]));
+    memset(iZregs, 0, PAREN_LEVELS*sizeof(iZregs[0]));
+    memset(iTregs, 0, PAREN_LEVELS*sizeof(iTregs[0]));
+
+    memset(OperatorsXY, 0, (PAREN_LEVELS+1)*sizeof(OperatorsXY[0]));
+    memset(OperatorsYZ, 0, (PAREN_LEVELS+1)*sizeof(OperatorsYZ[0]));
+    memset(OperatorsZT, 0, (PAREN_LEVELS+1)*sizeof(OperatorsZT[0]));
 }
 
 

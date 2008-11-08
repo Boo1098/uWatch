@@ -5,8 +5,8 @@
 * moon phase graphic
 * world times
 * more conversions like miles -> km etc.
+* physical constants
 * stopwatch
-* complex number support
 * identities from Bill Triplett:
 
    1: (a + i b) + (c + i d) = (a + c) + i (b + d)
@@ -38,12 +38,16 @@
    27: arctanh(a + i b) = (1/2)*ln((1 + (a + i b))/(1 - (a + i b)))
    
 
-** BUGS & Caveats
+** BUGS, Caveats & Things Outstanding.
 
 * epsilon fix for IEEE754, eg 2+.2+.2+.2+.2+.2-3 != 0
 * nPr and nCr to not use Factorial directly!
-* AM/PM wrong at noon! [FIXED?]
-* autoscroll number entry too long for display.
+* consider Jeff O's polar idea.
+* test complex functions for accuracy
+* extended precision needed for some complex operations.
+* backspace key in RPN mode.
+
+
 
 
 

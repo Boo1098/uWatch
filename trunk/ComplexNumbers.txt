@@ -42,6 +42,16 @@ Since the entry of a complex number can be longer than the 16 digits
 displayed, the number will scroll left on entry accommodating the rightmost
 digits (NOTE: you cannot currently scroll back before entry).
 
+** full mantissa display trick
+
+You can display the full mantissa for both the real and iparts of a complex
+number by pressing MENU then exit with MODE. The complex number is displayed
+using both lines with the top line the real part and the bottom line the
+ipart.
+
+note: this does not change anything on the stack and is just a display trick.
+
+
 ** Functions supporting complex numbers (current list)
 
 * base 4 ops (+ - * /)
@@ -93,7 +103,7 @@ interfere with the normal numeric operations. This is because complex numbers
 are an advanced feature which many users will be unaware of, especially at
 first.
 
-The amount of time i read users posting on forum saying their 15c has a little
+The amount of time i read users posting on forums saying their 15c has a little
 "c" on the screen and has gone into a mode where things work differently,
 means that modes are confusing. It's really, really annoying when your
 calculator/pda/phone etc. goes into a funny mode which works in a differnt way

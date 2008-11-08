@@ -136,10 +136,21 @@ static void sinandcos(double v, double* sa, double* ca)
 
 static void sinhandcosh(double v, double* sha, double* cha)
 {
-    double t = exp(v);
-    double t1 = 1/t;
-    *sha = (t - t1)/2;
-    *cha = (t + t1)/2;
+    if (fabs(v) >= 1)
+    {
+        double t = exp(v);
+        double t1 = 1/t;
+        *sha = (t - t1)/2;
+        *cha = (t + t1)/2;
+    }
+    else
+    {
+        // sinh(x) requires non-exp method for small |x|.
+        // noticed that this is already implemented in the mplib
+        // so use it!
+        *cha = cosh(v);
+        *sha = sinh(v);
+    }
 }
 
 static void RtoP(double* x, double* y)
@@ -234,7 +245,7 @@ static void opLn(double* rp, double* irp)
 #define MULC(_a, _b, _c, _d)                    \
 {                                               \
     double t = (_a)*(_c) - (_b)*(_d);           \
-    _b = (_a)*(_d) - (_b)*(_c);                 \
+    _b = (_a)*(_d) + (_b)*(_c);                 \
     _a = t;                                     \
 }
 

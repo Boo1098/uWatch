@@ -100,9 +100,17 @@ void RPNcalculator(void)
                 }
                 else
                 {
+                    // experimental complex MANT display
+                    if (Key == KeyMode && iXreg != 0)
+                    {
+                        UpdateMANTDisplay();
+                    }
+                    else
+                        UpdateDisplayRegs();
+
                     // escape from menu
                     Key = 0;
-                    UpdateDisplayRegs();
+
                 }
             }
         }
@@ -140,17 +148,12 @@ void RPNcalculator(void)
             PopStack();
             UpdateDisplayRegs();
             ResetFlags();
-            EnableXregOverwrite=TRUE;
+            //EnableXregOverwrite=TRUE;
             break;
         case KeyXY: 
             {
                 CompleteXreg();		//enter value on stack if needed
-
-		//swap and X and Y regs
-                TEMPreg=Xreg; iTEMPreg = iXreg;			
-                Xreg=Yreg; iXreg = iYreg;
-                Yreg=TEMPreg; iYreg = iTEMPreg;
-
+                SwapXY();
                 UpdateDisplayRegs();	//update display again
             }
             break;
