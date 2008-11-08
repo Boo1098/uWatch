@@ -1,4 +1,4 @@
-//********************************************************
+/********************************************************
 // uWatch
 // Common Calculator Functions
 // Version 1.3
@@ -37,12 +37,9 @@ extern void UpdateYregDisplay(void);
 extern void UpdateDisplayRegs(void);
 extern void CompleteXreg(void);
 extern void ResetFlags(void);
-extern BOOL StoreRecall(void);
+extern void StoreRecall(void);
 extern void SignKey(void);
-//extern void KeyRecord(void);
-//extern void KeyReplay(void);
-//extern void Conversions(void);
-//extern void BaseMode(void);
+extern void UpdateDisplayRegX();
 
 void Push()
 {
@@ -59,11 +56,16 @@ void DropStack(void)
     Zreg=Treg; iZreg=iTreg;
 }
 
+void Clt()
+{
+    Treg=0; iTreg=0;
+}
+
 void PopStack()
 {
     Xreg = Yreg; iXreg = iYreg;
     DropStack();
-    Treg=0; iTreg=0;
+    Clt();
 }
 
 //***********************************
@@ -77,8 +79,32 @@ void PushStackUp(void)
 void Drop()
 {
     DropStack();
-    OperatorXY = OperatorYZ; // bring down any operator too
-    OperatorYZ = 0;
+    if (!RPNmode)
+    {
+        OperatorXY = OperatorYZ; // bring down any operator too
+        OperatorYZ = OperatorZT;
+        OperatorZT = 0;
+
+        // dont propagate T in ALG.
+        Clt();
+    }
+}
+
+
+// clear X reg.
+void Clx()
+{
+    Xreg = 0; iXreg = 0;
+}
+
+void SwapXY()
+{
+    //swap and X and Y regs
+    double TEMPreg=Xreg; 
+    double iTEMPreg = iXreg;			
+
+    Xreg=Yreg; iXreg = iYreg;
+    Yreg=TEMPreg; iYreg = iTEMPreg;
 }
 
 // Perform operation and display
@@ -127,6 +153,17 @@ void EnterComplex()
         ExponentIncluded = FALSE;
         DecimalIncluded = FALSE;
     }
+}
+
+void ChangeSign()
+{
+    // if not entered, enter it!
+    CompleteXreg();
+
+    Xreg = -Xreg;
+    iXreg = -iXreg;
+
+    //UpdateLCDline2(DisplayXreg);        //update the display
 }
 
 // handle number input. return key if not handled (0 otherwise)
@@ -241,15 +278,23 @@ int EnterNumber(int Key)
     case KeySign: 
         //changes the sign of the mantissa or exponent
         Key = 0;
-        SignKey();
+        if (ValueEntered)
+        {
+            ChangeSign();
+            UpdateDisplayRegX();
+        }
+        else
+        {
+            SignKey();
+        }
         break;
     case KeyClear: 
         // only handle one level of clear. ie Clear Entry
         if (ValueEntered==FALSE)    
         {
             Key = 0;
-            Xreg = 0; iXreg = 0;
-            UpdateDisplayRegs();
+            Clx();
+            UpdateDisplayRegX();
             ResetFlags();
             EnableXregOverwrite = TRUE;
         }
@@ -261,34 +306,31 @@ int EnterNumber(int Key)
 // tidy as many unnecessary chars as possible from a sci number
 static void tidyNumber(char* p)
 {
+    if (*p == '-') ++p; // skip sign
+    if (*p == '0' && p[1] == '.')
+    {
+        // 0.xxx
+        strcpy(p, p+1);
+    }
+    
     p = strchr(p, 'e'); // exponent?
     if (p)
     {
-        char* q;
-        char* p0;
         ++p;
-        p0 = p;
         if (*p == '+')
-        {
-            q = p++;
-            while ((*q++ = *p++) != 0);
-        }
-        if (*p0 == '-') ++p0; // '-' allowed
+            strcpy(p, p+1);
 
-        if (*p0 == '0') // leading zero in exponent
-        {
-            q = p0++;
-            while ((*q++ = *p0++) != 0);
-        }
+        if (*p == '-') ++p; // '-' allowed
+
+        if (*p == '0') // leading zero in exponent
+            strcpy(p, p+1);
     }
 }
 
 void FormatValue(char* dest,
                  double value, double ivalue,
-                 int precision )
+                 int space, BOOL tidy)
 {
-    // strcpy(dest,"                ");     //blank the string first
-
     char base = (WatchMode == WATCH_MODE_CALC) ? CalcDisplayBase : 10;
 
     int index;
@@ -348,7 +390,30 @@ void FormatValue(char* dest,
             {
                 if (ivalue == 0)
                 {
-                    sprintf(dest,"%.10g", value);
+                    // fit into `space's on screen
+                    int p = space-1;
+                    int l;
+                    if (value < 0) --p; // adjust for sign
+                    
+                    for (;;)
+                    {
+                        sprintf(dest,"%.*g", p, value);
+                        l = strlen(dest);
+
+                        if (l <= space) 
+                            break;
+
+                        if (tidy)
+                        {
+                            // try tidying
+                            tidyNumber(dest);
+                            if (strlen(dest) <= space) 
+                                break;
+                        }
+
+                        p -= (l - space);
+                        if (p <= 0) break; // fail safe
+                    }
                 }
                 else
                 {
@@ -363,7 +428,7 @@ void FormatValue(char* dest,
                     }
 
                     // textify the real part
-                    sprintf(dest,"%.6g", value);
+                    sprintf(dest,"%.7g", value);
 
                     // tidy to save precious chars
                     tidyNumber(dest);
@@ -375,13 +440,19 @@ void FormatValue(char* dest,
                     
                     if (ivalue != 1)
                     {
+                        int li;
                         // now fit as much of the ipart as we can
-                        do
+                        for (;;)
                         {
-                            sprintf(dest + l,"%.*g", id--, ivalue);
+                            sprintf(dest + l,"%.*g", id, ivalue);
                             tidyNumber(dest+l);
-                            if (!id) break; // fail safe!
-                        } while (strlen(dest) > MaxLCDdigits);
+
+                            li = strlen(dest);
+                            if (li <= space) break; // done
+
+                            id -= (li - space);
+                            if (id <= 0) break; // fail safe!
+                        }
                     }
                 }
             }
@@ -444,18 +515,28 @@ void FormatValue(char* dest,
         break;
     }
 } 
+
+// format and display just X
+void UpdateDisplayRegX()
+{
+    UpdateXregDisplay();
+    UpdateLCDline2(DisplayXreg);
+}
+
 //***********************************
 //Converts both X&Y regs from real numbers into display strings and then displays them
 //Also displays the current algebraic operator
 void UpdateDisplayRegs(void)
 {
-    char c;
     unsigned int i;
     UpdateXregDisplay();
     UpdateYregDisplay();
 
     if (!RPNmode)
     {
+        char c;
+        BOOL fill;
+
         //the rest of this code is for the ALG mode only
         c = ' ';
         if (OperatorXY)
@@ -471,28 +552,32 @@ void UpdateDisplayRegs(void)
                 c = '^'; 
                 break;
             case CALC_OP_P2R:
-                c = 'p';
-                break;
-            case CALC_OP_R2P:
                 c = 'r';
                 break;
+            case CALC_OP_R2P:
+                c = 'p';
+                break;
             case CALC_OP_PARALLEL:
-                c = 'l';
+                c = '|';
                 break;
             default:
                 c = 'o'; 
             }
         }
 
-        //replace NULL with space
+        
+        fill = FALSE;
         for(i=0; i<MaxLCDdigits; i++)
-            if (!DisplayYreg[i]) DisplayYreg[i]=' ';
+        {
+            if (!DisplayYreg[i]) fill = TRUE;
+            if (fill) DisplayYreg[i] = ' ';
+        }
 
         //display the operator character
-        DisplayYreg[15]=c;      
-        DisplayYreg[16]=0;
+        DisplayYreg[MaxLCDdigits-1]=c;      
+        DisplayYreg[MaxLCDdigits]=0;
 
-        for (i = 0; i < 7; ++i)
+        for (i = 0; i <= PAREN_LEVELS; ++i)
         {
             if (!OperatorsXY[i]) break;
         }
@@ -500,8 +585,8 @@ void UpdateDisplayRegs(void)
         if (i > 1)
         {
             //display the operator character    
-            DisplayYreg[13]='(';
-            DisplayYreg[14]='0' + i - 1;
+            DisplayYreg[MaxLCDdigits-3]='(';
+            DisplayYreg[MaxLCDdigits-2]='0' + i - 1;
         }
     }
 
@@ -611,18 +696,41 @@ void CompleteXreg(void)
     EnableXregOverwrite=FALSE;
 }
 
+void UpdateMANTDisplay()
+{
+    char* p = DisplayYreg;
+    
+    // leave a space on the left so it looks a bit different
+    *p = ' ';
+    FormatValue( p + 1, Xreg, 0, MaxLCDdigits-1, FALSE );
+
+    p = DisplayXreg;
+    *p++ = ' ';
+    FormatValue( p+1, iXreg, 0, MaxLCDdigits-2, FALSE );
+    if (p[1] == '-')
+        *p++ = '-';
+
+    *p = 'i';
+
+    UpdateLCDline1(DisplayYreg);
+    UpdateLCDline2(DisplayXreg);
+}
+
 //***********************************
 // Converts the Xreg double value into a string for the DisplayXreg
 void UpdateXregDisplay(void)
 {
-    FormatValue( DisplayXreg, Xreg, iXreg, 10 );
+    FormatValue( DisplayXreg, Xreg, iXreg, MaxLCDdigits, TRUE );
 }
 
 //***********************************
 // Converts the Yreg double value into a string for the DisplayYreg
 void UpdateYregDisplay(void)
 {
-    FormatValue( DisplayYreg, Yreg, iYreg, 9 );
+    int l = MaxLCDdigits;
+    if (!RPNmode) l -= 4; // leave space for indicator
+
+    FormatValue( DisplayYreg, Yreg, iYreg, l, TRUE );
 }
 
 
@@ -639,13 +747,10 @@ void ResetFlags(void)
 
 //***********************************
 //processes the store/recall function
-BOOL StoreRecall(void)
+void StoreRecall(void)
 {
     char KeyPress2;
     int num;
-    BOOL rcl = FALSE;
-
-    // return TRUE if RCL
 
     //this operation discards any value currently in the display register
     UpdateLCDline1("RECALL REG 0-9 ?");     //ask for a register number
@@ -659,11 +764,9 @@ BOOL StoreRecall(void)
         {
             //store the Xreg value in the appropriate Sreg
             Sreg[num]=Xreg; iSreg[num] = iXreg;
-            //UpdateLCDline1("  VALUE STORED  ");
-            //DelayMs(100);           //small visual delay
         }
     }
-    else                //do the RCL function
+    else //do the RCL function
     {
         num = ReturnNumber(KeyPress2);
         if (num >= 0)
@@ -673,18 +776,15 @@ BOOL StoreRecall(void)
             //restore the Xreg value from the Sreg
             Xreg=Sreg[num]; iXreg = iSreg[num];
             ValueEntered=TRUE;
-            //UpdateLCDline1(" VALUE RECALLED ");
-            //DelayMs(100);           //small visual delay
-            rcl = TRUE;
         }
     }
-    return rcl;
 }
 
-//**********************************
-// processes the sign key
+// processes the sign key during input
 void SignKey(void)
 {
+    // ASSUME value not entered.
+
     int n = strlen(DisplayXreg);
     char* p;
     char* q;
@@ -694,7 +794,7 @@ void SignKey(void)
     q = strchr(DisplayXreg, 'i');
     
     //do this if there is an exponent already
-    if (!ValueEntered && (p && q < p))
+    if (p && q < p)
     {
         ++p; // to sign
 
@@ -718,7 +818,7 @@ void SignKey(void)
     else 
     {
         // complex?
-        if (!ValueEntered && q)
+        if (q)
         {
             --q; // to sign
             if (*q == '+') *q = '-';
@@ -761,15 +861,6 @@ void SignKey(void)
             }
         }
     }
-
-    if (ValueEntered)
-    {
-        // perform a sign changed on entered value and leave
-        // as entered.
-        ValueEntered = FALSE;
-        CompleteXreg();
-    }
-    
     UpdateLCDline2(DisplayXreg);        //update the display
 }
 
@@ -895,7 +986,7 @@ void Conversions(void)
     case 3:
         {
             Xreg=Xreg*9.0/5.0+32.0;
-            UpdateDisplayRegs();    //update display again
+            UpdateDisplayRegX();    //update display again
             break;
         }
     case 4:

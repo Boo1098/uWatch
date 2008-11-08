@@ -92,6 +92,13 @@ uWatch Revisions:
 - added ABS function to menu.
 - changed R>P and P>R so that X is the angle and Y is the arg.
 - fixed: C or mode escapes from menu
+- fixed: ALG mode did not even work properly. eg 3 + 4 * 2 / 2 went wrong!
+- change ALG operator indicators P2R = 'r', R2P = 'p'
+- fix screen corruption bug in ALG mode.
+- display more digits when possible
+- fix ALG mode bug with Y^X
+- ALG parentheses limit reduced to 4.
+- fixed, C doest not disable stack lift.
 
 -- Experimental complex number support
 - base 4 ops
@@ -103,6 +110,12 @@ uWatch Revisions:
   a single '.' starts the i part.
 - added REAL, C>R, R>C, CONJ to third menu 2nd page; real-part,
   split, join and conjugate.
+- fixed +/- to change sign of number including complex part.
+- remove leading 0 in 0.xyz to compact complex display.
+- full mant display using Menu + mode
+- fix alg mode for complex numbers
+
+
 
 
 

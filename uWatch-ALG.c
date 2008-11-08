@@ -29,11 +29,24 @@ This program is free software: you can redistribute it and/or modify
 **********************************************************/
 
 
-
-
-void ProcessXYoperator(void)
+void ProcessXYoperator()
 {
     Operation(OperatorXY);
+}
+
+void PushOp(int op)
+{
+    OperatorZT = OperatorYZ;
+    OperatorYZ = OperatorXY;
+    OperatorXY = op;
+}
+
+void reduce(int lev)
+{
+    while (OperatorXY && opPrec(OperatorXY) <= lev)
+    {
+        ProcessXYoperator();
+    }
 }
 
 //***********************************
@@ -42,14 +55,11 @@ void ProcessXYoperator(void)
 void ALGcalculator(void)
 {
     unsigned int Key;       //keypress variables
-    double TEMPreg;             //temp register for calculations
     int c;
     DisplayXreg[0] = 0;
     DisplayYreg[0] = 0;
-    DecimalIncluded=FALSE;
-    ExponentIncluded=FALSE;
+    ResetFlags();
     CurrentMenu=0;
-    ValueEntered=TRUE;
     UpdateXregDisplay();
     UpdateYregDisplay();
     UpdateLCDline1(DisplayYreg);
@@ -76,6 +86,9 @@ void ALGcalculator(void)
             int mi;
             CalcMenuInfo* mifo;
 
+            // pressing menu completes.
+            CompleteXreg();
+
             mifo = MainMenus + CurrentMenu;
             mi = DriveMenu2(mifo->lines[0], mifo->lines[1],
                             mifo->lines[2], mifo->lines[3]);
@@ -95,16 +108,15 @@ void ALGcalculator(void)
                     }
                     else
                     {
-                        // push OP
-                        CompleteXreg();
-                        ResetFlags();
+                        reduce(p);
 
-                        OperatorYZ=OperatorXY;
-                        OperatorXY = mi;
+                        // push OP
+                        ResetFlags();
+                        PushOp(mi);
 
                         // and values
                         Push();
-                        Xreg = 0;
+                        Clx();
 
                         EnableXregOverwrite = TRUE;
                         UpdateDisplayRegs();
@@ -136,8 +148,7 @@ void ALGcalculator(void)
         {
             CompleteXreg();
             ResetFlags();
-            ProcessXYoperator();    //process the previous XY operator (if any)
-            ProcessXYoperator();    
+            reduce(9); // ALL
             UpdateDisplayRegs();
         }
 
@@ -145,13 +156,11 @@ void ALGcalculator(void)
         {
             CompleteXreg();
             ResetFlags();
-            ProcessXYoperator();    //process the previous XY operator (if any)
-            ProcessXYoperator();    //process the previous XY operator (if any)
-            Yreg = Xreg;
-            Xreg=0;
+            reduce(3);
+            Push();
+            PushOp(CALC_OP_PLUS);
+            Clx();
             EnableXregOverwrite = TRUE;
-
-            OperatorXY=CALC_OP_PLUS;
             UpdateDisplayRegs();
         }
 
@@ -159,12 +168,13 @@ void ALGcalculator(void)
         {
             CompleteXreg();
             ResetFlags();
-            ProcessXYoperator();    //process the previous XY operator (if any)
-            ProcessXYoperator();    //process the previous XY operator (if any)
-            Yreg=Xreg;              //push X across and reset X ready for next value
-            Xreg=0;
+            reduce(3);
+
+            PushOp(CALC_OP_MINUS);
+            Push();
+            Clx();
+
             EnableXregOverwrite = TRUE;
-            OperatorXY=CALC_OP_MINUS;
             UpdateDisplayRegs();
         }
 
@@ -172,17 +182,12 @@ void ALGcalculator(void)
         {
             CompleteXreg();
             ResetFlags();
-            if (OperatorXY==CALC_OP_PLUS||OperatorXY==CALC_OP_MINUS)  //check for operator precedence
-            {
-                OperatorYZ=OperatorXY;
-                Zreg=Yreg;
-            }
-            else ProcessXYoperator();   //process the previous XY operator (if any)
-            //result is returned in X
-            Yreg=Xreg;              //push X across and reset X ready for next value
-            Xreg=0;
+
+            reduce(2);
+            PushOp(CALC_OP_MULT);
+            Push();
+            Clx();
             EnableXregOverwrite = TRUE;
-            OperatorXY=CALC_OP_MULT;
             UpdateDisplayRegs();
         }
 
@@ -190,21 +195,16 @@ void ALGcalculator(void)
         {
             CompleteXreg();
             ResetFlags();
-            if (OperatorXY==CALC_OP_PLUS||OperatorXY==CALC_OP_MINUS)  //check for operator precedence
-            {
-                OperatorYZ=OperatorXY;
-                Zreg=Yreg;
-            }
-            else ProcessXYoperator();   //process the previous XY operator (if any)
-                //result is returned in X
-            Yreg=Xreg;              //push X across and reset X ready for next value
-            Xreg=0;
+            reduce(2);
+            PushOp(CALC_OP_DIVIDE);
+            Push();
+            Clx();
             EnableXregOverwrite = TRUE;
-            OperatorXY=CALC_OP_DIVIDE;
             UpdateDisplayRegs();
         }
 
-        if (Key==KeyClear)          //user has pressed the CLEAR key
+        //user has pressed the CLEAR key
+        if (Key==KeyClear)  
         {
             //clear all the registers and operators
             ClearAllRegs();
@@ -215,9 +215,7 @@ void ALGcalculator(void)
         if (Key==KeyXY)             //user has pressed the X-Y key
         {
             CompleteXreg();     //enter value on stack if needed
-            TEMPreg=Xreg;           
-            Xreg=Yreg;          //swap and X and Y regs
-            Yreg=TEMPreg;
+            SwapXY();
             UpdateDisplayRegs();    //update display again
         }
 
@@ -233,41 +231,67 @@ void ALGcalculator(void)
                 //and can only execute parentheses if the key is pressed directly after an operator
             {
                 //all we do now is store the operators and Y/Zreg values in the stack
+                int i;
 
                 //shift all the operators
-                memmove(OperatorsXY + 1, OperatorsXY,  6*sizeof(OperatorXY));
-                memmove(OperatorsYZ + 1, OperatorsYZ,  6*sizeof(OperatorYZ));
+                for (i = PAREN_LEVELS; i > 0; --i)
+                {
+                    OperatorsXY[i] = OperatorsXY[i-1];
+                    OperatorsYZ[i] = OperatorsYZ[i-1];
+                    OperatorsZT[i] = OperatorsZT[i-1];
+                }
 
-                memmove(Yregs + 1, Yregs, 5*sizeof(Yreg));
-                Yregs[0] = Yreg;
+                for (i = PAREN_LEVELS-1; i > 0; --i)
+                {
+                    Yregs[i] = Yregs[i-1]; iYregs[i] = iYregs[i-1];
+                    Zregs[i] = Zregs[i-1]; iZregs[i] = iZregs[i-1];
+                    Tregs[i] = Tregs[i-1]; iTregs[i] = iTregs[i-1];
+                }
 
-                memmove(Zregs + 1, Zregs, 5*sizeof(Zreg));
-                Zregs[0] = Zreg;
+                Yregs[0] = Yreg;  iYregs[0] = iYreg;
+                Zregs[0] = Zreg;  iZregs[0] = iZreg;
+                Tregs[0] = Treg;  iTregs[0] = iTreg;
 
-                Yreg=0; Zreg=0; OperatorYZ=0; OperatorXY=0;
+                ClearCurrentRegs();
                 UpdateDisplayRegs();    //update display again
             }
         }
 
         if (Key==KeyRP)             //right parentheses
         {
-            //and can only execute close parentheses if there is a matching opening one 
-            //closing a parenthese is the same as pressing =
-            //so lets do the same as what we do with =
+            int i;
+
             CompleteXreg();
             ResetFlags();
-            ProcessXYoperator();    //process the previous XY operator (if any)
-            ProcessXYoperator();    //process the previous YZ operator (if any)
+            reduce(9); // all
+            
+            if (OperatorsXY[1])
+            {
+                //now we want to retrieve all the operators and Y/Zreg values from the stack
+                for (i = 0; i < PAREN_LEVELS; ++i)
+                {
+                    OperatorsXY[i] = OperatorsXY[i+1];
+                    OperatorsYZ[i] = OperatorsYZ[i+1];
+                    OperatorsZT[i] = OperatorsZT[i+1];
+                }
 
-            //now we want to retrieve all the operators and Y/Zreg values from the stack
-            memmove(OperatorsXY, OperatorsXY + 1,  6*sizeof(OperatorXY));
-            memmove(OperatorsYZ, OperatorsYZ + 1,  6*sizeof(OperatorYZ));
+                // clear top
+                OperatorsXY[i] = 0;
+                OperatorsYZ[i] = 0;
+                OperatorsZT[i] = 0;
+            
+                // bring regs back
+                Yreg = Yregs[0]; iYreg = iYregs[0];
+                Zreg = Zregs[0]; iZreg = iZregs[0];
+                Treg = Tregs[0]; iTreg = iTregs[0];
 
-            Yreg = Yregs[0];
-            memmove(Yregs, Yregs + 1, 5*sizeof(Yreg));
-
-            Zreg = Zregs[0];
-            memmove(Zregs, Zregs + 1, 5*sizeof(Zreg));
+                for (i = 0; i < PAREN_LEVELS-1; ++i)
+                {
+                    Yregs[i] = Yregs[i+1]; iYregs[i] = iYregs[i+1];
+                    Zregs[i] = Zregs[i+1]; iZregs[i] = iZregs[i+1];
+                    Tregs[i] = Tregs[i+1]; iTregs[i] = iTregs[i+1];
+                }
+            }
             
             UpdateDisplayRegs();    //update display again
         }
