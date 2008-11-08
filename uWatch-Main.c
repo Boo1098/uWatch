@@ -250,6 +250,7 @@ int opPrec(int op)
     if (op == CALC_OP_NPOW ||
         op == CALC_OP_R2P  ||
         op == CALC_OP_PARALLEL ||
+        op == CALC_OP_COMPLEX_JOIN ||
         op == CALC_OP_P2R  ||
         op == CALC_OP_NROOT) prec = 1;
     else if (op == CALC_OP_PLUS ||
@@ -332,20 +333,20 @@ CalcMenuInfo MainMenus[] =
     },
 
     { // menu 3
-        {" Play C>R  Conv ",   
+        {" Play R>C  Conv ",   
          " 2nd  Base //   ", 
-         " Rec  R>C  Conj ", 
+         " Rec  C>R  Conj ", 
          " 2nd  Real      ", 
         },
 
         { CALC_OP_PLAY,
-          CALC_OP_COMPLEX_SPLIT,
+          CALC_OP_COMPLEX_JOIN,
           CALC_OP_CONV,
           CALC_OP_BASE,
           CALC_OP_PARALLEL,
 
           CALC_OP_RECORD,
-          CALC_OP_COMPLEX_JOIN,
+          CALC_OP_COMPLEX_SPLIT,
           CALC_OP_CONJUGATE,
           CALC_OP_REAL_PART,
           CALC_OP_NULL,
@@ -358,7 +359,7 @@ char LCDhistory2[MaxLCDdigits+1];   //holds a copy of the LCD data for when the 
 
 BOOL NextMode;          //TRUE if MODE button switches to next mode. FALSE returns to Time/Date mode.
 BOOL TwelveHour;        //TRUE if 12 hour mode
-BOOL RPNmode;           //TRUE if RPN mode, otherwise Algebraic
+int RPNmode;           //TRUE if RPN mode, otherwise Algebraic
 
 int CalcDisplayBase;   //2-binary, 10-decimal, 16 decimal
 

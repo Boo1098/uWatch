@@ -35,6 +35,7 @@
 extern int DegreesMode;
 extern double Regs[4], iRegs[4];
 extern int CurrentMenu;
+extern int RPNmode;
 
 extern void Operation(int op);
 extern void caldati(long mjd,
@@ -51,6 +52,7 @@ extern void KeyRecord(void);
 extern void KeyReplay(void);
 extern void Conversions(void);
 extern void BaseMode(void);
+extern void SwapXY();
 
 /* Operation Codes */
 
