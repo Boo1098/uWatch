@@ -761,6 +761,7 @@ void Operation(int op)
         *irp = 0;
         break;
     case CALC_OP_COMPLEX_JOIN:
+        if (!RPNmode) SwapXY();
         *irp = rp[1];
         Drop();
         break;

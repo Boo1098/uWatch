@@ -560,6 +560,9 @@ void UpdateDisplayRegs(void)
             case CALC_OP_PARALLEL:
                 c = '|';
                 break;
+            case CALC_OP_COMPLEX_JOIN:
+                c = 'i';
+                break;
             default:
                 c = 'o'; 
             }
