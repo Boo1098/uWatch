@@ -238,14 +238,25 @@ int EnterNumber(int Key)
             // mode ONLY.
             if (l > 0 && !ValueEntered)
             {
-                if (DisplayXreg[l-1] == 'e')
+                char c = DisplayXreg[l-1];
+                if (c == 'e')
                 {
                     ExponentIncluded = FALSE;
                 }
-                else if (DisplayXreg[l-1] == '.')
+                else if (c == '.')
                 {
                     DecimalIncluded = FALSE;
                 }
+                else if (c == 'i')
+                {
+                    if (strchr(DisplayXreg, '.'))
+                        DecimalIncluded = TRUE;
+                    if (strchr(DisplayXreg, 'e'))
+                        ExponentIncluded = TRUE;
+
+                    ComplexIncluded = FALSE;
+                }
+
                 DisplayXreg[l-1] = 0;
                 UpdateLCDline2(DisplayXreg); //update the display
             }
