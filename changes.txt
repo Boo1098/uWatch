@@ -121,6 +121,8 @@ uWatch Revisions:
 1.4.0
 - relabelled 1.3.7 final!
 
+1.4.1
+- bugfix P>R and R>P in ALG mode hung!
 
 
 

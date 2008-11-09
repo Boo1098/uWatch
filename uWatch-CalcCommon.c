@@ -48,6 +48,20 @@ void Push()
     Yreg=Xreg; iYreg=iXreg;
 }
 
+void PushOp(int op)
+{
+    OperatorZT = OperatorYZ;
+    OperatorYZ = OperatorXY;
+    OperatorXY = op;
+}
+
+void PopOp()
+{
+    OperatorXY = OperatorYZ; // bring down any operator too
+    OperatorYZ = OperatorZT;
+    OperatorZT = 0;
+}
+
 //**********************************
 // Drops the stack down and leaves Treg intact making it useful as a "constant" register
 void DropStack(void)
@@ -80,14 +94,7 @@ void Drop()
 {
     DropStack();
     if (!RPNmode)
-    {
-        OperatorXY = OperatorYZ; // bring down any operator too
-        OperatorYZ = OperatorZT;
-        OperatorZT = 0;
-
-        // dont propagate T in ALG.
-        Clt();
-    }
+        Clt();        // dont propagate T in ALG.
 }
 
 
@@ -396,89 +403,88 @@ void FormatValue(char* dest,
         }
         break;
         case 10:
+            if (ivalue == 0)
             {
-                if (ivalue == 0)
-                {
-                    // fit into `space's on screen
-                    int p = space-1;
-                    int l;
-                    if (value < 0) --p; // adjust for sign
+                // fit into `space's on screen
+                int p = space-1;
+                int l;
+                if (value < 0) --p; // adjust for sign
                     
-                    for (;;)
-                    {
-                        sprintf(dest,"%.*g", p, value);
-                        l = strlen(dest);
+                for (;;)
+                {
+                    sprintf(dest,"%.*g", p, value);
+                    l = strlen(dest);
 
-                        if (l <= space) 
+                    if (l <= space) 
+                        break;
+
+                    if (tidy)
+                    {
+                        // try tidying
+                        tidyNumber(dest);
+                        if (strlen(dest) <= space) 
                             break;
-
-                        if (tidy)
-                        {
-                            // try tidying
-                            tidyNumber(dest);
-                            if (strlen(dest) <= space) 
-                                break;
-                        }
-
-                        p -= (l - space);
-                        if (p <= 0) break; // fail safe
-                    }
-                }
-                else
-                {
-                    int l;
-                    char c = '+';
-                    int id = 6;
-                    int d = 7;
-                    
-                    if (ivalue < 0)
-                    {
-                        ivalue = -ivalue;
-                        c = '-';
                     }
 
-                again:
-
-                    // textify the real part
-                    sprintf(dest,"%.*g", d, value);
-
-                    // tidy to save precious chars
-                    tidyNumber(dest);
-                    
-                    l = strlen(dest);                        
-                    dest[l++] = c;
-                    dest[l++] = 'i';
-                    dest[l] = 0;
-                    
-                    if (ivalue != 1)
-                    {
-                        int li;
-                        // now fit as much of the ipart as we can
-                        for (;;)
-                        {
-                            sprintf(dest + l,"%.*g", id, ivalue);
-                            tidyNumber(dest+l);
-
-                            li = strlen(dest);
-                            if (li <= space) break; // done
-
-                            id -= (li - space);
-                            if (id <= 0) 
-                            {
-                                // very rarely we cant fit ANY of the ipart
-                                // on display. shorten the real part and
-                                // try again.
-                                d -= 2;
-                                id = d-1;
-                                if (d > 2) goto again;
-                            }
-                        }
-                    }
-
-                    // ensure we dont overrun whatever.
-                    dest[space] = 0;
+                    p -= (l - space);
+                    if (p <= 0) break; // fail safe
                 }
             }
+            else
+            {
+                int l;
+                char c = '+';
+                int id = 6;
+                int d = 7;
+                    
+                if (ivalue < 0)
+                {
+                    ivalue = -ivalue;
+                    c = '-';
+                }
+
+            again:
+
+                // textify the real part
+                sprintf(dest,"%.*g", d, value);
+
+                // tidy to save precious chars
+                tidyNumber(dest);
+                    
+                l = strlen(dest);                        
+                dest[l++] = c;
+                dest[l++] = 'i';
+                dest[l] = 0;
+                    
+                if (ivalue != 1)
+                {
+                    int li;
+                    // now fit as much of the ipart as we can
+                    for (;;)
+                    {
+                        sprintf(dest + l,"%.*g", id, ivalue);
+                        tidyNumber(dest+l);
+
+                        li = strlen(dest);
+                        if (li <= space) break; // done
+
+                        id -= (li - space);
+                        if (id <= 0) 
+                        {
+                            // very rarely we cant fit ANY of the ipart
+                            // on display. shorten the real part and
+                            // try again.
+                            d -= 2;
+                            id = d-1;
+                            if (d > 2) goto again;
+                        }
+                    }
+                }
+            }
+
+            // ensure we dont overrun whatever.
+            dest[space] = 0;
+
             break;
         case 16:
         {
