@@ -28,18 +28,13 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
-void PushOp(int op)
-{
-    OperatorZT = OperatorYZ;
-    OperatorYZ = OperatorXY;
-    OperatorXY = op;
-}
 
 void reduce(int lev)
 {
     while (OperatorXY && opPrec(OperatorXY) <= lev)
     {
         Operation(OperatorXY);
+        PopOp();
     }
 }
 
@@ -49,7 +44,6 @@ void reduce(int lev)
 void ALGcalculator(void)
 {
     unsigned int Key;       //keypress variables
-    int c;
     DisplayXreg[0] = 0;
     DisplayYreg[0] = 0;
     ResetFlags();
@@ -94,7 +88,6 @@ void ALGcalculator(void)
                 if (mi > 0)
                 {
                     int p = opPrec(mi);
-
                     if (!p)
                     {
                         // operator now!
@@ -137,17 +130,17 @@ void ALGcalculator(void)
 
         // handle numbers
         Key = EnterNumber(Key);
+        if (!Key) continue;
 
-        if (Key==KeyEnter)          //user has pressed the ENTER (=) key
-        {
+        switch (Key)
+        {            
+        case KeyEnter:
+            //user has pressed the ENTER (=) key
             CompleteXreg();
             ResetFlags();
             reduce(9); // ALL
-            UpdateDisplayRegs();
-        }
-
-        if (Key==KeyPlus)           //user has pressed the PLUS key
-        {
+            break;
+        case KeyPlus:           //user has pressed the PLUS key
             CompleteXreg();
             ResetFlags();
             reduce(3);
@@ -155,38 +148,26 @@ void ALGcalculator(void)
             PushOp(CALC_OP_PLUS);
             Clx();
             EnableXregOverwrite = TRUE;
-            UpdateDisplayRegs();
-        }
-
-        if (Key==KeyMinus)          //user has pressed the MINUS key
-        {
+            break;
+        case KeyMinus:          //user has pressed the MINUS key
             CompleteXreg();
             ResetFlags();
             reduce(3);
-
             PushOp(CALC_OP_MINUS);
             Push();
             Clx();
-
             EnableXregOverwrite = TRUE;
-            UpdateDisplayRegs();
-        }
-
-        if (Key==KeyMult)               //user has pressed the MULTIPLY key
-        {
+            break;
+        case KeyMult:               //user has pressed the MULTIPLY key
             CompleteXreg();
             ResetFlags();
-
             reduce(2);
             PushOp(CALC_OP_MULT);
             Push();
             Clx();
             EnableXregOverwrite = TRUE;
-            UpdateDisplayRegs();
-        }
-
-        if (Key==KeyDiv)                //user has pressed the DIVIDE key
-        {
+            break;
+        case KeyDiv:                //user has pressed the DIVIDE key
             CompleteXreg();
             ResetFlags();
             reduce(2);
@@ -194,110 +175,98 @@ void ALGcalculator(void)
             Push();
             Clx();
             EnableXregOverwrite = TRUE;
-            UpdateDisplayRegs();
-        }
-
-        //user has pressed the CLEAR key
-        if (Key==KeyClear)  
-        {
-            //clear all the registers and operators
+            break;
+        case KeyClear:
+            //user has pressed the CLEAR key
             ClearAllRegs();
             ResetFlags();
-            UpdateDisplayRegs();
-        }
-
-        if (Key==KeyXY)             //user has pressed the X-Y key
-        {
+            break;
+        case KeyXY:             //user has pressed the X-Y key
             CompleteXreg();     //enter value on stack if needed
             SwapXY();
-            UpdateDisplayRegs();    //update display again
-        }
-
-        ////user has pressed the left parentheses key
-        if (Key==KeyLP)           
-        {
-            int i;
-
-            if (!ValueEntered)
+            break;
+        case KeyLP:
+            //user has pressed the left parentheses key
             {
-                // perform implied multiply
-                CompleteXreg();    
+                int i;
+                if (!ValueEntered)
+                {
+                    // perform implied multiply
+                    CompleteXreg();    
+                    ResetFlags();
+                    reduce(2);
+                    PushOp(CALC_OP_MULT);
+                    Push();
+                }
+
+                // restore values
+
+                //shift all the operators
+                for (i = PAREN_LEVELS; i > 0; --i)
+                {
+                    OperatorsXY[i] = OperatorsXY[i-1];
+                    OperatorsYZ[i] = OperatorsYZ[i-1];
+                    OperatorsZT[i] = OperatorsZT[i-1];
+                }
+
+                for (i = PAREN_LEVELS-1; i > 0; --i)
+                {
+                    Yregs[i] = Yregs[i-1]; iYregs[i] = iYregs[i-1];
+                    Zregs[i] = Zregs[i-1]; iZregs[i] = iZregs[i-1];
+                    Tregs[i] = Tregs[i-1]; iTregs[i] = iTregs[i-1];
+                }
+
+                Yregs[0] = Yreg;  iYregs[0] = iYreg;
+                Zregs[0] = Zreg;  iZregs[0] = iZreg;
+                Tregs[0] = Treg;  iTregs[0] = iTreg;
+
+                ClearCurrentRegs();
+            }
+            break;
+        case KeyRP:             //right parentheses
+            {
+                int i;
+
+                CompleteXreg();
                 ResetFlags();
-                reduce(2);
-                PushOp(CALC_OP_MULT);
-                Push();
-            }
-
-            // restore values
-
-            //shift all the operators
-            for (i = PAREN_LEVELS; i > 0; --i)
-            {
-                OperatorsXY[i] = OperatorsXY[i-1];
-                OperatorsYZ[i] = OperatorsYZ[i-1];
-                OperatorsZT[i] = OperatorsZT[i-1];
-            }
-
-            for (i = PAREN_LEVELS-1; i > 0; --i)
-            {
-                Yregs[i] = Yregs[i-1]; iYregs[i] = iYregs[i-1];
-                Zregs[i] = Zregs[i-1]; iZregs[i] = iZregs[i-1];
-                Tregs[i] = Tregs[i-1]; iTregs[i] = iTregs[i-1];
-            }
-
-            Yregs[0] = Yreg;  iYregs[0] = iYreg;
-            Zregs[0] = Zreg;  iZregs[0] = iZreg;
-            Tregs[0] = Treg;  iTregs[0] = iTreg;
-
-            ClearCurrentRegs();
-            UpdateDisplayRegs();    //update display again
-        }
-
-        if (Key==KeyRP)             //right parentheses
-        {
-            int i;
-
-            CompleteXreg();
-            ResetFlags();
-            reduce(9); // all
+                reduce(9); // all
             
-            if (OperatorsXY[1])
-            {
-                for (i = 0; i < PAREN_LEVELS; ++i)
+                if (OperatorsXY[1])
                 {
-                    OperatorsXY[i] = OperatorsXY[i+1];
-                    OperatorsYZ[i] = OperatorsYZ[i+1];
-                    OperatorsZT[i] = OperatorsZT[i+1];
-                }
+                    for (i = 0; i < PAREN_LEVELS; ++i)
+                    {
+                        OperatorsXY[i] = OperatorsXY[i+1];
+                        OperatorsYZ[i] = OperatorsYZ[i+1];
+                        OperatorsZT[i] = OperatorsZT[i+1];
+                    }
 
-                // clear top
-                OperatorsXY[i] = 0;
-                OperatorsYZ[i] = 0;
-                OperatorsZT[i] = 0;
+                    // clear top
+                    OperatorsXY[i] = 0;
+                    OperatorsYZ[i] = 0;
+                    OperatorsZT[i] = 0;
             
-                // bring regs back
-                Yreg = Yregs[0]; iYreg = iYregs[0];
-                Zreg = Zregs[0]; iZreg = iZregs[0];
-                Treg = Tregs[0]; iTreg = iTregs[0];
+                    // bring regs back
+                    Yreg = Yregs[0]; iYreg = iYregs[0];
+                    Zreg = Zregs[0]; iZreg = iZregs[0];
+                    Treg = Tregs[0]; iTreg = iTregs[0];
 
-                for (i = 0; i < PAREN_LEVELS-1; ++i)
-                {
-                    Yregs[i] = Yregs[i+1]; iYregs[i] = iYregs[i+1];
-                    Zregs[i] = Zregs[i+1]; iZregs[i] = iZregs[i+1];
-                    Tregs[i] = Tregs[i+1]; iTregs[i] = iTregs[i+1];
+                    for (i = 0; i < PAREN_LEVELS-1; ++i)
+                    {
+                        Yregs[i] = Yregs[i+1]; iYregs[i] = iYregs[i+1];
+                        Zregs[i] = Zregs[i+1]; iZregs[i] = iZregs[i+1];
+                        Tregs[i] = Tregs[i+1]; iTregs[i] = iTregs[i+1];
+                    }
                 }
             }
-            
-            UpdateDisplayRegs();    //update display again
-        }
-
-        if (Key==KeyRCL)                //user has pressed the RCL/STO key
-        {
+            break;
+        case KeyRCL:                //user has pressed the RCL/STO key
             //recalls one of the user defined memory registers into the Xreg
             CompleteXreg();
             StoreRecall();
-            UpdateDisplayRegs();    //update display again
+            break;
         }
+
+        UpdateDisplayRegs();
     }
 }
 

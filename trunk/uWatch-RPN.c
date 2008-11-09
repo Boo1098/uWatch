@@ -37,11 +37,10 @@ This program is free software: you can redistribute it and/or modify
 void RPNcalculator(void)
 {
     unsigned int Key; //keypress variables
-    int c;
 
-    ResetFlags();
     CurrentMenu=0;
     UpdateDisplayRegs();
+    ResetFlags();
 
     //main keypress loop is infinite.
     for (;;)
