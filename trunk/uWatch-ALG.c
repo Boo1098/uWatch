@@ -28,12 +28,6 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
-
-void ProcessXYoperator()
-{
-    Operation(OperatorXY);
-}
-
 void PushOp(int op)
 {
     OperatorZT = OperatorYZ;
@@ -45,7 +39,7 @@ void reduce(int lev)
 {
     while (OperatorXY && opPrec(OperatorXY) <= lev)
     {
-        ProcessXYoperator();
+        Operation(OperatorXY);
     }
 }
 
@@ -142,7 +136,7 @@ void ALGcalculator(void)
         }
 
         // handle numbers
-        c = EnterNumber(Key);
+        Key = EnterNumber(Key);
 
         if (Key==KeyEnter)          //user has pressed the ENTER (=) key
         {
@@ -219,42 +213,44 @@ void ALGcalculator(void)
             UpdateDisplayRegs();    //update display again
         }
 
-        if (Key==KeyLP)             ////user has pressed the left parentheses key
+        ////user has pressed the left parentheses key
+        if (Key==KeyLP)           
         {
-            if (ValueEntered==FALSE)
+            int i;
+
+            if (!ValueEntered)
             {
-                UpdateLCDline1("ERR: No Operator");
-                DelayMs(1000);
-                UpdateLCDline1(DisplayYreg);        //restore the display
+                // perform implied multiply
+                CompleteXreg();    
+                ResetFlags();
+                reduce(2);
+                PushOp(CALC_OP_MULT);
+                Push();
             }
-            else
-                //and can only execute parentheses if the key is pressed directly after an operator
+
+            // restore values
+
+            //shift all the operators
+            for (i = PAREN_LEVELS; i > 0; --i)
             {
-                //all we do now is store the operators and Y/Zreg values in the stack
-                int i;
-
-                //shift all the operators
-                for (i = PAREN_LEVELS; i > 0; --i)
-                {
-                    OperatorsXY[i] = OperatorsXY[i-1];
-                    OperatorsYZ[i] = OperatorsYZ[i-1];
-                    OperatorsZT[i] = OperatorsZT[i-1];
-                }
-
-                for (i = PAREN_LEVELS-1; i > 0; --i)
-                {
-                    Yregs[i] = Yregs[i-1]; iYregs[i] = iYregs[i-1];
-                    Zregs[i] = Zregs[i-1]; iZregs[i] = iZregs[i-1];
-                    Tregs[i] = Tregs[i-1]; iTregs[i] = iTregs[i-1];
-                }
-
-                Yregs[0] = Yreg;  iYregs[0] = iYreg;
-                Zregs[0] = Zreg;  iZregs[0] = iZreg;
-                Tregs[0] = Treg;  iTregs[0] = iTreg;
-
-                ClearCurrentRegs();
-                UpdateDisplayRegs();    //update display again
+                OperatorsXY[i] = OperatorsXY[i-1];
+                OperatorsYZ[i] = OperatorsYZ[i-1];
+                OperatorsZT[i] = OperatorsZT[i-1];
             }
+
+            for (i = PAREN_LEVELS-1; i > 0; --i)
+            {
+                Yregs[i] = Yregs[i-1]; iYregs[i] = iYregs[i-1];
+                Zregs[i] = Zregs[i-1]; iZregs[i] = iZregs[i-1];
+                Tregs[i] = Tregs[i-1]; iTregs[i] = iTregs[i-1];
+            }
+
+            Yregs[0] = Yreg;  iYregs[0] = iYreg;
+            Zregs[0] = Zreg;  iZregs[0] = iZreg;
+            Tregs[0] = Treg;  iTregs[0] = iTreg;
+
+            ClearCurrentRegs();
+            UpdateDisplayRegs();    //update display again
         }
 
         if (Key==KeyRP)             //right parentheses
@@ -267,7 +263,6 @@ void ALGcalculator(void)
             
             if (OperatorsXY[1])
             {
-                //now we want to retrieve all the operators and Y/Zreg values from the stack
                 for (i = 0; i < PAREN_LEVELS; ++i)
                 {
                     OperatorsXY[i] = OperatorsXY[i+1];

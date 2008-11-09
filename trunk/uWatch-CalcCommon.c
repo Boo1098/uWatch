@@ -137,7 +137,6 @@ static void ProcessNumberKey(char digit)
     {
         DisplayXreg[l] = digit;
         DisplayXreg[l+1] = 0;  // ensure termination
-
         ValueEntered=FALSE;
     }
 }
@@ -162,8 +161,6 @@ void ChangeSign()
 
     Xreg = -Xreg;
     iXreg = -iXreg;
-
-    //UpdateLCDline2(DisplayXreg);        //update the display
 }
 
 // handle number input. return key if not handled (0 otherwise)
@@ -197,6 +194,7 @@ int EnterNumber(int Key)
         if (l<XBufSize-1) // allow for 2 
         {
             //only do if decimal point does not already exist AND there is no exponent
+            char* p = DisplayXreg + l - 1;
             if (ExponentIncluded)
             {
                 // interpret '.' after 'e' as '+i'
@@ -206,18 +204,17 @@ int EnterNumber(int Key)
             {
                 if (DecimalIncluded)
                 {
-                    if (DisplayXreg[l-1] == '.')
+                    if (!ComplexIncluded)
                     {
                         // last was '.', re-interpret as +i
-                        DisplayXreg[l-1] = 0;
+                        if (*p == '.') *p = 0;
+                        EnterComplex();
                     }
-                    EnterComplex();
                 }
                 else
                 {
                     // insert a 0 if not following a digit
-                    if (l == 0 || !isdigit(DisplayXreg[l-1])
-                        || ValueEntered == TRUE)
+                    if (l == 0 || !isdigit(*p) || ValueEntered == TRUE)
                     {
                         //decimal point needs a 0 added to the start
                         ProcessNumberKey('0');
@@ -238,16 +235,16 @@ int EnterNumber(int Key)
             // mode ONLY.
             if (l > 0 && !ValueEntered)
             {
-                char c = DisplayXreg[l-1];
-                if (c == 'e')
+                char* p = DisplayXreg + l - 1;
+                if (*p == 'e')
                 {
                     ExponentIncluded = FALSE;
                 }
-                else if (c == '.')
+                else if (*p == '.')
                 {
                     DecimalIncluded = FALSE;
                 }
-                else if (c == 'i')
+                else if (*p == 'i')
                 {
                     if (strchr(DisplayXreg, '.'))
                         DecimalIncluded = TRUE;
@@ -255,9 +252,12 @@ int EnterNumber(int Key)
                         ExponentIncluded = TRUE;
 
                     ComplexIncluded = FALSE;
+                    
+                    // clear +/- before i as well
+                    p[-1] = 0;
                 }
 
-                DisplayXreg[l-1] = 0;
+                *p = 0;
                 UpdateLCDline2(DisplayXreg); //update the display
             }
         }
@@ -295,13 +295,11 @@ int EnterNumber(int Key)
             UpdateDisplayRegX();
         }
         else
-        {
             SignKey();
-        }
         break;
     case KeyClear: 
         // only handle one level of clear. ie Clear Entry
-        if (ValueEntered==FALSE)    
+        if (!ValueEntered)
         {
             Key = 0;
             Clx();
@@ -431,6 +429,7 @@ void FormatValue(char* dest,
                     int l;
                     char c = '+';
                     int id = 6;
+                    int d = 7;
                     
                     if (ivalue < 0)
                     {
@@ -438,8 +437,10 @@ void FormatValue(char* dest,
                         c = '-';
                     }
 
+                again:
+
                     // textify the real part
-                    sprintf(dest,"%.7g", value);
+                    sprintf(dest,"%.*g", d, value);
 
                     // tidy to save precious chars
                     tidyNumber(dest);
@@ -462,9 +463,20 @@ void FormatValue(char* dest,
                             if (li <= space) break; // done
 
                             id -= (li - space);
-                            if (id <= 0) break; // fail safe!
+                            if (id <= 0) 
+                            {
+                                // very rarely we cant fit ANY of the ipart
+                                // on display. shorten the real part and
+                                // try again.
+                                d -= 2;
+                                id = d-1;
+                                if (d > 2) goto again;
+                            }
                         }
                     }
+
+                    // ensure we dont overrun whatever.
+                    dest[space] = 0;
                 }
             }
             break;

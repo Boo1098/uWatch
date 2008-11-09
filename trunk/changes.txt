@@ -98,8 +98,10 @@ uWatch Revisions:
 - display more digits when possible
 - fix ALG mode bug with Y^X
 - ALG parentheses limit reduced to 4.
-- fixed, C doest not disable stack lift.
+- fixed, C doest not disable stack lift, performs DROP during non-entry.
+- fixed, C during entry clears and shows 0 for re-entry.
 - right bracket is backspace key during number entry in RPN mode.
+- implied multiply in ALG mode for 1 + 2 ( ... etc.
 
 -- Experimental complex number support
 - base 4 ops
@@ -116,6 +118,8 @@ uWatch Revisions:
 - full mant display using Menu + mode
 - fix alg mode for complex numbers
 
+1.4.0
+- relabelled 1.3.7 final!
 
 
 
