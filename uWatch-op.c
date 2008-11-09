@@ -27,7 +27,6 @@
 #include <math.h>
 #include "uWatch-op.h"
 #include "uWatch-astro.h"
-#include "uWatch-dp.h"
 
 #define LN10 2.302585092994045684017991454683
 
@@ -106,7 +105,9 @@ int moonPhase(int year,int month,int day)
 // complex fabs
 static double fabsC(double* a, double* b)
 {
+    // return sqrt(a^2 + b^2)
     // use numerically stable method, Numerical Recipies 3rd p226
+
     double fa, fb, t;
 
     fa = fabs(*a);
@@ -242,6 +243,7 @@ static void opLn(double* rp, double* irp)
     }
 }
 
+// macros for complex multiply and square
 #define MULC(_a, _b, _c, _d)                    \
 {                                               \
     double t = (_a)*(_c) - (_b)*(_d);           \
@@ -264,7 +266,7 @@ static void opInv(double* rp, double* irp)
     {
         // 1 / (c + i d) = c / (c*c + d*d) - i d / (c*c + d*d)
         double d = (*rp)*(*rp) + (*irp)*(*irp);
-        *rp = (*rp)/d;
+        *rp /= d;
         *irp = -(*irp)/d;
     }
 }
@@ -272,7 +274,6 @@ static void opInv(double* rp, double* irp)
 static void powInt(double* rp, double* irp, unsigned long m)
 {
     // assume m > 0
-
     double x, y;
 
     x = 1;
@@ -371,6 +372,18 @@ static void powC(double* rp, double* irp, double a, double b)
     PtoR(rp, irp);
 }
 
+static void asincoshelper(double* rp, double* irp)
+{
+    double t = *rp + 1;
+    double u = *rp - 1;
+    double w1 = fabsC(&t, irp); // sqrt(t*t + irp^2);
+    double w2 = fabsC(&u, irp); // sqrt(u*u + irp^2);
+    double al = (w1 + w2)/2;
+
+    *rp = (w1 - w2)/2;
+    *irp = log(al + sqrt(al*al - 1));
+}
+
 // Raw operation
 void Operation(int op)
 {
@@ -445,11 +458,8 @@ void Operation(int op)
             *rp=exp(*rp);
         else
         {
-            double t = exp(*rp);
-            double sb, cb;
-            sinandcos(*irp, &sb, &cb);
-            *rp = t*cb;
-            *irp = t*sb;
+            *rp = exp(*rp);
+            PtoR(rp, irp);
         }
         break;
     case CALC_OP_NROOT:
@@ -477,7 +487,7 @@ void Operation(int op)
         }
         break;
     case CALC_OP_SIN:
-        if (DegreesMode) { *rp /= RAD;  *irp /= RAD; }
+        if (DegreesMode) { *rp /= RAD; }
         if (!*irp)
             *rp=sin(*rp);
         else
@@ -492,7 +502,7 @@ void Operation(int op)
         }
         break;
     case CALC_OP_COS:
-        if (DegreesMode) { *rp /= RAD;  *irp /= RAD; }
+        if (DegreesMode) { *rp /= RAD; }
         if (!*irp)
             *rp=cos(*rp);
         else
@@ -507,7 +517,7 @@ void Operation(int op)
         }
         break;
     case CALC_OP_TAN:
-        if (DegreesMode) { *rp /= RAD;  *irp /= RAD; }
+        if (DegreesMode) { *rp /= RAD; }
         if (!*irp)
             *rp=tan(*rp);
         else
@@ -529,47 +539,25 @@ void Operation(int op)
             *rp=asin(*rp);
         else
         {
-            // XX unstable?
-            double t = *rp + 1;
-            double u = *rp - 1;
-            double v = (*irp)*(*irp);
-            double w1 = sqrt(t*t + v);
-            double w2 = sqrt(u*u + v);
-            double al = (w1 + w2)/2;
-            double be = (w1 - w2)/2;
+            int neg = (*irp < 0);
+            asincoshelper(rp, irp);
 
-            t = asin(be);
-            u = log(al + sqrt(al*al - 1));
-            
-            // choose branch cut
-            *rp = t;
-            *irp = (*irp < 0) ? -u : u;
-            
+            *rp = asin(*rp);
+            if (neg) *irp = -*irp;
         }
-        if (DegreesMode) { *rp *= RAD; *irp *= RAD; }
+        if (DegreesMode) { *rp *= RAD; }
         break;
     case CALC_OP_ACOS:
         if (!*irp && *rp >= -1 && *rp <= 1)
             *rp=acos(*rp);
         else
         {
-            // XX unstable?
-            double t = *rp + 1;
-            double u = *rp - 1;
-            double v = (*irp)*(*irp);
-            double w1 = sqrt(t*t + v);
-            double w2 = sqrt(u*u + v);
-            double al = (w1 + w2)/2;
-            double be = (w1 - w2)/2;
-
-            t = acos(be);
-            u = log(al + sqrt(al*al - 1));
-            
-            // choose branch cut
-            *rp = t;
-            *irp = (*irp < 0) ? u : -u;
+            int neg = (*irp >= 0);
+            asincoshelper(rp, irp);
+            *rp = acos(*rp);
+            if (neg) *irp = -*irp;
         }
-        if (DegreesMode) { *rp *= RAD; *irp *= RAD; }
+        if (DegreesMode) { *rp *= RAD; }
         break;
     case CALC_OP_ATAN:
         if (!*irp)
@@ -583,13 +571,12 @@ void Operation(int op)
 
             u = (*irp)+1; 
             v = (*irp)-1; 
-
             w2 = log((t + u*u)/(t + v*v))/4;
             
             *rp = w1;
             *irp = w2;
         }
-        if (DegreesMode) { *rp *= RAD; *irp *= RAD; }
+        if (DegreesMode) { *rp *= RAD;  }
         break;
     case CALC_OP_MODEDEG:
         DegreesMode = TRUE;
@@ -604,8 +591,10 @@ void Operation(int op)
         break;
     case CALC_OP_HMS:
         *rp = hms(*rp);
+        *irp = 0;
         break;
     case CALC_OP_R2P:
+        if (!RPNmode) SwapXY();
         *irp = 0;
         irp[1] = 0;
         RtoP(rp, rp + 1);
@@ -620,25 +609,26 @@ void Operation(int op)
             unsigned int y, m, d;
             caldati(*rp, &y, &m, &d);
             *rp = y/1.0e6 + m/100.0 + d;
+            *irp = 0;
         }
         break;
     case CALC_OP_HOURS:
         *rp = hr(*rp);
+        *irp = 0;
         break;
     case CALC_OP_P2R:
+        if (!RPNmode) SwapXY();
         *irp = 0;
         irp[1] = 0;
         if (DegreesMode) rp[1] /= RAD;
         PtoR(rp, rp + 1);
         break;
     case CALC_OP_SUNSET:
-        {
-            Push();
-            Push();
-            CalcRiseAndSet(rp + 1, rp);
-            irp[1] = 0;
-            *irp = 0;
-        }
+        Push();
+        Push();
+        CalcRiseAndSet(rp + 1, rp);
+        irp[1] = 0;
+        *irp = 0;
         break;
     case CALC_OP_DAYS:
         {
@@ -683,29 +673,10 @@ void Operation(int op)
         Drop();
         break;
     case CALC_OP_MULT:        //perform MULTIPLY operation
-        {
-#if 0
-            double drp[2], dirp[2];
-            double t[2], u[2];
-
-            drp[0] = 0; drp[1] = *rp;
-            dirp[0] = 0; dirp[1] = *irp;
-
-            MulDpSp(drp, rp[1], t);     // t = rp * rp1
-            MulDpSp(dirp, irp[1], u);   // u = irp * irp1
-            SubDpDp(t, u, t);           // t = t - u;
-
-            *irp = (*rp)*irp[1] + (*irp)*rp[1];
-            *rp = t[1]; 
-
-#else
-            MULC(*rp, *irp, rp[1], irp[1]);
-#endif
-        }
+        MULC(*rp, *irp, rp[1], irp[1]);
         Drop();
         break;
     case CALC_OP_DIVIDE:        //perform DIVIDE operation
-
         if (!*irp)
         {
             double x = rp[1]/(*rp);

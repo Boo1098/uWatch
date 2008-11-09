@@ -37,17 +37,11 @@ This program is free software: you can redistribute it and/or modify
 void RPNcalculator(void)
 {
     unsigned int Key; //keypress variables
-    double TEMPreg, iTEMPreg; //temp register for calculations
     int c;
 
-    DisplayXreg[0] = 0;
-    DisplayYreg[0] = 0;
     ResetFlags();
     CurrentMenu=0;
-    UpdateXregDisplay();
-    UpdateYregDisplay();
-    UpdateLCDline1(DisplayYreg);
-    UpdateLCDline2(DisplayXreg);
+    UpdateDisplayRegs();
 
     //main keypress loop is infinite.
     for (;;)
@@ -102,9 +96,7 @@ void RPNcalculator(void)
                 {
                     // experimental complex MANT display
                     if (Key == KeyMode && iXreg != 0)
-                    {
                         UpdateMANTDisplay();
-                    }
                     else
                         UpdateDisplayRegs();
 
@@ -116,21 +108,19 @@ void RPNcalculator(void)
         }
 
         // handle numbers
-        c = EnterNumber(Key);
+        Key = EnterNumber(Key);
         
         // handle specific keys
         switch (Key)
         {
         case KeyEnter: //user has pressed the ENTER key
-            {
-                CompleteXreg();
-                PushStackUp();
-                ResetFlags();
+            CompleteXreg();
+            PushStackUp();
+            ResetFlags();
 
-                //overwite the flag and force the Xreg to be overwritten on the next entry
-                EnableXregOverwrite=TRUE;	
-                UpdateDisplayRegs();
-            }
+            //overwite the flag and force the Xreg to be overwritten on the next entry
+            EnableXregOverwrite=TRUE;	
+            UpdateDisplayRegs();
             break;
         case KeyPlus: //user has pressed the PLUS key
             Operate(CALC_OP_PLUS);
@@ -148,32 +138,27 @@ void RPNcalculator(void)
             PopStack();
             UpdateDisplayRegs();
             ResetFlags();
-            //EnableXregOverwrite=TRUE;
             break;
         case KeyXY: 
-            {
-                CompleteXreg();		//enter value on stack if needed
-                SwapXY();
-                UpdateDisplayRegs();	//update display again
-            }
+            CompleteXreg();		//enter value on stack if needed
+            SwapXY();
+            UpdateDisplayRegs();	//update display again
             break;
         case KeyLP:  // ROLL
             {
+                double TEMPreg, iTEMPreg;
                 CompleteXreg();		//enter value on stack if needed
                 TEMPreg=Xreg; iTEMPreg = iXreg;
                 PopStack();
                 Treg=TEMPreg; iTreg = iTEMPreg;
-
                 UpdateDisplayRegs();	//update display again
             }
             break;
         case KeyRCL: 
-            {
-                //recalls the one of the user defined memory registers into the Xreg
-                CompleteXreg();
-                StoreRecall();
-                UpdateDisplayRegs();	//update display again
-            }
+            //recalls the one of the user defined memory registers into the Xreg
+            CompleteXreg();
+            StoreRecall();
+            UpdateDisplayRegs();	//update display again
             break;
         }
     }
