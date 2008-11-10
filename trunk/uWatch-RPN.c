@@ -71,8 +71,8 @@ void RPNcalculator(void)
             CompleteXreg();
 
             mifo = MainMenus + CurrentMenu;
-            mi = DriveMenu2(mifo->lines[0], mifo->lines[1],
-                            mifo->lines[2], mifo->lines[3]);
+            mi = DriveMenu2(mifo);
+                            
             
             Key = 0;
             if (mi >= 0)

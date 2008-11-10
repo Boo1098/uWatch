@@ -124,6 +124,8 @@ uWatch Revisions:
 1.4.1
 - bugfix P>R and R>P in ALG mode hung!
 
+1.4.2
+- added hyperbolic functions (tri 2nd page)
 
 
 
