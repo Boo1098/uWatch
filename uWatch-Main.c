@@ -41,7 +41,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #include <string.h>
 #include "uWatch-op.h"
 
-#define RevString   "Rev 1.4.1"
+#define RevString   "Rev 1.4.2"
 
 //define all the I/O pins
 #define Row1        _RB10
@@ -262,16 +262,19 @@ int opPrec(int op)
 }
 
 
+// signal this choice trigger the optional "extra" menu.
+#define MENU_EXTRA_FLAG   0x80
+
 typedef struct
 {
-    char*       lines[4];
-    unsigned char ops[10];
+    char*       lines[6];
+    unsigned char ops[16];
 } CalcMenuInfo;
 
 
 CalcMenuInfo MainMenus[] = 
 {
-
+ 
     { // menu 0
         {" 1/x  x^2   Sqrt",   
          " 2nd  y^x   Exp ", 
@@ -296,7 +299,9 @@ CalcMenuInfo MainMenus[] =
         {" Sin  Cos  Tan  ",   
          " 2nd  Pi   Deg  ", 
          " aSin aCos aTan ", 
-         " 2nd       Rad  "
+         " 2nd  Hyp  Rad  ",
+         " Sinh Cosh Tanh ",
+         " aSnh aCsh aTnh ",
         },
 
         { CALC_OP_SIN,
@@ -307,8 +312,16 @@ CalcMenuInfo MainMenus[] =
           CALC_OP_ASIN,
           CALC_OP_ACOS,
           CALC_OP_ATAN,
-          CALC_OP_NULL, // empty slot
-          CALC_OP_MODERAD
+          CALC_OP_HYP_MENU | MENU_EXTRA_FLAG,  // signal menu item
+          CALC_OP_MODERAD,
+
+          // extra menu functions
+          CALC_OP_HYP_SIN,
+          CALC_OP_HYP_COS,
+          CALC_OP_HYP_TAN,
+          CALC_OP_HYP_ASIN,
+          CALC_OP_HYP_ACOS,
+          CALC_OP_HYP_ATAN
         }
     },
 
@@ -976,47 +989,55 @@ int ReturnNumber(int key)
     return -1; // not a number
 }
 
-// Two line menu driver with optional inv
+// Two line menu driver with inv
 // if we escape or change modes, return -keypress
-int DriveMenu2(const char* line1, const char* line2,
-               const char* inv1, const char* inv2)
+int DriveMenu2(CalcMenuInfo* mifo)
 {
-    int mi;
+    int mi = -1;
     int key;
     int inv = 0;
-    int invOption = (inv1 != 0); // enabled?
+    int extra = 0;
+    char** lines = mifo->lines;
 
     /* Display `line1' and `line2' consisting of 6 menu items
      * corresponding to the function keys.
      * return the item selected in the pattern, or -1 on cancel/escape.
      *
-     *
-     *  0  1  2
-     *  3  4  5
-     *
-     * or, when inv is used
+     *  X is always the 2nd key
      *
      *  0  1  2
      *  X  3  4
      *
      *  5  6  7
      *  X  8  9
+     * 
+     * // extra
+     * 10 11  12
+     * 13 14  15
      *
      */
 
     for (;;)
     {
-        if (!inv)
+        if (extra)
         {
-            // display normal choices
-            UpdateLCDline1(line1);
-            UpdateLCDline2(line2);
+            UpdateLCDline1(lines[4]);
+            UpdateLCDline2(lines[5]);
         }
         else
         {
-            // display inv choices
-            UpdateLCDline1(inv1);
-            if (inv2) UpdateLCDline2(inv2);
+            if (!inv)
+            {
+                // display normal choices
+                UpdateLCDline1(lines[0]);
+                UpdateLCDline2(lines[1]);
+            }
+            else
+            {
+                // display inv choices
+                UpdateLCDline1(lines[2]);
+                UpdateLCDline2(lines[3]);
+            }
         }
 
         // get a key
@@ -1032,47 +1053,53 @@ int DriveMenu2(const char* line1, const char* line2,
             mi = -key;
             break;
         }
-
+        
         // look for a function key
         key = ReturnNumber(key);
         if (key >= 4 && key <= 9)
         {
             // is a function key
-            if (inv)
+            if (extra)
             {
-                // in "inv" mode, return alternate choice numbers
-                if (key == 4)
-                {
-                    // inv => not inv
-                    inv = 0;
-                }
-                else
-                {
-                    mi = key - 2; // 789 -> 567
-                    if (key < 7)
-                    {
-                        mi = key + 3; // 456 -> X89
-                        if (inv2 == 0)
-                            mi = key - 2; // 456 -> X34 
-                    }
-                    break;
-                }
+                mi = key + 3;  // 789 -> 10,11,12
+                if (mi < 10)
+                    mi += 6; // 456 -> 13,14,15
             }
             else
             {
-                if (key == 4 && invOption)
+                if (inv)
                 {
-                    // go to inv choices
-                    inv = 1;
+                    if (key == 4) inv = 0; // inv => not inv
+                    else
+                    {
+                        mi = key - 2; // 789 -> 567
+                        if (key < 7)
+                            mi = key + 3; // 456 -> X89
+                    }
                 }
                 else
                 {
-                    mi = key - 7; // 789 -> 012
-                    if (key < 7)
-                        mi = key - 1 - invOption; // 456 -> 345 (or X34)
-                    break;
+                    if (key == 4) inv = 1; // go to inv choices
+                    else
+                    {
+                        mi = key - 7; // 789 -> 012
+                        if (key < 7)
+                            mi = key - 2; // 456 -> X34
+                    }
                 }
             }
+        }
+
+        if (mi >= 0)
+        {
+            int op = mifo->ops[mi];
+            if (op & MENU_EXTRA_FLAG)
+            {
+                // an extra menu!
+                extra = 1;
+            }
+            else
+                break;
         }
     }
     return mi;

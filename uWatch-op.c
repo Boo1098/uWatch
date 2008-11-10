@@ -232,16 +232,6 @@ static double factorial(double num)
     }
 }
 
-static void opLn(double* rp, double* irp)
-{
-    if (*rp >= 0 && !*irp)
-        *rp=log(*rp);           
-    else
-    {
-        RtoP(rp, irp);
-        *rp = log(*rp);
-    }
-}
 
 // macros for complex multiply and square
 #define MULC(_a, _b, _c, _d)                    \
@@ -258,6 +248,18 @@ static void opLn(double* rp, double* irp)
     _a = t;                                     \
 }
 
+// some factored out ops
+static void opLn(double* rp, double* irp)
+{
+    if (*rp >= 0 && !*irp)
+        *rp=log(*rp);           
+    else
+    {
+        RtoP(rp, irp);
+        *rp = log(*rp);
+    }
+}
+
 static void opInv(double* rp, double* irp)
 {
     if (!*irp)
@@ -268,6 +270,114 @@ static void opInv(double* rp, double* irp)
         double d = (*rp)*(*rp) + (*irp)*(*irp);
         *rp /= d;
         *irp = -(*irp)/d;
+    }
+}
+
+static void opSin(double* rp, double* irp)
+{
+    if (!*irp)
+        *rp=sin(*rp);
+    else
+    {
+        // sin(a + ib) = sin(a)cosh(b) + i cos(a)sinh(b)
+        double sa, ca;
+        double shb, chb;
+        sinandcos(*rp, &sa, &ca);
+        sinhandcosh(*irp, &shb, &chb);
+        *rp = sa*chb;
+        *irp = ca*shb;
+    }
+}
+
+static void opCos(double* rp, double* irp)
+{
+    if (!*irp)
+        *rp=cos(*rp);
+    else
+    {
+        // cos(a + ib) = cos(a)cosh(b) - i sin(a)sinh(b)
+        double sa, ca;
+        double shb, chb;
+        sinandcos(*rp, &sa, &ca);
+        sinhandcosh(*irp, &shb, &chb);
+        *rp = ca*chb;
+        *irp = -sa*shb;
+    }
+}
+
+static void opTan(double* rp, double* irp)
+{
+    if (!*irp)
+        *rp=tan(*rp);
+    else
+    {
+        // tan(a + ib) = (sin(2a) + i sinh(2b))/(cos(2a) + cosh(2b))
+        double sa, ca;
+        double shb, chb;
+        double d;
+        sinandcos((*rp)*2, &sa, &ca);
+        sinhandcosh((*irp)*2, &shb, &chb);
+        d = ca + chb;
+        *rp = sa/d;
+        *irp = shb/d;
+    }
+}
+
+static void asincoshelper(double* rp, double* irp)
+{
+    double t = *rp + 1;
+    double u = *rp - 1;
+    double w1 = fabsC(&t, irp); // sqrt(t*t + irp^2);
+    double w2 = fabsC(&u, irp); // sqrt(u*u + irp^2);
+    double al = (w1 + w2)/2;
+
+    *rp = (w1 - w2)/2;
+    *irp = log(al + sqrt(al*al - 1));
+}
+
+static void opASin(double* rp, double* irp)
+{
+    if (!*irp && *rp >= -1 && *rp <= 1)
+        *rp=asin(*rp);
+    else
+    {
+        int neg = (*irp < 0);
+        asincoshelper(rp, irp);
+        *rp = asin(*rp);
+        if (neg) *irp = -*irp;
+    }
+}
+
+static void opACos(double* rp, double* irp)
+{
+    if (!*irp && *rp >= -1 && *rp <= 1)
+        *rp=acos(*rp);
+    else
+    {
+        int neg = (*irp >= 0);
+        asincoshelper(rp, irp);
+        *rp = acos(*rp);
+        if (neg) *irp = -*irp;
+    }
+}
+
+static void opATan(double* rp, double* irp)
+{
+    if (!*irp)
+        *rp=atan(*rp);
+    else
+    {
+        double t = (*rp)*(*rp);
+        double u = (*irp)*(*irp);
+        double w1 = (atan2(2*(*rp), 1-t-u))/2;
+        double w2, v;
+        
+        u = (*irp)+1; 
+        v = (*irp)-1; 
+        w2 = log((t + u*u)/(t + v*v))/4;
+        
+        *rp = w1;
+        *irp = w2;
     }
 }
 
@@ -372,16 +482,14 @@ static void powC(double* rp, double* irp, double a, double b)
     PtoR(rp, irp);
 }
 
-static void asincoshelper(double* rp, double* irp)
-{
-    double t = *rp + 1;
-    double u = *rp - 1;
-    double w1 = fabsC(&t, irp); // sqrt(t*t + irp^2);
-    double w2 = fabsC(&u, irp); // sqrt(u*u + irp^2);
-    double al = (w1 + w2)/2;
 
-    *rp = (w1 - w2)/2;
-    *irp = log(al + sqrt(al*al - 1));
+// helper function for the type
+// op (a + i b) = - i op(-b + ia)
+static void negOpNeg(double* rp, double *irp, void (*f)(double*,double*))
+{
+    *irp = -*irp;
+    (*f)(irp, rp);
+    *irp = -*irp;
 }
 
 // Raw operation
@@ -488,94 +596,26 @@ void Operation(int op)
         break;
     case CALC_OP_SIN:
         if (DegreesMode) { *rp /= RAD; }
-        if (!*irp)
-            *rp=sin(*rp);
-        else
-        {
-            // sin(a + ib) = sin(a)cosh(b) + i cos(a)sinh(b)
-            double sa, ca;
-            double shb, chb;
-            sinandcos(*rp, &sa, &ca);
-            sinhandcosh(*irp, &shb, &chb);
-            *rp = sa*chb;
-            *irp = ca*shb;
-        }
+        opSin(rp, irp);
         break;
     case CALC_OP_COS:
         if (DegreesMode) { *rp /= RAD; }
-        if (!*irp)
-            *rp=cos(*rp);
-        else
-        {
-            // cos(a + ib) = cos(a)cosh(b) - i sin(a)sinh(b)
-            double sa, ca;
-            double shb, chb;
-            sinandcos(*rp, &sa, &ca);
-            sinhandcosh(*irp, &shb, &chb);
-            *rp = ca*chb;
-            *irp = -sa*shb;
-        }
+        opCos(rp, irp);
         break;
     case CALC_OP_TAN:
         if (DegreesMode) { *rp /= RAD; }
-        if (!*irp)
-            *rp=tan(*rp);
-        else
-        {
-            // tan(a + ib) = (sin(2a) + i sinh(2b))/(cos(2a) + cosh(2b))
-
-            double sa, ca;
-            double shb, chb;
-            double d;
-            sinandcos((*rp)*2, &sa, &ca);
-            sinhandcosh((*irp)*2, &shb, &chb);
-            d = ca + chb;
-            *rp = sa/d;
-            *irp = shb/d;
-        }
+        opTan(rp, irp);
         break;
     case CALC_OP_ASIN:
-        if (!*irp && *rp >= -1 && *rp <= 1)
-            *rp=asin(*rp);
-        else
-        {
-            int neg = (*irp < 0);
-            asincoshelper(rp, irp);
-
-            *rp = asin(*rp);
-            if (neg) *irp = -*irp;
-        }
+        opASin(rp, irp);
         if (DegreesMode) { *rp *= RAD; }
         break;
     case CALC_OP_ACOS:
-        if (!*irp && *rp >= -1 && *rp <= 1)
-            *rp=acos(*rp);
-        else
-        {
-            int neg = (*irp >= 0);
-            asincoshelper(rp, irp);
-            *rp = acos(*rp);
-            if (neg) *irp = -*irp;
-        }
+        opACos(rp, irp);
         if (DegreesMode) { *rp *= RAD; }
         break;
     case CALC_OP_ATAN:
-        if (!*irp)
-            *rp=atan(*rp);
-        else
-        {
-            double t = (*rp)*(*rp);
-            double u = (*irp)*(*irp);
-            double w1 = (atan2(2*(*rp), 1-t-u))/2;
-            double w2, v;
-
-            u = (*irp)+1; 
-            v = (*irp)-1; 
-            w2 = log((t + u*u)/(t + v*v))/4;
-            
-            *rp = w1;
-            *irp = w2;
-        }
+        opATan(rp, irp);
         if (DegreesMode) { *rp *= RAD;  }
         break;
     case CALC_OP_MODEDEG:
@@ -741,6 +781,46 @@ void Operation(int op)
         break;
     case CALC_OP_REAL_PART:
         *irp = 0;
+        break;
+    case CALC_OP_HYP_SIN:
+        // sinh (a + ib) = -i sin(-b + i a)
+        // NB: wont lose accuracy if real.
+        negOpNeg(rp, irp, opSin);
+        break;
+    case CALC_OP_HYP_COS:
+        // cosh (a + i b) = cos (-b + i a)
+        // NB: wont lose accuracy if real.
+        {
+            double x = -*irp;
+            double y = *rp;
+            opCos(&x, &y);
+            *rp = x;
+            *irp = y;
+        }
+        break;
+    case CALC_OP_HYP_TAN:
+        if (!*irp)
+            *rp = tanh(*rp);
+        else
+        {
+            // tanh (a + ib) = -i tan(-b + i a)            
+            negOpNeg(rp, irp, opTan);
+        }
+        break;
+    case CALC_OP_HYP_ASIN:
+        negOpNeg(rp, irp, opASin);
+        break;
+    case CALC_OP_HYP_ACOS:
+        {
+            double x = *rp;
+            double y = *irp;
+            opACos(&x, &y);
+            *rp = -y;
+            *irp = x;
+        }
+        break;
+    case CALC_OP_HYP_ATAN:
+        negOpNeg(rp, irp, opATan);
         break;
     }
 }

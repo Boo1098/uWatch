@@ -97,6 +97,13 @@ extern void SwapXY();
 #define CALC_OP_COMPLEX_JOIN    38
 #define CALC_OP_CONJUGATE       39
 #define CALC_OP_REAL_PART       40
+#define CALC_OP_HYP_MENU        41
+#define CALC_OP_HYP_SIN         42
+#define CALC_OP_HYP_COS         43
+#define CALC_OP_HYP_TAN         44
+#define CALC_OP_HYP_ASIN        45
+#define CALC_OP_HYP_ACOS        46
+#define CALC_OP_HYP_ATAN        47
 
 
 #endif // __uwatch_op_h__
