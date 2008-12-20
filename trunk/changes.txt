@@ -127,6 +127,9 @@ uWatch Revisions:
 1.4.2
 - added hyperbolic functions (tri 2nd page)
 
+1.4.3
+- changed date format to ISO8601 YYYYMMDD due to binary rounding problems
+- fixed current date format "st", "rd", "th" sometimes wrong
 
 
 

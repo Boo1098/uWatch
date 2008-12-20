@@ -41,7 +41,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #include <string.h>
 #include "uWatch-op.h"
 
-#define RevString   "Rev 1.4.2"
+#define RevString   "Rev 1.4.3"
 
 //define all the I/O pins
 #define Row1        _RB10
@@ -1488,24 +1488,29 @@ void TimeDateDisplay(void)
     if (temp >> 4)
         s[5]=itochar(temp>>4);
 
-    temp &= 0xf;
-    s[6]=itochar(temp);
-    s[7]='t';
-    s[8]='h';
-    if (temp == 1) // 1, 21, 31
+    s[6]=itochar(temp & 0xf);
+
+    switch (temp)
     {
+    case 0x01:
+    case 0x21:
+    case 0x31:
         s[7]='s';
         s[8]='t';
-    }
-    else if (temp == 2)
-    {
+        break;
+    case 0x02:
+    case 0x22:
         s[7]='n';
         s[8]='d';
-    }
-    else if (temp == 3)
-    {
+        break;
+    case 0x03:
+    case 0x23:
         s[7]='r';
         s[8]='d';
+        break;
+    default:
+        s[7]='t';
+        s[8]='h';
     }
 
     s[10]=months[Month][0];

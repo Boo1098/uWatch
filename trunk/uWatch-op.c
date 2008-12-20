@@ -648,7 +648,7 @@ void Operation(int op)
         {
             unsigned int y, m, d;
             caldati(*rp, &y, &m, &d);
-            *rp = y/1.0e6 + m/100.0 + d;
+            *rp = y*10000L + m*100L + d;
             *irp = 0;
         }
         break;
@@ -672,11 +672,13 @@ void Operation(int op)
         break;
     case CALC_OP_DAYS:
         {
-            // assume *rp is in format dd.mmyyyy
-            int d = *rp;
-            double t = (*rp - d)*100;
-            int m = t;
-            int y = (t - m) * 10000;
+            // assume *rp is in format yyyymmdd
+            long d = (long)floor(*rp);
+            int y = d/10000L;
+            int m;
+            d-=y*10000L;
+            m = d/100L;
+            d-=m*100;
             *rp = mjd(y, m, d);
             *irp = 0;
         }
@@ -732,7 +734,6 @@ void Operation(int op)
         else
         {
             // (a + i b) / (c + i d) = 
-            // (a*c + b*d) / (c*c + d*d) + i (b*c – a*d) / (c*c + d*d)
 
             // see Numerical recipes, 3rd p226
             double t, s;
