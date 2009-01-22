@@ -7,6 +7,13 @@
 * more conversions like miles -> km etc.
 * physical constants
 * stopwatch
+* FIX, SCI and ENG display modes.
+* angular complex display mode (and entry system).
+* combine "+i" and "-i" into custom characters to save 1 space.
+* mode to show "+j" for wire heads :-)
+* ENG fpnumkMGT magnitude display sub-option.
+* try 0-9 keys as SMS style text input.
+* memo feature with password??
 
 ** BUGS, Caveats & Things Outstanding.
 
