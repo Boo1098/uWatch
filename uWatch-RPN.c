@@ -1,7 +1,7 @@
 //********************************************************
 // uWatch
 // RPN Calculator Functions
-// Version 1.3
+// Version 1.4.X
 // Last Update: 12th June 08
 // Copyright(c) 2008 David L. Jones
 // Written for the Microchip C30 Compiler
