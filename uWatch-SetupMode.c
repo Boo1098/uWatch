@@ -1,8 +1,8 @@
 //********************************************************
 // uWatch
 // Setup Mode Functions
-// Version 1.4.X
-// Last Update: 12th June 08
+// Version 1.5
+// Last Update: 16th March 09
 // Copyright(c) 2008 David L. Jones
 // Written for the Microchip C30 Compiler
 // Target Device: PIC24FJ64GA004 (44pin)

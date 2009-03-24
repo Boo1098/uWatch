@@ -131,5 +131,11 @@ uWatch Revisions:
 - changed date format to ISO8601 YYYYMMDD due to binary rounding problems
 - fixed current date format "st", "rd", "th" sometimes wrong
 
+1.5.0 (zowki's modification)
+- The third mode is now apps mode, branching out to tools, games and setup
+- Added games: Lunar Lander, Twenty One
+- Added tools: Quadratic, Stopwatch
 
+1.5.1
+- Stopwatch now displays elasped time dynamically
 
