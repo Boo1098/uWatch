@@ -1,7 +1,7 @@
 //********************************************************
 // uWatch
-// Version 1.4.X
-// Last Update: 12th Junes 08
+// Version 1.5
+// Last Update: 16th March 09
 // Written for the Microchip C30 Compiler
 // Copyright(c) 2008 David L. Jones
 // http://www.calcwatch.com
@@ -41,7 +41,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #include <string.h>
 #include "uWatch-op.h"
 
-#define RevString   "Rev 1.4.3"
+#define RevString   "Rev 1.5.1"
 
 //define all the I/O pins
 #define Row1        _RB10
@@ -234,7 +234,7 @@ double iYregs[PAREN_LEVELS], iZregs[PAREN_LEVELS], iTregs[PAREN_LEVELS];
 
 #define WATCH_MODE_TIME         0
 #define WATCH_MODE_CALC         1
-#define WATCH_MODE_SETUP        2
+#define WATCH_MODE_APPS         2
 
 //the storage registers. Contents retained when calc mode is exited.
 double Sreg[10], iSreg[10];
@@ -1137,8 +1137,11 @@ int GetNumBCD()
 //***********************************
 
 //***********************************
-// Insert all of the Setup code here
+// Insert all of the Apps mode code here
 #include "uWatch-SetupMode.c"
+#include "uWatch-AppsMode.c"
+#include "uWatch-GamesMode.c"
+#include "uWatch-ToolsMode.c"
 //***********************************
 
 
@@ -1784,7 +1787,7 @@ int main(void)
         //user did something in the calc mode, so return to time/date
         if (NextMode==FALSE) continue; 
     
-        WatchMode=WATCH_MODE_SETUP;
-        SetupMode();
+        WatchMode=WATCH_MODE_APPS;
+        AppsMode();
     }
 }

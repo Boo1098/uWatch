@@ -1,7 +1,7 @@
 /********************************************************
 // uWatch
 // Common Calculator Functions
-// Version 1.4.X
+// Version 1.5.X
 // Last Update: 12th June 08
 // Written for the Microchip C30 Compiler
 // Target Device: PIC24FJ64GA004 (44pin)
