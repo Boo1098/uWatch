@@ -41,7 +41,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #include <string.h>
 #include "uWatch-op.h"
 
-#define RevString   "Rev 1.5.1"
+#define RevString   "Rev 1.5.2"
 
 //define all the I/O pins
 #define Row1        _RB10
@@ -1137,12 +1137,23 @@ int GetNumBCD()
 //***********************************
 
 //***********************************
+// chess game
+
+long get_ms()
+{
+    return 0;
+}
+
+#include "uWatch-chess.c"
+
+//***********************************
 // Insert all of the Apps mode code here
 #include "uWatch-SetupMode.c"
 #include "uWatch-AppsMode.c"
 #include "uWatch-GamesMode.c"
 #include "uWatch-ToolsMode.c"
 //***********************************
+
 
 
 //***********************************

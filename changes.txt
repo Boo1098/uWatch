@@ -139,3 +139,6 @@ uWatch Revisions:
 1.5.1
 - Stopwatch now displays elasped time dynamically
 
+1.5.2
+- added Chess to games mode!
+
