@@ -34,7 +34,53 @@ static const char* GamesMenu[] =
 {
     "Lunar Lander",
     "Twenty One",
+    "Chess",
 };
+
+static unsigned int wait()
+{
+    unsigned int KeyPress2;        //keypress variables
+    do KeyPress2=KeyScan(); while(KeyPress2==0);
+    return KeyPress2;
+}
+
+static int print_result()
+{
+    int i;
+    int ok = 1;
+
+    /* is there a legal move? */
+    for (i = 0; i < first_move[1]; ++i)
+        if (makemove(gen_dat[i].m.b)) 
+        {
+            takeback();
+            break;
+        }
+
+    if (i == first_move[1]) 
+    {
+        ok = 0;
+        if (in_check(side)) 
+        {
+            if (side == LIGHT)
+                UpdateLCDline2("0-1 {Black}");
+            else
+                UpdateLCDline2("1-0 {White}");
+        }
+        else
+            UpdateLCDline2("Stalemate");
+    }
+    else if (fifty >= 100)
+    {
+        UpdateLCDline2("Draw 50 moves");
+        ok = 0;
+    }
+
+    if (!ok)
+        wait();
+    return ok;
+}
+
 
 //***********************************
 // The main games mode routine
@@ -53,7 +99,7 @@ void GamesMode(void)
         {
             UpdateLCDline1("--LUNAR LANDAR--");
             UpdateLCDline2(" By Shaun Chong ");
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
+            KeyPress2=wait();
             if (KeyPress2==KeyMode) return;
             
             int elapsedTime   = 0;
@@ -67,82 +113,82 @@ void GamesMode(void)
             int delta = 0;
             
             while (height > 0)
+            {
+                if (fuelRemaining > 0)
                 {
-                    if (fuelRemaining > 0)
-                    {
-                        lunar:
-                        UpdateLCDline1("ENT - burn fuel");
-                        UpdateLCDline2("MENU - stats");
-                        do KeyPress2=KeyScan(); while(KeyPress2==0);
-                        if (KeyPress2==KeyMode) return;
-                        if (KeyPress2==KeyMenu) //stats menu
-                            {
-                                UpdateLCDline1("1=Time  2=Height");
-                                UpdateLCDline2("3=Speed 4=Fuel");
-                                do KeyPress2=KeyScan(); while(KeyPress2==0);
-                                if (KeyPress2==KeyMode) return;
-                                if (KeyPress2==Key1)
-                                    {
-                                        UpdateLCDline1("Time (seconds):");
-                                        sprintf(s, "%i", elapsedTime);
-                                        UpdateLCDline2(s);
-                                        do KeyPress2=KeyScan(); while(KeyPress2==0);
-                                        if (KeyPress2==KeyMode) return;
-                                    }
-                                if (KeyPress2==Key2)
-                                    {
-                                        UpdateLCDline1("Height (feet):");
-                                        sprintf(s, "%i", height);
-                                        UpdateLCDline2(s);
-                                        do KeyPress2=KeyScan(); while(KeyPress2==0);
-                                        if (KeyPress2==KeyMode) return;
-                                    }
-                                if (KeyPress2==Key3)
-                                    {
-                                        UpdateLCDline1("Speed (feet/s):");
-                                        sprintf(s, "%i", velocity);
-                                        UpdateLCDline2(s);
-                                        do KeyPress2=KeyScan(); while(KeyPress2==0);
-                                        if (KeyPress2==KeyMode) return;
-                                    }
-                                if (KeyPress2==Key4)
-                                    {
-                                        UpdateLCDline1("Fuel:");
-                                        sprintf(s, "%i", fuelRemaining);
-                                        UpdateLCDline2(s);
-                                        do KeyPress2=KeyScan(); while(KeyPress2==0);
-                                        if (KeyPress2==KeyMode) return;
-                                    }
-                                goto lunar;
-                            }
-                        if (KeyPress2==KeyEnter)    //enter fuel to burn
-                            {
-                                UpdateLCDline1("Burn fuel(0-30):");
-                                Xreg = burnAmount;
-                                c = OneLineNumberEntry();
-                                burnAmount = Xreg;
-                            }
-                    }
-
-                    if (burnAmount < 0) burnAmount = 0;
-                    if (burnAmount > 30)    burnAmount = 30;
-                    if (burnAmount > fuelRemaining) burnAmount = fuelRemaining;
-
-                    newVelocity   = velocity - burnAmount + 5;
-                    fuelRemaining = fuelRemaining - burnAmount;
-                    height        = height - (velocity + newVelocity) * 0.5;
-                    elapsedTime   = elapsedTime + 1;
-                    velocity      = newVelocity;
-                    
-                    sprintf(s, "%i", burnAmount);
-                    strcat(s, " fuel burnt");
-                    UpdateLCDline1(s);
-                    sprintf(s, "%i", fuelRemaining);
-                    strcat(s, " fuel left");
-                    UpdateLCDline2(s);
-                    do KeyPress2=KeyScan(); while(KeyPress2==0);
+                lunar:
+                    UpdateLCDline1("ENT - burn fuel");
+                    UpdateLCDline2("MENU - stats");
+                    KeyPress2=wait();
                     if (KeyPress2==KeyMode) return;
+                    if (KeyPress2==KeyMenu) //stats menu
+                    {
+                        UpdateLCDline1("1=Time  2=Height");
+                        UpdateLCDline2("3=Speed 4=Fuel");
+                        KeyPress2=wait();
+                        if (KeyPress2==KeyMode) return;
+                        if (KeyPress2==Key1)
+                        {
+                            UpdateLCDline1("Time (seconds):");
+                            sprintf(s, "%i", elapsedTime);
+                            UpdateLCDline2(s);
+                            KeyPress2=wait();
+                            if (KeyPress2==KeyMode) return;
+                        }
+                        if (KeyPress2==Key2)
+                        {
+                            UpdateLCDline1("Height (feet):");
+                            sprintf(s, "%i", height);
+                            UpdateLCDline2(s);
+                            KeyPress2=wait();
+                            if (KeyPress2==KeyMode) return;
+                        }
+                        if (KeyPress2==Key3)
+                        {
+                            UpdateLCDline1("Speed (feet/s):");
+                            sprintf(s, "%i", velocity);
+                            UpdateLCDline2(s);
+                            KeyPress2=wait();
+                            if (KeyPress2==KeyMode) return;
+                        }
+                        if (KeyPress2==Key4)
+                        {
+                            UpdateLCDline1("Fuel:");
+                            sprintf(s, "%i", fuelRemaining);
+                            UpdateLCDline2(s);
+                            KeyPress2=wait();
+                            if (KeyPress2==KeyMode) return;
+                        }
+                        goto lunar;
+                    }
+                    if (KeyPress2==KeyEnter)    //enter fuel to burn
+                    {
+                        UpdateLCDline1("Burn fuel(0-30):");
+                        Xreg = burnAmount;
+                        c = OneLineNumberEntry();
+                        burnAmount = Xreg;
+                    }
                 }
+
+                if (burnAmount < 0) burnAmount = 0;
+                if (burnAmount > 30)    burnAmount = 30;
+                if (burnAmount > fuelRemaining) burnAmount = fuelRemaining;
+
+                newVelocity   = velocity - burnAmount + 5;
+                fuelRemaining = fuelRemaining - burnAmount;
+                height        = height - (velocity + newVelocity) * 0.5;
+                elapsedTime   = elapsedTime + 1;
+                velocity      = newVelocity;
+                    
+                sprintf(s, "%i", burnAmount);
+                strcat(s, " fuel burnt");
+                UpdateLCDline1(s);
+                sprintf(s, "%i", fuelRemaining);
+                strcat(s, " fuel left");
+                UpdateLCDline2(s);
+                do KeyPress2=KeyScan(); while(KeyPress2==0);
+                if (KeyPress2==KeyMode) return;
+            }
 
             /* Touchdown. Calculate landing parameters. */
             elapsedTime = elapsedTime - 1;
@@ -157,25 +203,25 @@ void GamesMode(void)
 
             UpdateLCDline1("Touchdown!");
             UpdateLCDline2("ENT to see stats");
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
+            KeyPress2=wait();
             if (KeyPress2==KeyMode) return;
             
             UpdateLCDline1("Time taken(sec):");
             sprintf(s, "%i", elapsedTime + delta);
             UpdateLCDline2(s);
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
+            KeyPress2=wait();
             if (KeyPress2==KeyMode) return;
                 
             UpdateLCDline1("Speed (feet/s):");
             sprintf(s, "%i", newVelocity);
             UpdateLCDline2(s);
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
+            KeyPress2=wait();
             if (KeyPress2==KeyMode) return;
                 
             UpdateLCDline1("Fuel left:");
             sprintf(s, "%i", fuelRemaining);
             UpdateLCDline2(s);
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
+            KeyPress2=wait();
             if (KeyPress2==KeyMode) return;
 
             if (newVelocity <= 0)
@@ -183,7 +229,7 @@ void GamesMode(void)
                     UpdateLCDline1("Perfect landing!");
                     UpdateLCDline2("ENT to cont.");
                     Xreg=0;
-                    do KeyPress2=KeyScan(); while(KeyPress2==0);
+                    wait();
                     break;
                 }
             else if (newVelocity < 2)
@@ -191,7 +237,7 @@ void GamesMode(void)
                     UpdateLCDline1("Bumpy landing.");
                     UpdateLCDline2("ENT to cont.");
                     Xreg=0;
-                    do KeyPress2=KeyScan(); while(KeyPress2==0);
+                    wait();
                     break;
                 }
             else
@@ -199,7 +245,7 @@ void GamesMode(void)
                     UpdateLCDline1("You crashed!");
                     UpdateLCDline2("ENT to cont.");
                     Xreg=0;
-                    do KeyPress2=KeyScan(); while(KeyPress2==0);
+                    wait();
                     break;
                 }
         }  break;
@@ -207,7 +253,7 @@ void GamesMode(void)
         {
             UpdateLCDline1("--TWENTY ONE--");
             UpdateLCDline2(" By Shaun Chong ");
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
+            KeyPress2 = wait();
             if (KeyPress2==KeyMode) return;
             
             char s2[MaxLCDdigits+1];
@@ -227,7 +273,7 @@ void GamesMode(void)
                strcat(s, s2);
                UpdateLCDline1(s);
                UpdateLCDline2("Player bust!");
-               do KeyPress2=KeyScan(); while(KeyPress2==0);
+               wait();
             }
             
             void bust_dealer(void)
@@ -242,7 +288,7 @@ void GamesMode(void)
                strcat(s, s2);
                UpdateLCDline1(s);
                UpdateLCDline2("Dealer bust!");
-               do KeyPress2=KeyScan(); while(KeyPress2==0);
+               wait();
             }
             
             void hit_player(void)
@@ -286,7 +332,7 @@ void GamesMode(void)
                   UpdateLCDline2("Push!");
                if (player_total<dealer_total)
                   UpdateLCDline2("Dealer wins!");
-               do KeyPress2=KeyScan(); while(KeyPress2==0);
+               wait();
             }
             
             prepare();
@@ -300,7 +346,7 @@ void GamesMode(void)
                strcat(s, " Dealer:?");
                UpdateLCDline1(s);
                UpdateLCDline2("Hit=1 Stand=2");
-               do KeyPress2=KeyScan(); while(KeyPress2==0);
+               KeyPress2 = wait();
                if (KeyPress2==KeyMode) return;
                if (KeyPress2==Key1) hit_player();
                if (KeyPress2==Key2) stand();
@@ -308,13 +354,98 @@ void GamesMode(void)
                {
                   UpdateLCDline1("Deal again?");
                   UpdateLCDline2("Yes=1 No=2");
-                  do KeyPress2=KeyScan(); while(KeyPress2==0);
+                  KeyPress2 = wait();
                   if (KeyPress2==KeyMode) return;
                   if (KeyPress2==Key1) prepare();
                   if (KeyPress2==Key2) break;
                }
             }
         } break;
+    case 2: // Chess
+        {
+            char s[16];
+            int m;
+            int from, to;
+            int i;
+
+            UpdateLCDline1("-- CHESS      --");
+            UpdateLCDline2("enter move");
+            KeyPress2=wait();
+            if (KeyPress2==KeyMode) return;
+
+            init_board();
+            max_time = 1L<<25;
+            max_depth = 3;
+
+            // generate initial allowed moves
+            gen();
+
+            for (;;) 
+            {
+                m = -1;
+
+                // get move
+                if (OneLineNumberEntry() == KeyMode) return; // escape
+
+                // parse move
+                from = DisplayXreg[0] - '1';
+                from += 8*(8 - (DisplayXreg[1] - '0'));
+
+                to = DisplayXreg[2] - '1';
+                to += 8*(8 - (DisplayXreg[3] - '0'));
+
+                for (i = 0; i < first_move[1]; ++i)
+                    if (gen_dat[i].m.b.from == from &&
+                        gen_dat[i].m.b.to == to) 
+                    {
+                        if (gen_dat[i].m.b.bits & 32)
+                        {
+                          /* assume it's a queen */
+                            i += 3;
+                        }
+                        m = i;
+                        break;
+                    }
+
+                if (m == -1 || !makemove(gen_dat[m].m.b))  
+                {
+                    UpdateLCDline1("Illegal Move");
+                    if (wait() == KeyMode) return;
+                }
+                else
+                {
+                    // is the game over?
+                    ply = 0;
+                    gen();
+                    if (!print_result()) return;
+
+                    /* computer's turn */
+                    /* think about the move and make it */
+                    UpdateLCDline1("thinking");
+
+                    /* bump the CPU whilst we think... */
+                    DisableSleepTimer();
+                    Clock4MHz();
+                    think();
+                    /* and back again to slow.. */
+                    Clock250KHz();
+                    EnableSleepTimer();
+                    ResetSleepTimer();
+
+                    if (pv[0][0].u) 
+                    {
+                        UpdateLCDline1(move_str(pv[0][0].u));
+                        makemove(pv[0][0].b);
+                    }
+
+                    ply = 0;
+                    gen();
+                    if (!print_result()) return;
+                }
+            }
+        }
+        break;
     }
 }
+
 

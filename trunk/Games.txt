@@ -1,0 +1,19 @@
+
+* Here are the instructions for some of the Games
+
+* Chess
+
+Right now there is no board display only the moves displayed in coordinate
+fasion (eg d7d5).
+
+Currently there is no way to swap sides, play as black, setup, undo or change
+level.
+
+At the start of the game, you play the white pieces. enter your first move
+using numbers instead of letters, so A=1, B=2 etc.  for example, the move
+E2-E4 is entered as the number 5254. the watch responds and then you make your next move. 
+
+Press mode key to escape.
+
+The chess engine is adapted from Tom Kerrigan's Simple Chess Program (TSCP)
+
