@@ -41,7 +41,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #include <string.h>
 #include "uWatch-op.h"
 
-#define RevString   "Rev 1.5.2"
+#define RevString   "Rev 1.5.3"
 
 //define all the I/O pins
 #define Row1        _RB10
@@ -1136,6 +1136,9 @@ int GetNumBCD()
 #include "uWatch-ALG.c"
 //***********************************
 
+#if 0
+// TSCP chess removed pending license issues.
+
 //***********************************
 // chess game
 
@@ -1145,6 +1148,7 @@ long get_ms()
 }
 
 #include "uWatch-chess.c"
+#endif
 
 //***********************************
 // Insert all of the Apps mode code here

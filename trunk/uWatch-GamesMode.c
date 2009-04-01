@@ -30,11 +30,15 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
+#define TSCP_CHESSxx
+
 static const char* GamesMenu[] = 
 {
     "Lunar Lander",
     "Twenty One",
-    "Chess",
+#ifdef TSCP_CHESS
+     "Chess",
+#endif
 };
 
 static unsigned int wait()
@@ -44,6 +48,8 @@ static unsigned int wait()
     return KeyPress2;
 }
 
+
+#ifdef TSCP_CHESS
 static int print_result()
 {
     int i;
@@ -80,6 +86,7 @@ static int print_result()
         wait();
     return ok;
 }
+#endif // TSCP_CHESS
 
 
 //***********************************
@@ -361,7 +368,8 @@ void GamesMode(void)
                }
             }
         } break;
-    case 2: // Chess
+#ifdef TSCP_CHESS
+    case 2: // TSCP Chess
         {
             char s[16];
             int m;
@@ -445,6 +453,7 @@ void GamesMode(void)
             }
         }
         break;
+#endif // TSCP_CHESS
     }
 }
 

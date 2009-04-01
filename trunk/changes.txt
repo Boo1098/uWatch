@@ -142,3 +142,8 @@ uWatch Revisions:
 1.5.2
 - added Chess to games mode!
 
+1.5.3
+- removed TSCP chess. Tom's License not compatible with GPL.
+
+
+
