@@ -1,5 +1,35 @@
 
-* Here are the instructions for some of the Games
+* Here are the instructions for the Games
+
+* Twenty One
+
+To play just use the 1 and 2 keys as directed. Use the Enter key to proceed
+when unsure. Press Mode at any time to quit back to time mode.
+
+The aim of the game is to get a higher value than the dealer but not bust.
+You bust when your value goes above 21. Hit means to draw a card and when
+you're happy, stand to proceed.
+
+Betting, double downs, blackjacks, etc have not been implemented yet.
+
+* Lunar Lander
+
+The aim of Lunar Lander is to land your spaceship safely (touching the ground at
+a velocity of 0ft/s). Here are the rules that govern your spaceship:
+
+1. After each second, the height, velocity, and remaining fuel
+will be reported in the status menu.
+
+2.After each second enter the number of units of fuel you wish to burn during
+the next second.
+
+3. Each unit of fuel will slow your descent by 1 foot/sec.
+
+4.The maximum amount of fuel you can burn in one second is 30 units. If you
+run out of fuel, you will no longer be prompted to enter the number of units
+to burn each second.
+
+You can use the mode key to quit the game any time.
 
 * Chess
 
