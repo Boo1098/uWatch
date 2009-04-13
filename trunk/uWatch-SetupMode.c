@@ -92,9 +92,9 @@ static const char* SetupMenu[] =
     "LCD timeout",
     "ClockCalibration",
     "12/24hr Time",
-    "About",
     "DST Zone",
     "Location",
+    "About",
 };
 
 // enter a number on line return in Xreg
@@ -324,17 +324,7 @@ void SetupMode(void)
             }
         }
         break;
-    case 8: // about
-        {
-            strcpy(s," Watch ");
-            strcat(s,RevString);
-            s[0]=228;               //mu symbol
-            UpdateLCDline1(s);
-            UpdateLCDline2("(c)David L Jones");
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
-        }
-        break;
-    case 9: // DST Zone
+    case 8: // DST Zone
         {
             UpdateLCDline2("  +/- & ENTER");
             while(TRUE)
@@ -361,7 +351,7 @@ void SetupMode(void)
             }
         }
         break;
-    case 10: // location
+    case 9: // location
         {
             int c;
             /* The location feature will be expanded to provide a 
@@ -426,6 +416,17 @@ void SetupMode(void)
             } while (!ok);
         }
         break;
+    case 10: // about
+        {
+            strcpy(s," Watch ");
+            strcat(s,RevString);
+            s[0]=228;               //mu symbol
+            UpdateLCDline1(s);
+            UpdateLCDline2("(c)David L Jones");
+            do KeyPress2=KeyScan(); while(KeyPress2==0);
+        }
+        break;
+
     }
 }
 
