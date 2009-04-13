@@ -145,5 +145,7 @@ uWatch Revisions:
 1.5.3
 - removed TSCP chess. Tom's License not compatible with GPL.
 
+1.5.4
+- added VoidChess! 3 levels of play, play as black or white!
 
 
