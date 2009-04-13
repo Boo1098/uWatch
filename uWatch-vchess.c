@@ -1,0 +1,1156 @@
+/*-
+ * Copyright (c) 2009 Voidware Ltd.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ * 
+ * 1. Redistributions of the source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 
+ * 2. Any redistribution solely in binary form must conspicuously
+ *    reproduce the following disclaimer in documentation provided with the
+ *    binary redistribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED ``AS IS'', WITHOUT ANY WARRANTIES, EXPRESS
+ * OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  LICENSOR SHALL
+ * NOT BE LIABLE FOR ANY LOSS OR DAMAGES RESULTING FROM THE USE OF THIS
+ * SOFTWARE, EITHER ALONE OR IN COMBINATION WITH ANY OTHER SOFTWARE.
+ * 
+ */
+
+/***************************************************************************
+
+* This is VoidCHESS  v1.2
+* 
+* Vchess has been designed to run in a small code and data footprint. for
+* example, embedded applications.  vchess does not have an abundance of static
+* data, eg precomputed move and evaluation data. there is only one array of
+* move offsets and another of piece values (also the starting board layout).
+*
+* Vchess draws its static board evaluation from positional mobility along with
+* the usual material score. This makes for a small eval routine (less code),
+* but has some serious drawbacks. For example, there is no help for pawn
+* structures nor prevention of rash attacks. There are small tweaks to the
+* positional counters inside the move scan itself. I hope to improve on this
+* eventually.
+*
+* For data space, vchess has the board, the move stack and other small data
+* including the killer array. The biggest of these is the move stack. A move is
+* 4 bytes and this stack is the maximum number of moves we can have in our
+* search tree. change the move stack size to what you have available.
+* 
+* The board is represented as a 128 byte array. This is the "0x88" board
+* layout. The left 64 bytes are the board squares and the right 64 bytes are
+* divided into 32 white and 32 black piece position stores. For example the
+* white king is in square Board[0x4]. Board[4] contains the piece slot (eg
+* 0xb). This is an index into the right side of the board array. We have
+* Board[0xb] = 4. So the piece position corresponding to a board square points
+* back to the board square. This arrangement is so that we can either traverse
+* the board or traverse the pieces depending on the situation. Each of the 32
+* position slots (on the right side of the 0x88 board) is actually the 16
+* pieces (board square indices) followed by their piece type. You add 32 to
+* the piece position slot to get to the piece type (this is because to add 16
+* on 0x88 you add 0x20 otherwise you wind up on the left board again!).
+*
+* This picture makes this arrangement a bit clearer (in hex):
+*
+* 70 71 72 73 74 75 76 77 | 78 79 7a 7b 7c 7d 7e 7f
+* 60 61 62 63 64 65 66 67 | 68 69 6a 6b 6c 6d 6e 6f
+* 50 51 52 53 54 55 56 57 | 58 59 5a 5b 5c 5d 5e 5f
+* 40 41 42 43 44 45 46 47 | 48 49 4a 4b 4c 4d 4e 4f
+* 30 31 32 33 34 35 36 37 | 38 39 3a 3b 3c 3d 3e 3f
+* 20 21 22 23 24 25 26 27 | 28 29 2a 2b 2c 2d 2e 2f
+* 10 11 12 13 14 15 16 17 | 18 19 1a 1b 1c 1d 1e 1f
+*  0  1  2  3  4  5  6  7 |  8  9  a  b  c  d  e  f
+* 
+* SUMMARY:
+
+* when `index' & 0x88 == 0, we have a valid board square and Board[index] =
+*       piece position slot (pps), zero => empty.
+* Board[pps] = square index (ie back to the board square), -1 => empty.
+* Board[pps + 32] = piece code (eg pawn, knight, rook etc.)
+* 16 white pieces (pps)  in 0x8 thru 0xf then 0x18 thru 0x1f
+* 16 white piece types  in 0x28 to 0x2f, then 0x38 to 0x3f
+* The black pieces start at 0x48 and the same pattern follows.
+* 
+* The principal variation (PV) found during iterative deepening is not
+* stored in static data, only the very top-level PV is held in `MainPV'. Note
+* that the PVLine object is an array of MAX_PV move slots (eg 10). This means
+* it is around 44 bytes (inc length). The PV tree is held on the stack during
+* search and only alpha improvers are copied to the parent. This avoids having
+* static data for the PV tree. However it does mean there might be a stack
+* space problem. This is mitigated by arranging for only those search depths >
+* 0 having a PVLine object (no PV is maintained in quiescence). So, for
+* example, if your search depth is 6 levels, you will need 6*44 = 264 bytes of
+* stack for the PVLines at least. Plus there are other local variables in
+* search, but this is the biggest.
+* 
+* There are a small number of chess features ignored (currently).
+* 
+* * three move repetition rule
+* * 50 move rule (todo).
+*
+* Using:
+*
+* If this is the vchess.c source file, you can just compile it. the main loop
+* prints out a rather terrible board and command line UI.  However, the command
+* interface supports the WinBoard protocol. I strongly recommend using winboard
+* to host vchess.
+*
+*
+**************************************************************************/
+
+#include <stdlib.h>
+#include <string.h>
+
+typedef unsigned char uchar;
+typedef signed char byte;
+typedef unsigned int uint;
+typedef unsigned long uint4;
+
+// canonial piece codes
+typedef enum
+{
+    empty = 0,
+    pawn = 1,
+    knight = 2,
+    king = 3,
+    bishop = 5,
+    rook = 6,
+    queen = 7
+} Piece;
+
+typedef struct
+{
+    uchar from;
+    uchar to;
+    uchar promote;
+    uchar toPos;
+} Move;
+
+// board offset of king position
+#define POSKING  0x08
+
+// position delta for piece info
+#define POSMAT   0x20
+
+#define A1 0
+#define B1 1
+#define C1 2
+#define D1 3
+#define E1 4
+#define F1 5
+#define G1 6
+#define H1 7
+
+#define A8 0x70
+#define B8 0x71
+#define C8 0x72
+#define D8 0x73
+#define E8 0x74
+#define F8 0x75
+#define G8 0x76
+#define H8 0x77
+
+#define WHITE 0
+#define BLACK 1
+#define CHECKMOVE 0x10 
+#define PIECEMASK 0x7
+
+// pieces separated by 32 so we have a bit for black
+#define BLACKPOS 0x40
+
+// maximum moves in tree search
+#define MAX_STACK       128
+#define MAX_PV          10
+#define MAX_DEPTH       10
+#define WIN_SCORE       10000
+
+// for pos codes
+#define SIDEOF(_x) ((_x)>=(BLACKPOS+POSKING))
+#define COMPARE_MOVES(_a, _b) \
+    (*(uint4*)&(_a) == *(uint4*)&(_b))
+
+// for piece code
+#define SLIDER(_x)  ((_x)&4)
+
+// also piece codes if SLIDER will have these bits too
+#define SLIDE_DIAG 1
+#define SLIDE_ORTH 2
+
+// represent the principal variation
+typedef struct 
+{
+    int         n;
+    Move        m[MAX_PV];
+} PVLine;
+
+byte Board[128]; // 0x88 representation
+uint Side;
+Move MoveStack[MAX_STACK];
+Move* moveStackPtr;
+Move* moveStackEnd;
+uchar InCheck;  
+int Overflow;
+uint4 Nodes;
+uint MoveCount[2];
+uint MatScore[2];
+uint EP;
+PVLine MainPV;
+int UsePV;
+int NullMove; // in a null move
+uint Castle;
+Move Killer[MAX_PV];
+
+// represent a board in piece codes, will be translated into
+// pos codes on the 0x88 board
+static const uchar startboard[] = 
+{
+    rook, knight, bishop, queen, king, bishop, knight, rook,
+    pawn, pawn, pawn, pawn, pawn, pawn, pawn, pawn,        
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
+    pawn|BLACKPOS, pawn|BLACKPOS, pawn|BLACKPOS, pawn|BLACKPOS, pawn|BLACKPOS, pawn|BLACKPOS, pawn|BLACKPOS, pawn|BLACKPOS,
+    rook|BLACKPOS, knight|BLACKPOS, bishop|BLACKPOS, queen|BLACKPOS, king|BLACKPOS, bishop|BLACKPOS, knight|BLACKPOS, rook|BLACKPOS
+};
+
+// values of piece codes, pnk?brq
+const short pieceValue[] = { 0, 100, 300, 0, 0, 300, 500, 900 };
+
+// movements by piece code on the 0x88 board
+const byte offset[6][9] = 
+{
+    { 31, 33, 14, 18, -18, -14, -33, -31 }, // n
+    { 16, -16, -1, 1, 15, 17, -17, -15 }, // k
+    { 0 }, // ?
+    { 15, 17, -17, -15 }, // b
+    { 16, -1, 1, -16 }, // r
+    { 15, 16, 17, -1, 1, -17, -16, -15 }, // q
+};
+
+void initPieces(const uchar* board)
+{
+    int i, j;
+    int dbw = POSKING + 1; // first nonking slot
+    int dbb = dbw + BLACKPOS;
+    const uchar* bp = board;
+    int p;
+    
+    for (i = 0; i < 8; ++i)
+    {
+        for (j = 0; j < 8; ++j)
+        {
+            int t = j+(i<<4);
+            int pt = *bp++;
+            if (pt)
+            {
+                int blk = pt & BLACKPOS;
+                pt &= PIECEMASK;
+            
+                if (pt == king)
+                    p = POSKING + blk;
+                else
+                {
+                    if (blk)
+                    {
+                        p = dbb;
+                        dbb = (dbb + 1) | 0x08;
+                    }
+                    else
+                    {
+                        p = dbw;
+                        dbw = (dbw + 1) | 0x08;
+                    }
+                }
+
+                Board[t] = p;
+                Board[p] = t;
+                Board[p + POSMAT] = pt;  // save the piece type too
+            }
+            else
+                Board[t] = 0;
+        }
+    }
+}
+
+void initBoard()
+{
+    // the first 64 are the board squares then 32 white positions
+    // then 32 black positions
+    memset(Board, -1, 128);
+    memset(Killer, 0, sizeof(Killer));
+    initPieces(startboard);
+    
+    moveStackPtr = MoveStack;
+    moveStackEnd = MoveStack + MAX_STACK;
+    Side = WHITE;
+    InCheck = 0;
+    EP = 0;
+    Castle = 0xf; // both sides can castle
+}
+
+
+#define CASE_MIN        0
+#define CASE_MOVES      1
+#define CASE_NONSLIDERS 2
+#define CASE_ALL        0xff
+
+int attackTest(int cases, int side, int pos)
+{
+    const byte* offp = offset[king-2];
+    int i;
+    for (i = 0; i < 8; ++i)
+    {
+        int p = pos;
+        int d = 0;
+        int p2;
+        int pt;
+        for (;;)
+        {
+            p += offp[i];
+            if (p & 0x88) break;
+            p2 = Board[p];
+            if (p2)
+            {
+                if (SIDEOF(p2) == side) // opponent?
+                {
+                    pt = Board[p2 + POSMAT];
+                    if (SLIDER(pt))
+                    {
+                        if (i < 4)
+                        {
+                            if (pt & SLIDE_ORTH) return 1;
+                        }
+                        else
+                        {
+                            if (pt & SLIDE_DIAG) return 1;
+                        }
+                    }
+                    else if (!d && (cases & CASE_NONSLIDERS))
+                    {
+                        if (pt == king) return 1;
+                        if (pt == pawn)
+                        {
+                            int d = p - pos;
+                            if (side == WHITE) d = -d;
+                            if (d == 0x0f || d == 0x11) return 1;
+                        }
+                    }
+                }
+                break;
+            }
+            ++d;
+        }
+    }
+
+    if (cases & CASE_NONSLIDERS)
+    {
+        // knights?
+        const byte* offp = offset[knight-2];
+        while (*offp)
+        {
+            int p = pos + *offp++;
+            if (!(p & 0x88))
+            {
+                int p2 = Board[p];
+                if (SIDEOF(p2) == side && Board[p2 + POSMAT] == knight)
+                    return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+// move to blank square
+#define MOVE(_f, _t, _fp, _tp)     \
+    Board[_fp] = _t;                \
+    Board[_t] = _fp;                \
+    Board[_f] = _tp;
+
+
+int isLegalMove(Move mv)
+{
+    /* its legal if we are not in check */
+    int legal;
+    int from = mv.from;
+    int to = mv.to;
+    int fromPos = Board[from];
+    int toPos = Board[to];
+    int oside = !SIDEOF(fromPos); // other side
+    int kingpos = Board[POSKING + (oside ? 0 : BLACKPOS)];
+    int kingmove = (from == kingpos);
+
+    if (kingmove)
+    {
+        // if this is a castle, consider the king moving twice to
+        // detect move over check
+        int d = to - from;
+        if (d == 2 || d == -2)
+        {
+            // castle
+            // is this square attacked?
+            if (attackTest(CASE_NONSLIDERS, oside, from+(d>>1)))
+            {
+                // was illegal
+                return 0;
+            }
+        }
+        kingpos = to;
+    }
+
+    // make the move    
+    MOVE(from, to, fromPos, 0);
+    if (toPos) Board[toPos] = -1;
+
+    // if we are not moving the king, we can only in in check from sliders.
+    // otherwise check nonsliders too
+    // if we're already in check, examine all captures
+    legal = !attackTest((kingmove || InCheck) ? CASE_NONSLIDERS : CASE_MIN,
+                        oside,
+                        kingpos);
+
+    // undo the move
+    MOVE(to, from, fromPos, toPos);
+    if (toPos) Board[toPos] = to;
+    return legal;
+}
+
+typedef void MoveFn(Move m);
+
+int addPawnMove(Move mv, MoveFn* mf, int all)
+{
+    int mc = isLegalMove(mv);
+    if (mc)
+    {
+        int r = mv.to &0xF0;
+        if (r == 0x70 || r == 0) // rank 1 o 8
+        {
+            // consider promotion
+            mv.promote = queen;
+            (*mf)(mv);
+
+            mv.promote = rook;
+            (*mf)(mv);
+
+            mv.promote = bishop;
+            (*mf)(mv);
+            
+            mv.promote = knight;
+            (*mf)(mv);
+        }
+        else
+            if (all) (*mf)(mv);
+    }
+    return mc;
+}
+
+int moveScan(int cases, int side, MoveFn* mf)
+{
+    /* always scan sliders and captures, `cases' include also
+     * nonsliders and ordinary moves.
+     */
+
+    // return number of legal moves
+    int all = cases & CASE_MOVES;
+    int mc = 0;  // legal move count
+    int cc = 0;  // captures & defenders
+    int dp = POSKING;
+    int i;
+    Move mv;
+
+    if (side != WHITE) dp += BLACKPOS;
+    
+    for (i = 0; i < 16; ++i)
+    {
+        int pos = Board[dp];
+        if (pos >= 0)
+        {
+            int pt = Board[dp + POSMAT];
+            mv.from = pos;
+            mv.promote = 0;
+            if (pt == pawn)
+            {
+                int d = 0x10;
+                int d2 = 0x20;
+                int r2 = 0x10;
+                int p2;
+
+                if (side != WHITE)
+                {
+                    d = -d;
+                    d2 = -d2;
+                    r2 = 0x60;
+                }
+
+                if (!Board[pos+d])
+                {
+                    if ((pos&0xF0) == r2 && !Board[pos+d2])
+                    {
+                        // double forward
+                        mv.to = pos + d2;
+                        if (isLegalMove(mv))
+                        {
+                            ++mc;
+                            if (all) (*mf)(mv);
+                        }
+                    }
+                 
+                    // pawn advance
+                    mv.to = pos + d;
+                    mc += addPawnMove(mv, mf, all);
+                }
+            
+                // captures
+                p2 = pos + d + 1;
+                if (!(p2 & 0x88))
+                {
+                    int pd = Board[p2];
+                    if (pd)
+                    {
+                        ++cc;
+                        if (SIDEOF(pd) != side)
+                        {
+                            mv.to = p2;
+                            mc += addPawnMove(mv, mf, all);
+                        }
+                    }
+                }
+                p2 = pos + d - 1;
+                if (!(p2 & 0x88))
+                {
+                    int pd = Board[p2];
+                    if (pd)
+                    {
+                        ++cc;
+                        if (SIDEOF(pd) != side)
+                        {
+                            mv.to = p2;
+                            mc += addPawnMove(mv, mf, all);
+                        }
+                    }
+                }
+                
+                // EP
+                if (EP)
+                {
+                    p2 = Board[EP];
+                    if ((p2+1 == pos || p2-1 == pos) && SIDEOF(EP) != side)
+                    {
+                        p2 += d2 - d; // to square
+                        if (!Board[p2])
+                        {
+                            mv.to = p2;
+                            if (isLegalMove(mv))
+                            {
+                                ++mc;
+                                (*mf)(mv);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                const byte* off = offset[pt-2];
+                int d = *off;
+                do
+                {
+                    int p0 = pos;
+                    int bp;
+                    do
+                    {
+                        p0 += d;
+                        if (p0 & 0x88) break;
+                        bp = Board[p0];
+                        mv.to = p0;
+                        if (bp)
+                        {
+                            ++cc;
+                            if (SIDEOF(bp) != side)
+                            {
+                                if (isLegalMove(mv))
+                                {
+                                    ++mc;
+                                    (*mf)(mv);
+                                }
+                            }
+                            break;
+                        }
+                        else
+                        {
+                            if (isLegalMove(mv))
+                            {
+                                ++mc;
+                                if (all) (*mf)(mv);
+                            }
+                            else if (!InCheck) break; // same legality.
+                        }
+                    } while (SLIDER(pt));
+                } while ((d = *++off) != 0);
+            }
+        }
+        dp = (dp + 1) | 0x08;
+    }
+
+    // consider castle if not in check
+    // NB: dont include castle moves in move count to encourage castling
+    if (!InCheck && all)
+    {
+        mv.promote = 0;
+        if (side == WHITE)
+        {
+            // queenside castle
+            if ((Castle&1) && Board[B1]+Board[C1]+Board[D1] == 0)
+            {
+                mv.from = E1; 
+                mv.to = C1;
+                if (isLegalMove(mv))
+                    (*mf)(mv);
+            }
+                
+            // kingside castle
+            if ((Castle&2) && Board[F1]+Board[G1] == 0)
+            {
+                mv.from = E1;
+                mv.to = G1;
+                if (isLegalMove(mv))
+                    (*mf)(mv);
+            }
+        }
+        else
+        {
+            // queenside castle
+            if ((Castle&4) && Board[B8]+Board[C8]+Board[D8] == 0)
+            {
+                mv.from = E8;
+                mv.to = C8;
+                if (isLegalMove(mv))
+                    (*mf)(mv);
+            }
+                
+            // kingside castle
+            if ((Castle&8) && Board[F8]+Board[G8]==0)
+            {
+                mv.from = E8;
+                mv.to = G8;
+                if (isLegalMove(mv))
+                    (*mf)(mv);
+            }
+        }
+    }
+    return mc + cc;
+}
+
+int opponentCheck(int cases, int side)
+{
+    // is other side in check
+    return attackTest(cases, side,
+                      Board[POSKING + (side == WHITE ? BLACKPOS : 0)]);
+}
+
+void pushMove(Move mv)
+{
+    // assume legal
+    int from = mv.from;
+    int to = mv.to;
+    int fromPos = Board[from];
+    int side = SIDEOF(fromPos);
+
+    mv.toPos = Board[to];
+
+    // find out if this is a checking move
+    MOVE(from, to, fromPos, 0);
+
+    // if we've moved a slider, only need to check them,
+    // otherwise check all pieces.
+    if (opponentCheck(SLIDER(Board[fromPos + POSMAT]) ?
+                      CASE_MIN : CASE_NONSLIDERS,
+                      side))
+    {
+        // opponent in check with this move.
+        mv.promote |= CHECKMOVE;
+    }
+
+    // undo the move
+    MOVE(to, from, fromPos, mv.toPos);
+        
+    if (moveStackPtr < moveStackEnd)
+        *moveStackPtr++ = mv;
+    else
+        Overflow = 1;
+}
+
+void makeMove(Move m, int* ep)
+{
+    int from = m.from;
+    int to = m.to;
+    int fromPos = Board[from];
+    int d;
+    int oldEP;
+    int pt;
+    int toPos = Board[to];
+
+    // remember old EP square and reset
+    oldEP = EP;
+    *ep = oldEP;
+    EP = 0; 
+
+    // deal with promotion
+    if (m.promote & PIECEMASK)
+    {
+        // change the from piece into the promoted piece
+        Board[fromPos + POSMAT] = m.promote & PIECEMASK;
+    }
+
+    pt = Board[fromPos + POSMAT];
+    if (pt == king) // kingmove
+    {
+        d = m.to - m.from;
+        if (d == 2)
+        {
+            // kingside castle, move rook
+            int fp = Board[m.from+3];
+            MOVE(m.from+3, m.from+1, fp, 0);
+            
+        }
+        else if (d == -2)
+        {
+            // queenside castle, move rook
+            int fp = Board[m.from-4];
+            MOVE(m.from-4,m.from-1, fp, 0);
+        }
+        
+        // clear castle bits
+        Castle &= ~(0x3<<(SIDEOF(fromPos)<<1));
+    }
+    else if (pt == pawn)
+    {
+        d = m.to - m.from;
+        if (d < 0) d = -d;
+        if (d == 0x20)
+        {
+            // initial pawn move, set EP square
+            EP = fromPos;
+        }
+        else if ((d&1) && !m.toPos) // EP capture?
+        {
+            // diagonal with no capture = EP
+            // EP square must still contain the piece
+            Board[Board[oldEP]] = 0;
+            Board[oldEP] = -1; // pos
+        }
+    }
+    else if (pt == rook)
+    {
+        if (from == 0x70)
+            Castle &= ~(0x4);
+        else if (from == 0x77)
+            Castle &= ~8;
+        else if (from == 0x0)
+            Castle &= ~1;
+        else if (from == 0x7)
+            Castle &= ~2;
+    }
+
+    MOVE(from, to, fromPos, 0);
+    if (toPos) Board[toPos] = -1;
+
+    if (m.promote & PIECEMASK)
+    {
+        // was a promotion. need to perform check test again
+        InCheck = opponentCheck(CASE_NONSLIDERS, Side);
+    }
+    else
+        InCheck = m.promote & CHECKMOVE;
+
+    // switch sides
+    Side = !Side;
+}
+
+void unmakeMove(Move m, int ep)
+{
+    int toPos = m.toPos;
+    int from = m.from;
+    int to = m.to;
+    int fromPos = Board[to];
+    int pt;
+
+    // switch sides back
+    Side = !Side;
+
+    // restore EP square
+    EP = ep;
+
+    if (m.promote & PIECEMASK)
+    {
+        // demote piece
+        Board[fromPos + POSMAT] = pawn;
+    }
+
+    pt = Board[fromPos + POSMAT];
+    if (pt == king) // kingmove
+    {
+        // undo castle
+        int d = m.to - m.from;
+        if (d == 2)
+        {
+            // undo kingside rook
+            int fp = Board[m.from+1];
+            MOVE(m.from+1, m.from+3, fp, 0);
+        }
+        else if (d == -2)
+        {
+            // undo queenside rook
+            int fp = Board[m.from-1];
+            MOVE(m.from-1, m.from-4, fp, 0);
+        }
+    }
+    else if (pt == pawn && !m.toPos)  // non capture
+    {
+        int d = m.to - m.from;        
+        if (d&1)
+        {
+            // diagonal non-capture move => EP
+            int p2 = m.to;
+            if (d < 0) p2 += 0x10;
+            else p2 -= 0x10;
+            Board[p2] = EP;
+            Board[EP] = p2;
+        }
+    }
+
+    MOVE(to, from, fromPos, toPos);
+    if (toPos) Board[toPos] = to;
+
+    InCheck = 0;
+}
+
+void playMove(Move m)
+{
+    int ep;
+    int i;
+    for (i = 0; i < MAX_PV-1; ++i) Killer[i] = Killer[i+1];
+    makeMove(m, &ep);
+}
+
+int moveGen(int cases, int side)
+{
+    Overflow = 0;
+    return moveScan(cases, side, pushMove);
+}
+
+#define MS(_p, _m) { *(_p)++ = ((_m)&7)+'a';  *(_p)++ = ((_m)>>4)+'1'; }
+
+const char* moveToStr(Move m, int fancy)
+{
+    static char buf[16];
+    char* p = buf;
+    MS(p, m.from);
+    if (fancy) *p++ = (m.toPos & ~CHECKMOVE) ? 'x'  : '-';
+    MS(p, m.to);
+    if (fancy && m.promote & CHECKMOVE) *p++ = '+'; // in check!
+    *p = 0;
+    return buf;
+}
+
+int scoreStatic()
+{
+    int v;
+    int i;
+    int dp = POSKING+1;
+    int p;
+
+    v = 0;
+    for (i = 0; i < 15; ++i)
+    {
+        p = Board[dp];
+        if (p >= 0) v += pieceValue[Board[dp + POSMAT]];
+        dp = (dp + 1) | 0x08;
+    }
+
+    // update the latest material score
+    MatScore[WHITE]=v;
+
+    dp = POSKING + BLACKPOS + 1;
+    v = 0;
+    for (i = 0; i < 15; ++i)
+    {
+        p = Board[dp];
+        if (p >= 0) v += pieceValue[Board[dp + POSMAT]];
+        dp = (dp + 1) | 0x08;
+    }
+    MatScore[BLACK] = v;
+
+    v = MatScore[WHITE] - v;
+    if (Side == BLACK) v = -v;
+    
+    v += MoveCount[Side];
+
+    if (!(Castle & 0x3<<(Side<<1)))
+        v += 10; // bonus for castling.
+
+    return v;
+}
+
+int moveValue(Move* m)
+{
+    int v = 0;
+    if (m->toPos) // capture
+    {
+        // MVV/LVA
+        // use value of pieces ranges from P*8+(8-K) = 10 to
+        // Q*8+(8-P) = 47
+        v = Board[m->toPos+POSMAT]*8 + (8 - Board[Board[m->from] + POSMAT]);
+    }
+    else
+    {
+        if (m->promote & CHECKMOVE)
+            v = 100;  // put checks first
+    }
+    return v;
+}
+
+Move* bestMoveVal(Move* first, Move* last)
+{
+    Move* best = first;
+    Move* mv;
+
+    int bestVal = moveValue(best);
+    for (mv = first; mv != last; ++mv)
+    {
+        int v = moveValue(mv);
+        if (v > bestVal)
+        {
+            bestVal = v;
+            best = mv;
+        }
+    }
+    return best;
+}
+
+Move* bestMove(Move* first, Move* last, int ply)
+{
+    Move* best = 0;
+    Move* mv;
+
+    if (!NullMove)
+    {
+        if (UsePV)
+        {
+            for (mv = first; mv != last; ++mv)
+            {
+                if (COMPARE_MOVES(*mv, MainPV.m[ply]))
+                {
+                    best = mv;
+                    break;
+                }
+            }
+            if (!best) UsePV = 0; // dont use the pv anymore.
+        }
+
+        if (!best)
+            for (mv = first; mv != last; ++mv)
+            {
+                if (COMPARE_MOVES(*mv, Killer[ply])) 
+                {
+                    best = mv;
+                    break;
+                }
+            }            
+    }
+    return best;
+}
+
+int quiesce(int alpha, int beta, int depth)
+{
+    Move* first = moveStackPtr;
+    Move* mv;
+    int v;
+    int ep;
+    int castle;
+    int done;
+    int bv;
+
+    ++Nodes;
+
+    // generate moves
+    MoveCount[Side] = moveGen(CASE_MIN, Side);
+    
+    // give up if we're going too deep whatever
+    done = (first == moveStackPtr) || (depth < -MAX_DEPTH);
+
+    bv = scoreStatic();
+    
+    if (bv > alpha)
+    {
+        alpha = bv;
+        if (bv >= beta)
+            done = 1;
+    }
+    
+    if (!done)
+    {
+        for (mv = first; mv != moveStackPtr; ++mv)
+        {
+            // try to search the moves in a better order
+            Move* m2 = bestMoveVal(mv, moveStackPtr);
+            if (m2 != mv)
+            {
+                Move t = *mv;
+                *mv = *m2;
+                *m2 = t;
+            }
+
+            castle = Castle;
+            makeMove(*mv, &ep);
+
+            v = -quiesce(-beta, -alpha, depth-1);
+
+            Castle = castle;
+            unmakeMove(*mv, ep);
+
+            if (v > bv)
+            {
+                bv = v;
+                if (v > alpha)
+                {
+                    if (v >= beta) break;
+                    alpha = v;
+                }
+            }
+        }
+    }
+
+    moveStackPtr = first;
+    return bv;
+}
+    
+int search(int alpha, int beta, int depth, int top, PVLine* ppv)
+{
+    Move* first;
+    Move* mv;
+    int v;
+    PVLine pv;
+    int ep;
+    int castle;
+    int bv;
+    int ply;
+    int i;
+    int moves;
+
+    ppv->n = 0;
+
+    if (depth <= 0) return quiesce(alpha, beta, depth);
+
+    first = moveStackPtr;
+    bv = -WIN_SCORE;
+    ply = top - depth;
+
+    ++Nodes;
+
+    // try null moves
+    if (ply > 0 && depth > 2 && !InCheck && !NullMove)
+    {
+        // check we have sensible material for null move
+        if (MatScore[Side] >= 400)
+        {
+            NullMove = 1;
+            Side = !Side;
+            v = -search(-beta, 1-beta, depth-1-2, top, &pv);
+            Side = !Side;
+            NullMove = 0;
+            if (v >= beta)
+                return v;
+        }
+    }
+    
+    // generate moves
+    MoveCount[Side] = moveGen(CASE_ALL, Side);
+    moves = moveStackPtr - first;
+
+    if (moves)
+    {
+        int newPV = 0;
+        for (mv = first; mv != moveStackPtr; ++mv)
+        {
+            // try to search the moves in a better order
+            Move* m2 = bestMove(mv, moveStackPtr, ply);
+            if (!m2) m2 = bestMoveVal(mv, moveStackPtr);
+            if (m2 != mv)
+            {
+                Move t = *mv;
+                *mv = *m2;
+                *m2 = t;
+            }
+            
+            castle = Castle;
+            makeMove(*mv, &ep);
+            
+            if (newPV)
+            {
+                v = -search(-alpha-1, -alpha, depth-1, top, &pv);
+                if (v > alpha && v < beta)
+                    v = -search(-beta, -alpha, depth-1, top, &pv);
+            }
+            else
+                v = -search(-beta, -alpha, depth-1, top, &pv);
+            
+            Castle = castle;
+            unmakeMove(*mv, ep);
+
+            if (v > bv)
+            {
+                bv = v;
+                if (v > alpha)
+                {
+                    if (v >= beta)
+                    {
+                        if (!mv->toPos && ply < MAX_PV)
+                            Killer[ply] = *mv;
+                        break;
+                    }
+
+                    alpha = v;
+                    newPV = 1;
+
+                    // collect the PV
+                    ppv->m[0] = *mv;
+                    i = pv.n;
+                    if (i == MAX_PV) --i;
+                    memcpy(ppv->m + 1, pv.m, i * sizeof(Move));
+                    ppv->n = i + 1;
+                }
+            }
+        }
+    }
+    else
+    {
+        // no moves!
+        bv = 0; // stalemate
+        if (InCheck)
+        {
+            // mate seen, add ply to prevent mate declaration except
+            // top-level
+            bv= -WIN_SCORE + ply; 
+        }
+    }
+
+    moveStackPtr = first;
+    return bv;
+}
+
+int moveToBoard(const char* p)
+{
+    // NB: changed to use numbers !!
+    int b = -1;
+    if (*p >= '1' && *p <= '8' && p[1] >= '1' && p[1] <= '8')
+        b = ((p[1]-'1')<<4) + p[0]-'1';
+    return b;
+}
+
+
