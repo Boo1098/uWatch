@@ -30,15 +30,11 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
-#define TSCP_CHESSxx
-
 static const char* GamesMenu[] = 
 {
     "Lunar Lander",
     "Twenty One",
-#ifdef TSCP_CHESS
-     "Chess",
-#endif
+    "Chess",
 };
 
 static unsigned int wait()
@@ -48,46 +44,65 @@ static unsigned int wait()
     return KeyPress2;
 }
 
+static int chessLevel;
 
-#ifdef TSCP_CHESS
-static int print_result()
+static int computerMoves()
 {
     int i;
-    int ok = 1;
+    int v = 0;
+    int chk = InCheck;
+    int dmax = chessLevel;
 
-    /* is there a legal move? */
-    for (i = 0; i < first_move[1]; ++i)
-        if (makemove(gen_dat[i].m.b)) 
-        {
-            takeback();
-            break;
-        }
+    Nodes = 0;
 
-    if (i == first_move[1]) 
+    // boost one level when in check
+    if (chk) ++dmax;
+
+    UpdateLCDline1("thinking...");
+
+    /* bump the CPU whilst we think... */
+    DisableSleepTimer();
+    Clock4MHz();
+
+    memset(&MainPV, 0, sizeof(MainPV));
+    for (i = 1; i <= dmax; ++i)
     {
-        ok = 0;
-        if (in_check(side)) 
-        {
-            if (side == LIGHT)
-                UpdateLCDline2("0-1 {Black}");
-            else
-                UpdateLCDline2("1-0 {White}");
-        }
-        else
-            UpdateLCDline2("Stalemate");
-    }
-    else if (fifty >= 100)
-    {
-        UpdateLCDline2("Draw 50 moves");
-        ok = 0;
+        UsePV = 1;
+        InCheck = chk;
+        NullMove = 0;
+        moveStackPtr = MoveStack;
+        v = search(-WIN_SCORE, WIN_SCORE, i, i, &MainPV);
     }
 
-    if (!ok)
-        wait();
-    return ok;
+    /* and back again to slow.. */
+    Clock250KHz();
+    EnableSleepTimer();
+    ResetSleepTimer();
+    
+    if (v <= -WIN_SCORE)
+    {
+        UpdateLCDline2("You Win!");
+        return -1;
+    }
+    else
+    {
+        if (MainPV.n)
+        {
+            char buf[16];
+            Move* m = MainPV.m;
+            strcat(strcpy(buf, "I move, "), moveToStr(*m, 1));
+            UpdateLCDline1(buf);
+            playMove(*m);
+        }
+
+        if (v >= WIN_SCORE)
+        {
+            UpdateLCDline2("I Win!");
+            return 1;
+        }
+    }
+    return 0;
 }
-#endif // TSCP_CHESS
-
 
 //***********************************
 // The main games mode routine
@@ -368,92 +383,88 @@ void GamesMode(void)
                }
             }
         } break;
-#ifdef TSCP_CHESS
-    case 2: // TSCP Chess
+    case 2: // VoidCHESS!
         {
-            char s[16];
-            int m;
-            int from, to;
-            int i;
+            int computer = BLACK;
+            int moveok;
+            Move* mv;
+            Move* first;
+            int to, from;
 
-            UpdateLCDline1("-- CHESS      --");
-            UpdateLCDline2("enter move");
-            KeyPress2=wait();
-            if (KeyPress2==KeyMode) return;
+            initBoard();
 
-            init_board();
-            max_time = 1L<<25;
-            max_depth = 3;
+            UpdateLCDline1("- VCHESS v1.2  -");
+            
+            UpdateLCDline2("W=1, B=2 ?");
+            if ((KeyPress2 = wait()) == KeyMode) return;
+            if (KeyPress2 == Key2) computer = WHITE;
 
-            // generate initial allowed moves
-            gen();
-
-            for (;;) 
+            for (;;)
             {
-                m = -1;
-
-                // get move
+                int lev;
+                UpdateLCDline1("Level 1,2 or 3 ?");
                 if (OneLineNumberEntry() == KeyMode) return; // escape
+                lev = Xreg;
+                if (lev >= 1 && lev <= 3)
+                {
+                    chessLevel = lev;
+                    break;
+                }
+            }
 
-                // parse move
-                from = DisplayXreg[0] - '1';
-                from += 8*(8 - (DisplayXreg[1] - '0'));
-
-                to = DisplayXreg[2] - '1';
-                to += 8*(8 - (DisplayXreg[3] - '0'));
-
-                for (i = 0; i < first_move[1]; ++i)
-                    if (gen_dat[i].m.b.from == from &&
-                        gen_dat[i].m.b.to == to) 
+            // NB: will be overwritten if comp moves
+            UpdateLCDline1("Your move?");
+            
+            for (;;)
+            {
+                if (computer == Side)
+                {
+                    if (computerMoves())
                     {
-                        if (gen_dat[i].m.b.bits & 32)
+                        wait();
+                        break; // game over
+                    }
+                    continue;
+                }
+
+                moveStackPtr = MoveStack;
+                first = moveStackPtr;
+
+                // generate legal moves
+                moveGen(CASE_ALL, Side);
+
+                do
+                {
+                    moveok = 0;
+
+                    // get move
+                    if (OneLineNumberEntry() == KeyMode) return; // escape
+                    
+                    // parse move
+                    from = moveToBoard(DisplayXreg);
+                    to =  moveToBoard(DisplayXreg + 2);
+                    
+                    if (from >= 0 && to >= 0)
+                    {
+                        // check legal
+                        for (mv = first; mv != moveStackPtr; ++mv)
                         {
-                          /* assume it's a queen */
-                            i += 3;
+                            if (mv->from == from && mv->to == to)
+                            {
+                                moveok = 1;
+                                break;
+                            }
                         }
-                        m = i;
-                        break;
                     }
-
-                if (m == -1 || !makemove(gen_dat[m].m.b))  
-                {
-                    UpdateLCDline1("Illegal Move");
-                    if (wait() == KeyMode) return;
-                }
-                else
-                {
-                    // is the game over?
-                    ply = 0;
-                    gen();
-                    if (!print_result()) return;
-
-                    /* computer's turn */
-                    /* think about the move and make it */
-                    UpdateLCDline1("thinking");
-
-                    /* bump the CPU whilst we think... */
-                    DisableSleepTimer();
-                    Clock4MHz();
-                    think();
-                    /* and back again to slow.. */
-                    Clock250KHz();
-                    EnableSleepTimer();
-                    ResetSleepTimer();
-
-                    if (pv[0][0].u) 
-                    {
-                        UpdateLCDline1(move_str(pv[0][0].u));
-                        makemove(pv[0][0].b);
-                    }
-
-                    ply = 0;
-                    gen();
-                    if (!print_result()) return;
-                }
+                    if (!moveok)
+                        UpdateLCDline1("illegal move!");
+                } while (!moveok);
+                
+                if (moveok) 
+                    playMove(*mv);
             }
         }
         break;
-#endif // TSCP_CHESS
     }
 }
 
