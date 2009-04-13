@@ -1,5 +1,3 @@
-**** Operational and Implementation Notes
-
 *** Daylight Saving Time.
 
 This is driven from a table of regions. Each region specifies the start and
