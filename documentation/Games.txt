@@ -34,16 +34,30 @@ You can use the mode key to quit the game any time.
 * Chess
 
 Right now there is no board display only the moves displayed in coordinate
-fasion (eg d7d5).
+fasion (eg d7-d5 or b4xf7+).
 
-Currently there is no way to swap sides, play as black, setup, undo or change
-level.
+At the start of the game, you are asked to play either white (1) or black
+(2). Then you can select the level of play 1, 2 or 3. press enter after making
+your selection. The level controls how much thinking time you want to give the
+watch. level 1 is pretty much instantaneous, level 2, a few seconds and level
+3 about 30 seconds.
 
-At the start of the game, you play the white pieces. enter your first move
-using numbers instead of letters, so A=1, B=2 etc.  for example, the move
-E2-E4 is entered as the number 5254. the watch responds and then you make your next move. 
+Enter your move using numbers instead of letters, so A=1, B=2 etc.  for
+example, the move E2-E4 is entered as the number 5254. the watch responds and
+then you make your next move.
 
-Press mode key to escape.
+Pressing the mode key escapes from the chess game. Currently there is no way
+to return to the state of play after exit.
 
-The chess engine is adapted from Tom Kerrigan's Simple Chess Program (TSCP)
+Misc Notes:
+
+* the 50 move rule is not enforced.             [ will be fixed]
+* the three repetition rule is not enforced.    [ tricky! ]
+* all player pawn promotions are to queen.      [ will be fixed ]
+* vchess may declare a win if it finds a mate-in-n situation.
+* the chess engine is voidchess v1.2.
+
+
+
+
 
