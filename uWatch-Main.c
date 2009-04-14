@@ -41,7 +41,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #include <string.h>
 #include "uWatch-op.h"
 
-#define RevString   "Rev 1.5.4"
+#define RevString   "Rev 1.5.6"
 
 //define all the I/O pins
 #define Row1        _RB10

@@ -282,6 +282,7 @@ void GamesMode(void)
             int player_total=0;
             int dealer_total=0;
             int done=0;
+            int dealerBust=0;
             
             void bust_player(void)
             {
@@ -321,7 +322,6 @@ void GamesMode(void)
             
             void hit_dealer(void)
             {
-               int dealerBust=0;
                dealer_total+=rand()% 10+1;
                if (dealer_total>21)
                {
@@ -390,7 +390,7 @@ void GamesMode(void)
         } break;
     case 2: // VoidCHESS!
         {
-            UpdateLCDline1("- VCHESS v1.2  -");
+            UpdateLCDline1("- VCHESS v1.3  -");
             UpdateLCDline2("Ent to continue");
             if ((KeyPress2 = wait()) == KeyMode) return;
             
@@ -476,5 +476,3 @@ void GamesMode(void)
         break;
     }
 }
-
-

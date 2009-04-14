@@ -110,6 +110,7 @@ typedef unsigned char uchar;
 typedef signed char byte;
 typedef unsigned int uint;
 typedef unsigned long uint4;
+#define VERSION "VoidCHESS 1.3"
 
 // canonial piece codes
 typedef enum
@@ -157,7 +158,6 @@ typedef struct
 
 #define WHITE 0
 #define BLACK 1
-#define CHECKMOVE 0x10 
 #define PIECEMASK 0x7
 
 // pieces separated by 32 so we have a bit for black
@@ -291,7 +291,7 @@ void initBoard()
     Side = WHITE;
     InCheck = 0;
     EP = 0;
-    Castle = 0xf; // both sides can castle
+    Castle = 0x0f; // both sides can castle
 }
 
 
@@ -420,9 +420,16 @@ int isLegalMove(Move mv)
     return legal;
 }
 
-typedef void MoveFn(Move m);
+void pushMove(Move mv)
+{
+    mv.toPos = Board[mv.to];
+    if (moveStackPtr < moveStackEnd)
+        *moveStackPtr++ = mv;
+    else
+        Overflow = 1;
+}
 
-int addPawnMove(Move mv, MoveFn* mf, int all)
+int addPawnMove(Move mv, int all)
 {
     int mc = isLegalMove(mv);
     if (mc)
@@ -432,24 +439,24 @@ int addPawnMove(Move mv, MoveFn* mf, int all)
         {
             // consider promotion
             mv.promote = queen;
-            (*mf)(mv);
+            pushMove(mv);
 
             mv.promote = rook;
-            (*mf)(mv);
+            pushMove(mv);
 
             mv.promote = bishop;
-            (*mf)(mv);
+            pushMove(mv);
             
             mv.promote = knight;
-            (*mf)(mv);
+            pushMove(mv);
         }
         else
-            if (all) (*mf)(mv);
+            if (all) pushMove(mv);
     }
     return mc;
 }
 
-int moveScan(int cases, int side, MoveFn* mf)
+int moveGen(int cases, int side)
 {
     /* always scan sliders and captures, `cases' include also
      * nonsliders and ordinary moves.
@@ -463,8 +470,10 @@ int moveScan(int cases, int side, MoveFn* mf)
     int i;
     Move mv;
 
+    Overflow = 0;
     if (side != WHITE) dp += BLACKPOS;
     
+    mv.promote = 0;
     for (i = 0; i < 16; ++i)
     {
         int pos = Board[dp];
@@ -472,7 +481,6 @@ int moveScan(int cases, int side, MoveFn* mf)
         {
             int pt = Board[dp + POSMAT];
             mv.from = pos;
-            mv.promote = 0;
             if (pt == pawn)
             {
                 int d = 0x10;
@@ -496,13 +504,13 @@ int moveScan(int cases, int side, MoveFn* mf)
                         if (isLegalMove(mv))
                         {
                             ++mc;
-                            if (all) (*mf)(mv);
+                            if (all) pushMove(mv);
                         }
                     }
                  
                     // pawn advance
                     mv.to = pos + d;
-                    mc += addPawnMove(mv, mf, all);
+                    mc += addPawnMove(mv, all);
                 }
             
                 // captures
@@ -516,7 +524,7 @@ int moveScan(int cases, int side, MoveFn* mf)
                         if (SIDEOF(pd) != side)
                         {
                             mv.to = p2;
-                            mc += addPawnMove(mv, mf, all);
+                            mc += addPawnMove(mv, all);
                         }
                     }
                 }
@@ -530,7 +538,7 @@ int moveScan(int cases, int side, MoveFn* mf)
                         if (SIDEOF(pd) != side)
                         {
                             mv.to = p2;
-                            mc += addPawnMove(mv, mf, all);
+                            mc += addPawnMove(mv, all);
                         }
                     }
                 }
@@ -548,7 +556,7 @@ int moveScan(int cases, int side, MoveFn* mf)
                             if (isLegalMove(mv))
                             {
                                 ++mc;
-                                (*mf)(mv);
+                                pushMove(mv);
                             }
                         }
                     }
@@ -576,7 +584,7 @@ int moveScan(int cases, int side, MoveFn* mf)
                                 if (isLegalMove(mv))
                                 {
                                     ++mc;
-                                    (*mf)(mv);
+                                    pushMove(mv);
                                 }
                             }
                             break;
@@ -586,7 +594,7 @@ int moveScan(int cases, int side, MoveFn* mf)
                             if (isLegalMove(mv))
                             {
                                 ++mc;
-                                if (all) (*mf)(mv);
+                                if (all) pushMove(mv);
                             }
                             else if (!InCheck) break; // same legality.
                         }
@@ -601,25 +609,28 @@ int moveScan(int cases, int side, MoveFn* mf)
     // NB: dont include castle moves in move count to encourage castling
     if (!InCheck && all)
     {
-        mv.promote = 0;
         if (side == WHITE)
         {
             // queenside castle
             if ((Castle&1) && Board[B1]+Board[C1]+Board[D1] == 0)
             {
-                mv.from = E1; 
-                mv.to = C1;
-                if (isLegalMove(mv))
-                    (*mf)(mv);
+                int p = Board[A1];
+                if (p && Board[p+POSMAT] == rook)
+                {
+                    mv.from = E1; mv.to = C1;
+                    if (isLegalMove(mv)) pushMove(mv);
+                }
             }
                 
             // kingside castle
             if ((Castle&2) && Board[F1]+Board[G1] == 0)
             {
-                mv.from = E1;
-                mv.to = G1;
-                if (isLegalMove(mv))
-                    (*mf)(mv);
+                int p = Board[H1];
+                if (p && Board[p+POSMAT]==rook)
+                {
+                    mv.from = E1; mv.to = G1;
+                    if (isLegalMove(mv)) pushMove(mv);
+                }
             }
         }
         else
@@ -627,62 +638,46 @@ int moveScan(int cases, int side, MoveFn* mf)
             // queenside castle
             if ((Castle&4) && Board[B8]+Board[C8]+Board[D8] == 0)
             {
-                mv.from = E8;
-                mv.to = C8;
-                if (isLegalMove(mv))
-                    (*mf)(mv);
+                int p = Board[A8];
+                if (p && Board[p+POSMAT]==rook)
+                {
+                    mv.from = E8; mv.to = C8;
+                    if (isLegalMove(mv)) pushMove(mv);
+                }
             }
                 
             // kingside castle
             if ((Castle&8) && Board[F8]+Board[G8]==0)
             {
-                mv.from = E8;
-                mv.to = G8;
-                if (isLegalMove(mv))
-                    (*mf)(mv);
+                int p = Board[H8];
+                if (p && Board[p+POSMAT] == rook)
+                {
+                    mv.from = E8; mv.to = G8;
+                    if (isLegalMove(mv)) pushMove(mv);
+                }
             }
         }
     }
     return mc + cc;
 }
 
-int opponentCheck(int cases, int side)
+int opponentCheck(int side)
 {
     // is other side in check
-    return attackTest(cases, side,
+    return attackTest(CASE_ALL, side,
                       Board[POSKING + (side == WHITE ? BLACKPOS : 0)]);
-}
 
-void pushMove(Move mv)
-{
     // assume legal
-    int from = mv.from;
-    int to = mv.to;
-    int fromPos = Board[from];
-    int side = SIDEOF(fromPos);
 
-    mv.toPos = Board[to];
 
     // find out if this is a checking move
-    MOVE(from, to, fromPos, 0);
 
     // if we've moved a slider, only need to check them,
     // otherwise check all pieces.
-    if (opponentCheck(SLIDER(Board[fromPos + POSMAT]) ?
-                      CASE_MIN : CASE_NONSLIDERS,
-                      side))
-    {
         // opponent in check with this move.
-        mv.promote |= CHECKMOVE;
-    }
 
     // undo the move
-    MOVE(to, from, fromPos, mv.toPos);
         
-    if (moveStackPtr < moveStackEnd)
-        *moveStackPtr++ = mv;
-    else
-        Overflow = 1;
 }
 
 void makeMove(Move m, int* ep)
@@ -701,28 +696,28 @@ void makeMove(Move m, int* ep)
     EP = 0; 
 
     // deal with promotion
-    if (m.promote & PIECEMASK)
+    if (m.promote)
     {
         // change the from piece into the promoted piece
-        Board[fromPos + POSMAT] = m.promote & PIECEMASK;
+        Board[fromPos + POSMAT] = m.promote;
     }
 
     pt = Board[fromPos + POSMAT];
     if (pt == king) // kingmove
     {
-        d = m.to - m.from;
+        d = to - from;
         if (d == 2)
         {
             // kingside castle, move rook
-            int fp = Board[m.from+3];
-            MOVE(m.from+3, m.from+1, fp, 0);
+            int fp = Board[from+3];
+            MOVE(from+3, from+1, fp, 0);
             
         }
         else if (d == -2)
         {
             // queenside castle, move rook
-            int fp = Board[m.from-4];
-            MOVE(m.from-4,m.from-1, fp, 0);
+            int fp = Board[from-4];
+            MOVE(from-4,from-1, fp, 0);
         }
         
         // clear castle bits
@@ -730,7 +725,7 @@ void makeMove(Move m, int* ep)
     }
     else if (pt == pawn)
     {
-        d = m.to - m.from;
+        d = to - from;
         if (d < 0) d = -d;
         if (d == 0x20)
         {
@@ -748,10 +743,10 @@ void makeMove(Move m, int* ep)
     else if (pt == rook)
     {
         if (from == 0x70)
-            Castle &= ~(0x4);
+            Castle &= ~4;
         else if (from == 0x77)
             Castle &= ~8;
-        else if (from == 0x0)
+        else if (from == 0)
             Castle &= ~1;
         else if (from == 0x7)
             Castle &= ~2;
@@ -760,13 +755,8 @@ void makeMove(Move m, int* ep)
     MOVE(from, to, fromPos, 0);
     if (toPos) Board[toPos] = -1;
 
-    if (m.promote & PIECEMASK)
-    {
         // was a promotion. need to perform check test again
-        InCheck = opponentCheck(CASE_NONSLIDERS, Side);
-    }
-    else
-        InCheck = m.promote & CHECKMOVE;
+    InCheck = opponentCheck(Side);
 
     // switch sides
     Side = !Side;
@@ -786,7 +776,7 @@ void unmakeMove(Move m, int ep)
     // restore EP square
     EP = ep;
 
-    if (m.promote & PIECEMASK)
+    if (m.promote)
     {
         // demote piece
         Board[fromPos + POSMAT] = pawn;
@@ -796,27 +786,27 @@ void unmakeMove(Move m, int ep)
     if (pt == king) // kingmove
     {
         // undo castle
-        int d = m.to - m.from;
+        int d = to - from;
         if (d == 2)
         {
             // undo kingside rook
-            int fp = Board[m.from+1];
-            MOVE(m.from+1, m.from+3, fp, 0);
+            int fp = Board[from+1];
+            MOVE(from+1, from+3, fp, 0);
         }
         else if (d == -2)
         {
             // undo queenside rook
-            int fp = Board[m.from-1];
-            MOVE(m.from-1, m.from-4, fp, 0);
+            int fp = Board[from-1];
+            MOVE(from-1, from-4, fp, 0);
         }
     }
     else if (pt == pawn && !m.toPos)  // non capture
     {
-        int d = m.to - m.from;        
+        int d = to - from;        
         if (d&1)
         {
             // diagonal non-capture move => EP
-            int p2 = m.to;
+            int p2 = to;
             if (d < 0) p2 += 0x10;
             else p2 -= 0x10;
             Board[p2] = EP;
@@ -838,11 +828,6 @@ void playMove(Move m)
     makeMove(m, &ep);
 }
 
-int moveGen(int cases, int side)
-{
-    Overflow = 0;
-    return moveScan(cases, side, pushMove);
-}
 
 #define MS(_p, _m) { *(_p)++ = ((_m)&7)+'a';  *(_p)++ = ((_m)>>4)+'1'; }
 
@@ -851,9 +836,8 @@ const char* moveToStr(Move m, int fancy)
     static char buf[16];
     char* p = buf;
     MS(p, m.from);
-    if (fancy) *p++ = (m.toPos & ~CHECKMOVE) ? 'x'  : '-';
+    if (fancy) *p++ = m.toPos ? 'x'  : '-';
     MS(p, m.to);
-    if (fancy && m.promote & CHECKMOVE) *p++ = '+'; // in check!
     *p = 0;
     return buf;
 }
@@ -907,11 +891,6 @@ int moveValue(Move* m)
         // Q*8+(8-P) = 47
         v = Board[m->toPos+POSMAT]*8 + (8 - Board[Board[m->from] + POSMAT]);
     }
-    else
-    {
-        if (m->promote & CHECKMOVE)
-            v = 100;  // put checks first
-    }
     return v;
 }
 
@@ -921,7 +900,8 @@ Move* bestMoveVal(Move* first, Move* last)
     Move* mv;
 
     int bestVal = moveValue(best);
-    for (mv = first; mv != last; ++mv)
+    mv = first;
+    while (++mv != last)
     {
         int v = moveValue(mv);
         if (v > bestVal)
