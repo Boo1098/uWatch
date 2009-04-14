@@ -55,7 +55,7 @@ Misc Notes:
 * the three repetition rule is not enforced.    [ tricky! ]
 * all player pawn promotions are to queen.      [ will be fixed ]
 * vchess may declare a win if it finds a mate-in-n situation.
-* the chess engine is voidchess v1.2.
+* the chess engine is voidchess v1.3
 
 
 
