@@ -321,8 +321,13 @@ void GamesMode(void)
             
             void hit_dealer(void)
             {
+               int dealerBust=0;
                dealer_total+=rand()% 10+1;
-               if (dealer_total>21) bust_dealer();
+               if (dealer_total>21)
+               {
+                  bust_dealer();
+                  dealerBust=1;
+               }
             }
             
             void prepare(void)
@@ -352,7 +357,7 @@ void GamesMode(void)
                   UpdateLCDline2("Player wins!");
                if (player_total==dealer_total)
                   UpdateLCDline2("Push!");
-               if (player_total<dealer_total)
+               if (player_total<dealer_total || dealerBust==0)
                   UpdateLCDline2("Dealer wins!");
                wait();
             }
@@ -397,7 +402,7 @@ void GamesMode(void)
 
             initBoard();
             
-            UpdateLCDline1("Play which color?");
+            UpdateLCDline1("Play which color");
             UpdateLCDline2("White=1, Black=2");
             if ((KeyPress2 = wait()) == KeyMode) return;
             if (KeyPress2 == Key2) computer = WHITE;
@@ -417,6 +422,7 @@ void GamesMode(void)
 
             // NB: will be overwritten if comp moves
             UpdateLCDline1("Your move?");
+            Xreg=0;   //clear Xreg
             
             for (;;)
             {
