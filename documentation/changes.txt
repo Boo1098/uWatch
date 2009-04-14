@@ -148,4 +148,7 @@ uWatch Revisions:
 1.5.4
 - added VoidChess! 3 levels of play, play as black or white!
 
+1.5.5
+- added Factor, a tool that gets the factors of a number
+
 
