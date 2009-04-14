@@ -385,6 +385,10 @@ void GamesMode(void)
         } break;
     case 2: // VoidCHESS!
         {
+            UpdateLCDline1("- VCHESS v1.2  -");
+            UpdateLCDline2("Ent to continue");
+            if ((KeyPress2 = wait()) == KeyMode) return;
+            
             int computer = BLACK;
             int moveok;
             Move* mv;
@@ -392,10 +396,9 @@ void GamesMode(void)
             int to, from;
 
             initBoard();
-
-            UpdateLCDline1("- VCHESS v1.2  -");
             
-            UpdateLCDline2("W=1, B=2 ?");
+            UpdateLCDline1("Play which color?");
+            UpdateLCDline2("White=1, Black=2");
             if ((KeyPress2 = wait()) == KeyMode) return;
             if (KeyPress2 == Key2) computer = WHITE;
 
@@ -457,7 +460,7 @@ void GamesMode(void)
                         }
                     }
                     if (!moveok)
-                        UpdateLCDline1("illegal move!");
+                        UpdateLCDline1("Illegal move!");
                 } while (!moveok);
                 
                 if (moveok) 
