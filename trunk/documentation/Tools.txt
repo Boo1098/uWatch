@@ -1,0 +1,19 @@
+* Here are the instructions for the Tools
+
+* Quadratic
+
+Quadratic is a quadratic equation solver which solves equations in this format:
+ax^2 + bx + c = 0 given B*B-4*A*C >= 0
+
+Just input the values of a,b and c and the program solves the value of x
+
+*Factor
+
+Factor gets the factor of an integer. Just input the input and the program
+will return the factors of that number not including 1 and the number itself.
+If there are no factors found, then the program will say it is a prime number.
+
+*Stopwatch
+
+To use the stopwatch, use the Enter button to start and stop the timer.
+Use mode to exit at any time.

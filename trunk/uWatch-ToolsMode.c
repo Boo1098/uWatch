@@ -33,6 +33,7 @@ This program is free software: you can redistribute it and/or modify
 static const char* ToolsMenu[] = 
 {
     "Quadratic",
+    "Factor",
     "Stopwatch",
 };
 
@@ -49,7 +50,7 @@ void ToolsMode(void)
 
     switch(Mode)
     {
-        case 0: //quadratic (Solve  ax^2 + bx + c = 0 given B*B-4*A*C >= 0)
+        case 0: //quadratic (Solve ax^2 + bx + c = 0 given B*B-4*A*C >= 0)
         {
             float a,b,c;
             float d;
@@ -101,8 +102,47 @@ void ToolsMode(void)
                return;
             }
         } break;
-        
-        case 1:   //stopwatch
+        case 1:   //factor
+        {
+            int i;
+            int num;
+            int tmp;
+            int factors=0;
+            char s2[MaxLCDdigits + 1];
+            
+            UpdateLCDline1("Type number:");
+            Xreg = 0;
+            tmp = OneLineNumberEntry();
+            num = Xreg;
+            Xreg = 0;
+            
+            memset(s, '\0', sizeof(s));
+            
+            for(i=1;i<num;i++)
+            {
+               if(num%i==0)
+               {
+                  sprintf(s2, "%d", i);
+                  strcat(s, s2);
+                  strcat(s, " ");
+                  factors++;
+               }
+            }
+            
+            if (factors!=0)
+            {
+              UpdateLCDline1("Factors:");
+              UpdateLCDline2(s);
+            }
+            
+            if (factors==0)
+            {
+              UpdateLCDline1("No Factors");
+              UpdateLCDline2("Number is prime");
+            }
+            do KeyPress2=KeyScan(); while(KeyPress2==0);
+        } break;
+        case 2:   //stopwatch
         {
             rtccTime before;
             rtccTime after;
