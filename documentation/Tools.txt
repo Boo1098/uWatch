@@ -15,5 +15,18 @@ If there are no factors found, then the program will say it is a prime number.
 
 *Stopwatch
 
-To use the stopwatch, use the Enter button to start and stop the timer.
-Use mode to exit at any time.
+In time mode, MENU will start stopwatch, and C will exit.
+Stopwatch can also be started from the Tools menu.
+
+When you press ENTER to start the stopwatch, thre F-key options appear at top...
+
+LAP
+This sets a "waypoint" -- so the stopwatch keeps running in the background, but you can see what the time was when you pressed LAP.  It will show [LAP] when displaying the lap time. Press again to go back to normal stopwatch time display.
+
+SPLIT
+This tells you the difference between the current time and the last time you pressed LAP.  In other words, it's a split time.  It will display [SPLIT] when showing the split time.  Press again to go back to normal stopwatch time display.
+
+ZERO
+This resets the stopwatch count time to 0.
+
+You also press ENTER to halt the stopwatch and exit.

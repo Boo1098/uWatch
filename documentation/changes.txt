@@ -154,3 +154,25 @@ uWatch Revisions:
 1.5.6
 - upgraded vchess engine to 1.3
 
+1.5.7 (Andrew Davie's modification)
+-- Custom characters for time mode added
+- AM/PM defined and offset upwards to make it a bit neater
+- used a nice little star for DST
+- used two characters for moon phase. (mockup only)
+- redefined "st", "nd", "rd", "th" so that they're smaller, raised, and nicer.
+
+--Stopwatch modified
+- in time mode, stopwatch can be started by MENU button
+  (ie: you don't have to go to the TOOLS menu)
+- stopwatch now has lap, split and zero
+
+--LCD fixes and other modifications
+- backlight turns on for as long as you hold the RCL button and stays on
+  after holding for 4 seconds, press RCL again to turn off
+- 12/24 hour mode toggled from time mode by any key
+- key presses respond immediately rather than only when released (all modes)
+- negative values in stopwatch fixed
+- "+/-" key works the same as "+" in menu operations
+- display cleaner, no cursor when updating screen
+- display update on return from sleep is immediate
+  (no more cursor/blackness weirdness)

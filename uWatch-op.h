@@ -29,7 +29,7 @@
 // 0=sunday, 1=monday etc.
 #define DAYOFWEEK(_x)    (((_x)+6)%7)
 
-#define PI              3.14159265358979
+#define PI              3.141592653589793238462643
 #define RAD             (180.0/PI)
 
 extern int DegreesMode;

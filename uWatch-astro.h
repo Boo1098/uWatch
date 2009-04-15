@@ -24,7 +24,7 @@
 #ifndef __uwatch_astro_h__
 #define __uwatch_astro_h__
 
-#include        <Generic.h>     // BOOL
+#include        "Generic.h"     // BOOL
 
 #ifndef MaxLCDdigits
 #define MaxLCDdigits    16

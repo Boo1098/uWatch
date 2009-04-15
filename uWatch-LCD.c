@@ -69,6 +69,18 @@ int lcd_puts(const char * s, int lmax)
     return i;
 }
 
+
+int custom_character( int charctr, int *custom ) {
+
+	int i;
+	ClearLCD_RS;
+	lcd_write( 0x40 + charctr * 8 );
+    SetLCD_RS;
+	for ( i = 0; i < 8; i++ )
+		lcd_write( custom[i] );
+	return charctr | 16;			// to avoid '0'
+}
+
 // move cursor to a specified position
 // use position 40 for start of 2nd LCD line
 void lcd_goto(unsigned char pos)
@@ -77,16 +89,16 @@ void lcd_goto(unsigned char pos)
 	lcd_write(0x80+pos);
 }
 
-/* initialise the LCD - put into 4 bit mode */
+/* initialise the LCD - put into 4 bit mode */ //BOO: seems to be 8-bit
 void lcd_init(void)
 {
 	SetLCD_POWER;		//switch on the LCD power
 	DelayMs(50);
 	ClearLCD_RS;		// write control bytes
 	DelayMs(20);		// power on delay
-	lcd_write(0x0F);
+	lcd_write(0x0C );//F);
 	DelayMs(20);
-	lcd_write(0x01);
+	lcd_write(0x01);		// CLEAR DISPLAY
 	DelayMs(20);
-	lcd_write(0x38);	//8 bit mode, 2 lines
+	lcd_write(0x3C );// BOO: turn off cursor was 38);	//8 bit mode, 2 lines
 }
