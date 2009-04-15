@@ -90,9 +90,10 @@ static int computerMoves()
         {
             char buf[16];
             Move* m = MainPV.m;
-            strcat(strcpy(buf, "I move, "), moveToStr(*m, 1));
-            UpdateLCDline1(buf);
             playMove(*m);
+            strcat(strcpy(buf, "= "), moveToStr(*m, 1));
+            if (InCheck) strcat(buf, " Check!");
+            UpdateLCDline1(buf);
         }
 
         if (v >= WIN_SCORE)

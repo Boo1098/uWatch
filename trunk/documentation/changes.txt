@@ -182,3 +182,18 @@ uWatch Revisions:
 - 2nd in second menus changed to 1st
 - Factor optimized
 - Key delay increased to 200ms (was too sensitive)
+
+1.5.8
+- put in the moonphase glyphs done by Andrew Davie. 
+- pattern is now:
+   (--) = new
+   (^-) = crescent
+   (0-) = first quarter
+   (0^) = waxing.
+   (00) = full
+   (0^) = waning
+   (-0) = second quarter
+   (-^) = final crescent.
+   the pattern waxes from the left and wanes on the right. i reflected the quarter glyph to get the other side.
+
+   
