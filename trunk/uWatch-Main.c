@@ -7,7 +7,7 @@
 // http://www.calcwatch.com
 // EMAIL: david@alternatezone.com
 // Target Device: PIC24FJ64GA004 (44pin)
-//********************************************************
+// ********************************************************
 
 /*********************************************************
 This program is free software: you can redistribute it and/or modify
@@ -41,7 +41,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #include <string.h>
 #include "uWatch-op.h"
 
-#define RevString   "Rev 1.5.6"
+#define RevString   "Rev 1.5.7"
 
 //define all the I/O pins
 #define Row1        _RB10
@@ -190,6 +190,8 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 
 
 #define DIM(_x) (sizeof(_x)/sizeof((_x)[0]))
+
+#define BACKLIGHT_TOGGLE 1000
 
 // these flags were "char" except that makes bigger code!
 int CurrentMenu;               // The number of the currently active menu line. 0 to MaxRPNmenuItems
@@ -370,8 +372,9 @@ CalcMenuInfo MainMenus[] =
 char LCDhistory1[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
 char LCDhistory2[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
 
-BOOL NextMode;          //TRUE if MODE button switches to next mode. FALSE returns to Time/Date mode.
+//BOOL NextMode;          //TRUE if MODE button switches to next mode. FALSE returns to Time/Date mode.
 BOOL TwelveHour;        //TRUE if 12 hour mode
+BOOL last12;			// COPY for time display
 int RPNmode;           //TRUE if RPN mode, otherwise Algebraic
 
 int CalcDisplayBase;   //2-binary, 10-decimal, 16 decimal
@@ -621,7 +624,7 @@ void i2c_low_scl(void)
 //***********************************
 unsigned char i2c_in_byte(void)
 {
-    unsigned char i_byte, n;
+    unsigned char i_byte = 0, n;
     i2c_high_sda();
     for (n=0; n<8; n++)
     {
@@ -795,7 +798,7 @@ void KeystrokeRecord(unsigned char key)
 // only one pass of the keys is made, looping must be done by the calling function
 //   this allows the calling function to do stuff while scaning keys
 // returns 0 if no key pressed
-unsigned int KeyScan(void)
+unsigned int KeyScan2(BOOL debounce)
 {
     unsigned int k;
 
@@ -860,33 +863,51 @@ unsigned int KeyScan(void)
     if (Col4==0) k=KeyEnter;
     ClearRow7;          
 
-    if (k!=0) //key was pressed so lets debounce it
+    if ( k!=0) //key was pressed so lets debounce it
     {
         ResetSleepTimer();  //reset the sleep timer every time a key is pressed
-        DelayMs(KeyDelay);  //debounce delay
-        SetRow1;
-        SetRow2;
-        SetRow3;
-        SetRow4;
-        SetRow5;
-        SetRow6;
-        SetRow7;
-        do; while((Col1==0)||(Col2==0)||(Col3==0)||(Col4==0));  //wait for the key to be released
-        ClearRow1;
-        ClearRow2;
-        ClearRow3;
-        ClearRow4;
-        ClearRow5;
-        ClearRow6;
-        ClearRow7;          
+		if ( debounce ) {
+	
+	        DelayMs(KeyDelay);  //debounce delay
+	        SetRow1;
+	        SetRow2;
+	        SetRow3;
+	        SetRow4;
+	        SetRow5;
+	        SetRow6;
+	        SetRow7;
+	        do; while((Col1==0)||(Col2==0)||(Col3==0)||(Col4==0));  //wait for the key to be released
+	        ClearRow1;
+	        ClearRow2;
+	        ClearRow3;
+	        ClearRow4;
+	        ClearRow5;
+	        ClearRow6;
+	        ClearRow7;          
+		}
+
         if (ProgRec) 
         {
             KeystrokeRecord(k);     //record the keystroke
             if (k==KeyMode) return(0); //don't return to main menu on MODE key
         }
+
     }
     return(k);      
 }
+
+
+// Return a debounced key. The previous key must be released and THEN we get a key, which
+// is returned immediately. This allows immediate response to keypresses without having to
+// release the key first. As long as everything uses this debounce method, all will be OK.
+
+unsigned int GetDebouncedKey() {
+    unsigned int Key;
+	while ( KeyScan2( FALSE ));		    // debounce PREVIOUS
+    while ( !( Key=KeyScan2( FALSE )));  // wait for any non-debounced key
+	return Key;
+}
+
 
 //***********************************
 // converts 2 digit BCD to integer
@@ -906,7 +927,10 @@ unsigned int DECtoBCD(unsigned int num)
 //converts a single digit integer into a char
 unsigned char itochar(int i)
 {
-    if (i >= 0 && i <= 9) return '0' + i;
+    if (i >= 1 && i <= 9) return '0' + i;
+	if (i == 0) return 'O';						// gets rid of slashed-zeros in time mode
+
+
     return '*';
 }
 
@@ -939,14 +963,14 @@ int DriveMenu(const char* title, const char** Menu, int n)
      * return selection index or -1 on escape/cancel.
      */
     int mi = 0;
-    int key;
+    unsigned int key;
 
     UpdateLCDline2(title);
     for (;;)
     {
         UpdateLCDline1(Menu[mi]);
 
-        while ((key = KeyScan()) == 0) ;
+		key = GetDebouncedKey();
 
         ResetSleepTimer();
         //start to process the keypress
@@ -955,9 +979,9 @@ int DriveMenu(const char* title, const char** Menu, int n)
         if (key==KeyClear || key == KeyMode) return -1;
 
         //user pressed some key other than MODE, so ensure that when exit we go back to the time/date display
-        NextMode=FALSE; 
+        //NextMode=FALSE; 
 
-        if (key == KeyPlus)
+        if (key == KeyPlus || key == KeySign )
         {
             if (++mi == n) mi = 0;
         }
@@ -1040,8 +1064,7 @@ int DriveMenu2(CalcMenuInfo* mifo)
             }
         }
 
-        // get a key
-        while (!(key = KeyScan())) ;
+		key = GetDebouncedKey();
 
         // reset timer
         ResetSleepTimer();
@@ -1109,15 +1132,12 @@ int DriveMenu2(CalcMenuInfo* mifo)
 // get a 2 digit BCD, < 0 if fail
 int GetNumBCD()
 {
-    int key, h;
+    int h;
 
-    while (!(key = KeyScan())) ;
-    h=ReturnNumber(key);
+    h=ReturnNumber( GetDebouncedKey() );
     if (h >= 0)
-    {
-        while (!(key = KeyScan())) ;
-        return (h<<4)|ReturnNumber(key); // NB: neg if escape.
-    }
+        return (h<<4)|ReturnNumber( GetDebouncedKey() ); // NB: neg if escape.
+
     return h;
 }
 
@@ -1393,11 +1413,15 @@ static BOOL checkDST()
 void TimeDateDisplay(void)
 {
     char s[MaxLCDdigits+1];
-    BOOL pm;
+    BOOL pm = FALSE;
     unsigned int temp;
     rtccDate td;
     rtccTime tt;
     int point;
+
+	int BASE = TOFF;
+	if ( !TwelveHour )
+		BASE += 2;
 
     // copy old time
     tt = Time;
@@ -1406,11 +1430,12 @@ void TimeDateDisplay(void)
     RtccReadTime(&Time);            //read the RTCC registers
 
     // if time not changed, we're done
-    if (tt.l == Time.l)
+    if (tt.l == Time.l && TwelveHour == last12 )
     {
         // no need to update
         return;
     }
+	last12 = TwelveHour;
 
     // copy old date
     td = Date;
@@ -1451,33 +1476,76 @@ void TimeDateDisplay(void)
     s[MaxLCDdigits] = 0;
 
     if (temp >= 10)
-        s[TOFF] = itochar(temp/10);
+        s[BASE] = itochar(temp/10);
     
-    s[TOFF+1]=itochar(temp % 10);
-    s[TOFF+2]=':';
+    s[BASE+1]=itochar(temp % 10);
+    s[BASE+2]=':';
 
     temp=Time.f.min;
-    s[TOFF+3]=itochar(temp>>4);
-    s[TOFF+4]=itochar(Time.f.min&0x0F);
-    s[TOFF+5]=':';
+    s[BASE+3]=itochar(temp>>4);
+    s[BASE+4]=itochar(Time.f.min&0x0F);
+    s[BASE+5]=':';
 
     temp=Time.f.sec;
-    s[TOFF+6]=itochar(temp>>4);
-    s[TOFF+7]=itochar(Time.f.sec&0x0F);
-    point = TOFF+8;
+    s[BASE+6]=itochar(temp>>4);
+    s[BASE+7]=itochar(Time.f.sec&0x0F);
+    point = BASE+8;
 
     if (TwelveHour)
     {
-        s[TOFF+8]='a';
-        if (pm) s[TOFF+8]='p';
-        s[TOFF+9]='m';
-        point += 2;
+		int cbase = pm? 1 : 0;
+
+		int AMPM[][8] = {
+	
+			{ 0x02, 0x05, 0x09, 0x0f, 0x09, 0x00, 0x00, 0x00 },		// "A"
+			{ 0x0E, 0x09, 0x09, 0x0E, 0x08, 0x00, 0x00, 0x00 },		// "P"
+			{ 0x11, 0x1B, 0x15, 0x11, 0x11, 0x00, 0x00, 0x00 }		// "M"
+		};
+
+		custom_character( 1, &(AMPM[cbase][0] ));
+		custom_character( 2, &(AMPM[2][0] ));
+
+        s[BASE+8] = 1;
+        s[BASE+9] = 2;
+
+		point += 2;
     }
 
-    if (DST) 
-        s[point] = '.';  // put a little dot after the time if DST
+    if (!DST) {
+		int dst[] = { 0x00, 0x04, 0x1F, 0x0E, 0x0A, 0x00, 0x00, 0x00 };
+		custom_character( 3, dst );
+        s[ point ] = 3;  // put a little star after the time if DST
+	}
 
-    s[15] = mphase[MoonPhase];
+	s[15] = mphase[MoonPhase];
+
+/*
+	UNCOMMENT THIS FOR GRAPHICAL MOON PHASES
+
+	int moons[][8] = {
+
+		{ 0x03, 0x0C, 0x10, 0x10, 0x10, 0x10, 0x0C, 0x03 },		// ()
+		{ 0x18, 0x06, 0x01, 0x01, 0x01, 0x01, 0x06, 0x18 },
+
+		{ 0x03, 0x0F, 0x1F, 0x1F, 0x1F, 0x1F, 0x0F, 0x03 },		// (
+		{ 0x18, 0x06, 0x01, 0x01, 0x01, 0x01, 0x06, 0x18 },
+
+		{ 0x03, 0x0C, 0x10, 0x10, 0x10, 0x10, 0x0C, 0x03 },		// )
+		{ 0x18, 0x1E, 0x1F, 0x1F, 0x1F, 0x1F, 0x1E, 0x18 },
+
+		{ 0x03, 0x0F, 0x1F, 0x1F, 0x10, 0x10, 0x0C, 0x03 },		// ()  left 1/2
+		{ 0x18, 0x1E, 0x1F, 0x1F, 0x1F, 0x1F, 0x1E, 0x18 },
+	};
+
+	mp = ++mp & 3;
+
+	custom_character( 4, &(moons[mp*2][0]) );
+	custom_character( 5, &(moons[mp*2+1][0]) );
+
+	s[14] = 4;
+	s[15] = 5;
+*/
+
     UpdateLCDline1(s);                  //display the time
 
     /* process second line */
@@ -1496,30 +1564,49 @@ void TimeDateDisplay(void)
     if (temp >> 4)
         s[5]=itochar(temp>>4);
 
+	int left[] = {
+
+		0x00, 0x0E, 0x09, 0x09, 0x09, 0x00, 0x00, 0x00,		// nd
+		0x04, 0x0E, 0x04, 0x04, 0x03, 0x00, 0x00, 0x00,		// th
+		0x06, 0x08, 0x07, 0x01, 0x0E, 0x00, 0x00, 0x00,		// st
+		0x00, 0x07, 0x04, 0x04, 0x04, 0x00, 0x00, 0x00,		// rd
+	};
+
+	int right[] = {
+
+		0x02, 0x0E, 0x12, 0x12, 0x0E, 0x00, 0x00, 0x00,		//nd
+		0x10, 0x1C, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00,		//th
+		0x08, 0x1C, 0x08, 0x08, 0x06, 0x00, 0x00, 0x00,		//st
+		0x02, 0x0E, 0x12, 0x12, 0x0E, 0x00, 0x00, 0x00,		//rd
+	};
+
+
     s[6]=itochar(temp & 0xf);
+
+	int cindex = 1;			// default: th
 
     switch (temp)
     {
     case 0x01:
     case 0x21:
     case 0x31:
-        s[7]='s';
-        s[8]='t';
+		cindex = 2; //st
         break;
     case 0x02:
     case 0x22:
-        s[7]='n';
-        s[8]='d';
+		cindex = 0; //nd
         break;
     case 0x03:
     case 0x23:
-        s[7]='r';
-        s[8]='d';
+        cindex = 3; //rd
         break;
-    default:
-        s[7]='t';
-        s[8]='h';
     }
+
+	custom_character( 6, &( left[ cindex*8 ] ));
+	custom_character( 7, &( right[ cindex*8 ] ));
+
+	s[7]=6;
+	s[8]=7;
 
     s[10]=months[Month][0];
     s[11]=months[Month][1];
@@ -1527,6 +1614,7 @@ void TimeDateDisplay(void)
 
     s[14]=itochar(Date.f.year>>4);
     s[15]=itochar(Date.f.year&0x0F);
+
     UpdateLCDline2(s);                  //display the date
 }
 
@@ -1593,7 +1681,10 @@ void __attribute__((__interrupt__)) _T1Interrupt( void )
 
     ResetSleepTimer();
     StartSleepTimer();            //switch the SLEEP timer back on
-    DelayMs(500);               //add a key delay
+
+	// removed by BOO
+	// this is the ugly delay after wakeup where we see garbage...
+  //  DelayMs(500);               //add a key delay
 }
 
 
@@ -1704,6 +1795,7 @@ void ProgramInit(void)
 
     // Power Down mode enabled, 11 bit sampling
     TwelveHour=TRUE;        //TRUE if 12 hour mode
+	last12 = TRUE;
     RPNmode=TRUE;               // default to RPN!!
     ProgPlay=FALSE;         //turn off keystroke playback
     ProgRec=FALSE;          //turn off keystroke record
@@ -1727,6 +1819,7 @@ void OpenTimer1(unsigned int config,unsigned int period)
 //***********************************
 int main(void)
 {
+	int mask;
     char Key;
     int c;
     ProgramInit();  //initialse everything
@@ -1750,37 +1843,53 @@ int main(void)
 
     while(TRUE)     //The main endless loop
     {
-        //the MODE key switches between apps
-        NextMode=TRUE;
+		mask = 0;
 
         do {
+
             TimeDateDisplay();
             WatchMode=WATCH_MODE_TIME;
-            for(c=0;c<50;c++)
-            {
-                Key=KeyScan();
-                if (Key) break;
-            }
-            
-            if (Key==KeyRCL)
-            {
+
+			Key = KeyScan2( FALSE );
+
+			if ( !mask && ( Key != KeyMode ))
+				mask = 0xFFFF;
+
+			Key &= mask;
+
+            if (Key==KeyRCL ) {
+                
+                // code by Boo 12/4/2009 -- momentary ON, hold for permanent ON
+                // also neatly handles OFF by repeat of the same
+
+
                 BacklightON();
-                for(c=0;c<3000;c++)
-                {
-                    Key=KeyScan();
+                for ( c = 0; TimeDateDisplay(), KeyScan2( FALSE ) == KeyRCL;
+					c = c <= BACKLIGHT_TOGGLE ? c+1 : c );
+                if ( c < BACKLIGHT_TOGGLE )
+                    BacklightOFF();
+ 
+            }
 
-                    //if RCL key is pressed again within a few seconds
-                    if (Key==KeyRCL) break;
-                }
+			else if ( Key == KeyMenu ) {
+				StopWatch();
+			}
 
-                //if key was not pressed a second time then switch off backlight
-                if (Key!=KeyRCL) BacklightOFF();   
-            } //otherwise leave the backlight on so user can use other modes
+			else if ( Key && ( Key != KeyMode )) {
+
+				// Any other key toggles between 12/24 hour mode
+				TwelveHour = !TwelveHour;
+				do {
+					TimeDateDisplay();
+				} while ( KeyScan2( FALSE ));
+			}
+
                 
         } while (Key!=KeyMode); //loop until a key has been pressed
 
         WatchMode=WATCH_MODE_CALC;    
-        if (RPNmode)
+
+		if (RPNmode)
         { 
             RPNcalculator();
         }
@@ -1790,7 +1899,7 @@ int main(void)
         }
 
         //user did something in the calc mode, so return to time/date
-        if (NextMode==FALSE) continue; 
+        //if (NextMode==FALSE) continue; 
     
         WatchMode=WATCH_MODE_APPS;
         AppsMode();

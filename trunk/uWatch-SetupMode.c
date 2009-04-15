@@ -115,7 +115,8 @@ int OneLineNumberEntry()
         int c;
         int key;
 
-        while ((key = KeyScan()) == 0) ;
+		key = GetDebouncedKey();
+        // ??? while ((key = KeyScan(TRUE)) == 0) ;
         ResetSleepTimer();		
                 
         c = EnterNumber(key);
@@ -192,7 +193,7 @@ void SetupMode(void)
                 if (RPNmode) 
                     UpdateLCDline1("Calc Mode = RPN");
                 else UpdateLCDline1("Calc Mode = ALG");
-                do KeyPress2=KeyScan(); while(KeyPress2==0);
+                KeyPress2 = GetDebouncedKey();
                 if (KeyPress2==KeyEnter) return;
                 if ((KeyPress2==KeyPlus)||(KeyPress2==KeyMinus))
                     RPNmode=!RPNmode;
@@ -203,7 +204,7 @@ void SetupMode(void)
         {
             UpdateLCDline1("Erase EEPROM ?");
             UpdateLCDline2("ENTER or Cancel");
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
+            KeyPress2 = GetDebouncedKey();
             if (KeyPress2==KeyEnter)
             {
                 unsigned int c;
@@ -212,7 +213,9 @@ void SetupMode(void)
                 for(c=0;c<65534;c++)        //don't overwrite the last byte, it's used for the calibration value
                 {
                     ResetSleepTimer();          //we don't want to timeout while doing this
-                    if (KeyScan()==KeyClear) break;
+                    
+					if ( GetDebouncedKey() == KeyClear ) break;
+
                     I2CmemoryWRITE(c,0);
                     c2++;
                     if (c2>=100)    
@@ -235,18 +238,18 @@ void SetupMode(void)
             {
                 UpdateLCDline1("EEPROM failed!");
                 UpdateLCDline2("Press ENTER");
-                do KeyPress2=KeyScan(); while(KeyPress2==0);
+                KeyPress2 = GetDebouncedKey();
                 return;
             }
             UpdateLCDline1("EEPROM passed");
             UpdateLCDline2("Press ENTER");
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
+            KeyPress2 = GetDebouncedKey();
             UpdateLCDline1("Keyboard Test");
             UpdateLCDline2("MODE to exit");
                     
             while(TRUE)
             {
-                do KeyPress2=KeyScan(); while(KeyPress2==0);
+                KeyPress2 = GetDebouncedKey();
                 switch(KeyPress2)
                 {
                 case Key1: UpdateLCDline2("1"); break;
@@ -285,7 +288,7 @@ void SetupMode(void)
             {
                 sprintf(s,"%3i Seconds",PR1/128);
                 UpdateLCDline2(s);
-                do KeyPress2=KeyScan(); while(KeyPress2==0);
+                KeyPress2 = GetDebouncedKey();
                 if ((KeyPress2==KeyPlus)&&(PR1<53760)) PR1=PR1+1280;        //increment by 10 seconds
                 if ((KeyPress2==KeyMinus)&&(PR1>1280)) PR1=PR1-1280;        //decrement by 10 seconds
                 if (KeyPress2==KeyEnter) break;
@@ -300,7 +303,7 @@ void SetupMode(void)
             {
                 sprintf(s,"CAL=%4i",RCFGCALbits.CAL);
                 UpdateLCDline2(s);
-                do KeyPress2=KeyScan(); while(KeyPress2==0);
+                KeyPress2 = GetDebouncedKey();
                 if (KeyPress2==KeyPlus) RCFGCALbits.CAL++;
                 if (KeyPress2==KeyMinus) RCFGCALbits.CAL--;
                 if (KeyPress2==KeyEnter) break;
@@ -317,7 +320,7 @@ void SetupMode(void)
                 if (TwelveHour) 
                     UpdateLCDline1("Time Mode = 12h");
                 else UpdateLCDline1("Time Mode = 24h");
-                do KeyPress2=KeyScan(); while(!KeyPress2);
+                KeyPress2 = GetDebouncedKey();
                 if (KeyPress2==KeyEnter) return;
                 if (KeyPress2==KeyPlus||KeyPress2==KeyMinus)
                     TwelveHour=!TwelveHour;
@@ -331,7 +334,7 @@ void SetupMode(void)
             {
                 UpdateLCDline1(TimeZones[(int)dstRegion].region);
                         
-                do KeyPress2=KeyScan(); while(!KeyPress2);
+                KeyPress2 = GetDebouncedKey();
                 if (KeyPress2==KeyEnter) 
                 {
                     DST = inDST(&Mode); // dummy
@@ -423,7 +426,8 @@ void SetupMode(void)
             s[0]=228;               //mu symbol
             UpdateLCDline1(s);
             UpdateLCDline2("(c)David L Jones");
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
+			KeyPress2 = GetDebouncedKey();
+            //do KeyPress2=KeyScan(); while(KeyPress2==0);
         }
         break;
 

@@ -37,6 +37,140 @@ static const char* ToolsMenu[] =
     "Stopwatch",
 };
 
+void StopWatch(void) {
+	unsigned int KeyPress2;
+    char s[MaxLCDdigits + 1];
+
+
+	rtccTime before;
+	rtccTime after;
+	
+	int startSeconds;
+	int mask;
+	int hours;
+	int minutes;
+	int seconds;
+	int c;
+	char s2[MaxLCDdigits + 1];
+
+
+	
+	void displayElasped( int displaySeconds )
+	{
+
+//   		after=Time;
+//    	RtccReadTime(&Time);
+
+//		if ( displayL && after.l != Time.l) {
+//			seconds = BCDtoDEC(Time.f.hour) * 60 * 60 + BCDtoDEC(Time.f.min) * 60 + BCDtoDEC(Time.f.sec) - startSeconds;
+			
+			hours = (int) ( displaySeconds / ( 60 * 60 ));
+			displaySeconds -= hours * 60 * 60;
+			minutes = (int) ( displaySeconds / 60 );
+			displaySeconds -= minutes * 60;
+			
+			sprintf( s, "        %02d:%02d:%02d", hours, minutes, displaySeconds );
+			
+			UpdateLCDline2(s);
+		//}
+	}
+	
+	UpdateLCDline1("Stopwatch \x7E[ENT]");
+	UpdateLCDline2("        00:00:00");
+
+	do {
+		KeyPress2 = GetDebouncedKey();
+		if (KeyPress2==KeyMode || KeyPress2 == KeyClear || KeyPress2 == KeyMenu ) return;
+	} while ( KeyPress2 != KeyEnter );
+	
+	RtccReadTime(&before);
+	Time = before;
+	startSeconds = BCDtoDEC(before.f.hour) * 60 * 60 + BCDtoDEC(before.f.min) * 60 + BCDtoDEC(before.f.sec);
+	
+
+
+	mask = 0;
+
+	BOOL displayCurrent = TRUE;
+	BOOL displayLap = FALSE;
+	BOOL displaySplit = FALSE;
+
+	int lapSeconds = 0;
+	int splitSeconds = 0;
+	int displaySeconds;
+
+
+			sprintf( s, "%s%sZERO", displayLap ? "[LAP]":" LAP ", displaySplit ? "[SPLIT]" : " SPLIT " );
+			UpdateLCDline1( s );
+
+	do {
+
+    	RtccReadTime( &Time );
+		seconds = BCDtoDEC(Time.f.hour) * 60 * 60 + BCDtoDEC(Time.f.min) * 60 + BCDtoDEC(Time.f.sec);
+        displaySeconds = seconds - startSeconds;
+
+		if ( KeyPress2 == Key7 ) {	// LAP
+
+			displayLap = !displayLap;
+
+			if ( displayLap ) {
+				lapSeconds = displaySeconds;
+				displaySplit = FALSE;
+			}
+
+			sprintf( s, "%s%sZERO", displayLap ? "[LAP]":" LAP ", displaySplit ? "[SPLIT]" : " SPLIT " );
+			UpdateLCDline1( s );
+
+			mask = 0;
+
+		} else if ( KeyPress2 == Key8 ) { // SPLIT
+			
+			displaySplit = !displaySplit;
+
+			if ( displaySplit ) {
+				splitSeconds = displaySeconds - lapSeconds;
+				displayLap = FALSE;
+			}
+
+			sprintf( s, "%s%sZERO", displayLap ? "[LAP]":" LAP ", displaySplit ? "[SPLIT]" : " SPLIT " );
+			UpdateLCDline1( s );
+
+			mask  = 0;
+
+		} else if ( KeyPress2 == Key9 ) { // ZERO
+			startSeconds = seconds;
+			lapSeconds = seconds;
+			splitSeconds = 0;
+			displaySeconds = 0;
+			mask = 0;
+		}
+
+
+		if ( displayLap )
+			displaySeconds = lapSeconds;
+		else if ( displaySplit )
+			displaySeconds = splitSeconds;
+
+
+        displayElasped( displaySeconds );
+
+
+		KeyPress2 = KeyScan2( FALSE );
+		if ( !mask && ( KeyPress2 != KeyEnter ))
+			mask = 0xFFFF;
+		KeyPress2 &= mask;
+
+		if (KeyPress2==KeyMode) return;
+	
+	} while ( KeyPress2 != KeyEnter );
+	
+	
+	UpdateLCDline1("Any key to exit");
+	KeyPress2 = GetDebouncedKey();
+
+}
+
+
 //***********************************
 // The main tools mode routine
 // Note that all variables are global
@@ -90,7 +224,7 @@ void ToolsMode(void)
                sprintf(s2, "%f", root2);
                strcat(s, s2);
                UpdateLCDline2(s);
-               do KeyPress2=KeyScan(); while(KeyPress2==0);
+               KeyPress2 = GetDebouncedKey();
                return;
             }
             
@@ -98,7 +232,7 @@ void ToolsMode(void)
             {
                UpdateLCDline1("Error:");
                UpdateLCDline2("Invalid Equation");
-               do KeyPress2=KeyScan(); while(KeyPress2==0);
+               KeyPress2 = GetDebouncedKey();
                return;
             }
         } break;
@@ -140,81 +274,13 @@ void ToolsMode(void)
               UpdateLCDline1("No Factors");
               UpdateLCDline2("Number is prime");
             }
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
+            KeyPress2 = GetDebouncedKey();
         } break;
         case 2:   //stopwatch
         {
-            rtccTime before;
-            rtccTime after;
-            int hours;
-            int minutes;
-            int seconds;
-            int c;
-            char s2[MaxLCDdigits + 1];
-            
-            void displayElasped(void)
-            {
-               memset(s, ' ', MaxLCDdigits);
-               after=Time;
-               RtccReadTime(&Time);
-               if (after.l == Time.l)
-               {
-                  // no need to update
-                  return;
-               }
-               hours=BCDtoDEC(after.f.hour)-BCDtoDEC(before.f.hour);
-               minutes=BCDtoDEC(after.f.min)-BCDtoDEC(before.f.min);
-               seconds=BCDtoDEC(after.f.sec)-BCDtoDEC(before.f.sec);
-               if (hours!=0)
-               {
-                  if (hours<10) strcat(s, "0");
-                  sprintf(s2, "%d", hours);
-                  strcat(s, s2);
-                  strcat(s, ":");
-               } else strcat(s, "00:");
-            
-               if (minutes!=0)
-               {
-                  if (minutes<10) strcat(s, "0");
-                  sprintf(s2, "%d", minutes);
-                  strcat(s, s2);
-                  strcat(s, ":");
-               } else strcat(s, "00:");
-               
-               if (seconds!=0)
-               {
-                  if (seconds<10) strcat(s, "0");
-                  sprintf(s2, "%d", seconds);
-                  strcat(s, s2);
-               } else strcat(s, "00");
-               
-               UpdateLCDline2(s);
-               memset(s, '\0', sizeof(s));
-            }
-            
-            UpdateLCDline1("Stopwatch");
-            UpdateLCDline2("ENT to start");
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
-            if (KeyPress2==KeyMode) return;
-            RtccReadTime(&before);
-            UpdateLCDline1("ENT to stop");
-            
-            while (TRUE)
-            {
-               displayElasped();
-               for(c=0;c<50;c++)
-               {
-                  KeyPress2=KeyScan();
-                  if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) break;
-               }
-               
-               if (KeyPress2==KeyMode) return;
-               if (KeyPress2==KeyEnter) break;
-            }
-            
-            UpdateLCDline1("ENT to exit");
-            do KeyPress2=KeyScan(); while(KeyPress2==0);
-        } break;
+			StopWatch();
+		}
+		break;
     }
 }
 

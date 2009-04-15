@@ -40,7 +40,7 @@ static const char* GamesMenu[] =
 static unsigned int wait()
 {
     unsigned int KeyPress2;        //keypress variables
-    do KeyPress2=KeyScan(); while(KeyPress2==0);
+    KeyPress2 = GetDebouncedKey();
     return KeyPress2;
 }
 
@@ -208,7 +208,7 @@ void GamesMode(void)
                 sprintf(s, "%i", fuelRemaining);
                 strcat(s, " fuel left");
                 UpdateLCDline2(s);
-                do KeyPress2=KeyScan(); while(KeyPress2==0);
+                KeyPress2 = GetDebouncedKey();
                 if (KeyPress2==KeyMode) return;
             }
 

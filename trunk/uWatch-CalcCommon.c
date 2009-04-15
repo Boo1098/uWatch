@@ -1,4 +1,5 @@
-/********************************************************
+/********************************************************/
+
 // uWatch
 // Common Calculator Functions
 // Version 1.5.X
@@ -650,7 +651,7 @@ int xtio( char c )
 
 double ConvertDisplay(char* DisplayString, double* ip)
 {
-    double result;
+    double result = 0;
     int base = (WatchMode == WATCH_MODE_CALC) ? CalcDisplayBase : 10;
     *ip = 0;
     switch ( base )
@@ -786,11 +787,14 @@ void StoreRecall(void)
 
     //this operation discards any value currently in the display register
     UpdateLCDline1("RECALL REG 0-9 ?");     //ask for a register number
-    do KeyPress2=KeyScan(); while(KeyPress2==0);    //get the users response        
+
+	KeyPress2 = GetDebouncedKey();
+
     if (KeyPress2==KeyRCL) //check for 2nd press of RCl key to enter STO mode
     {                                       // do the STO function
         UpdateLCDline1(" STORE REG 0-9 ?");     //ask for a register number
-        do KeyPress2=KeyScan(); while(KeyPress2==0);    //get the users response        
+
+		KeyPress2 = GetDebouncedKey();
         num = ReturnNumber(KeyPress2);
         if(num >= 0)
         {
@@ -957,7 +961,9 @@ void HexEntry(void)
     char digit[2];
     UpdateLCDline1(" F1=A F2=B F3=C ");
     UpdateLCDline2(" F4=D F5=E F6=F ");
-    do KeyPress2=KeyScan(); while(KeyPress2==0);
+
+	KeyPress2 = GetDebouncedKey();
+
     switch(KeyPress2)
     {
     case Key7: {digit[0]='A'; break;}
@@ -1039,7 +1045,8 @@ void BaseMode(void)
     int KeyPress2;
     UpdateLCDline1(" Bin  Dec  Hex  ");
     UpdateLCDline2("                ");
-    do KeyPress2=KeyScan(); while(KeyPress2==0);
+
+	KeyPress2 = GetDebouncedKey();
     switch(KeyPress2)
     {
     case Key7: {CalcDisplayBase = 2; break;}
