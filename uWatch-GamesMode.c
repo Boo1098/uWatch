@@ -355,9 +355,9 @@ void GamesMode(void)
                UpdateLCDline1(s);
                if (player_total>dealer_total)
                   UpdateLCDline2("Player wins!");
-               if (player_total==dealer_total)
+               else if (player_total==dealer_total)
                   UpdateLCDline2("Push!");
-               if (player_total<dealer_total || dealerBust==0)
+               else if (player_total<dealer_total || dealerBust==0)		// must be else, otherwise will call wrong winner
                   UpdateLCDline2("Dealer wins!");
                wait();
             }
