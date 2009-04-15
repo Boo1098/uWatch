@@ -281,7 +281,7 @@ CalcMenuInfo MainMenus[] =
         {" 1/x  x^2   Sqrt",   
          " 2nd  y^x   Exp ", 
          " Abs  Log10 10^x", 
-         " 2nd  y^1/x Ln  "
+         " 1st  y^1/x Ln  "
         },
 
         { CALC_OP_RECIPROCAL, 
@@ -301,7 +301,7 @@ CalcMenuInfo MainMenus[] =
         {" Sin  Cos  Tan  ",   
          " 2nd  Pi   Deg  ", 
          " aSin aCos aTan ", 
-         " 2nd  Hyp  Rad  ",
+         " 1st  Hyp  Rad  ",
          " Sinh Cosh Tanh ",
          " aSnh aCsh aTnh ",
         },
@@ -331,7 +331,7 @@ CalcMenuInfo MainMenus[] =
         {" HMS       R>P  ",   
          " 2nd  x!   ->D  ", 
          " ->H       P>R  ", 
-         " 2nd  Sun  DMY  "
+         " 1st  Sun  DMY  "
         },
 
         { CALC_OP_HMS,
@@ -351,7 +351,7 @@ CalcMenuInfo MainMenus[] =
         {" Play R>C  Conv ",   
          " 2nd  Base //   ", 
          " Rec  C>R  Conj ", 
-         " 2nd  Real      ", 
+         " 1st  Real      ", 
         },
 
         { CALC_OP_PLAY,
