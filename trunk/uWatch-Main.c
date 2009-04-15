@@ -903,6 +903,7 @@ unsigned int KeyScan2(BOOL debounce)
 
 unsigned int GetDebouncedKey() {
     unsigned int Key;
+	DelayMs(120);						// actually debounce-ignore stuff
 	while ( KeyScan2( FALSE ));		    // debounce PREVIOUS
     while ( !( Key=KeyScan2( FALSE )));  // wait for any non-debounced key
 	return Key;
@@ -1502,11 +1503,8 @@ void TimeDateDisplay(void)
 			{ 0x11, 0x1B, 0x15, 0x11, 0x11, 0x00, 0x00, 0x00 }		// "M"
 		};
 
-		custom_character( 1, &(AMPM[cbase][0] ));
-		custom_character( 2, &(AMPM[2][0] ));
-
-        s[BASE+8] = 1;
-        s[BASE+9] = 2;
+        s[BASE+8] = custom_character( 0, &( AMPM[cbase][0] ));
+        s[BASE+9] = custom_character( 2, &( AMPM[2][0] ));
 
 		point += 2;
     }

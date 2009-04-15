@@ -78,7 +78,7 @@ int custom_character( int charctr, int *custom ) {
     SetLCD_RS;
 	for ( i = 0; i < 8; i++ )
 		lcd_write( custom[i] );
-	return charctr | 16;			// to avoid '0'
+	return charctr | 8;			// avoid '0' problem
 }
 
 // move cursor to a specified position

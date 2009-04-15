@@ -158,6 +158,186 @@ void StopWatch(void) {
 
 }
 
+
+void factor()
+{
+	unsigned int KeyPress2;
+    char s[MaxLCDdigits + 1];
+    char s2[MaxLCDdigits*2 + 1];
+
+    unsigned long int i;
+    unsigned long int n;
+    int tmp;
+    int factors=0;
+
+    
+    UpdateLCDline1("Type number:");
+    Xreg = 0;
+    tmp = OneLineNumberEntry();
+    n = Xreg;
+    Xreg = 0;
+
+    if (n> (unsigned long int)(long int)(-1)) //checks if number > max long int
+    {
+        UpdateLCDline1("Number too large");
+        UpdateLCDline2("Ent to continue");
+        KeyPress2=wait();
+        if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) return;
+    }
+    
+    if (n<0) //checks for negative
+    {
+        UpdateLCDline1("Negative number");
+        UpdateLCDline2("Ent to continue");
+        KeyPress2=wait();
+        if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) return;
+    }
+    
+    if (n==1 || n==2)   //skips calculations if n=1 or 2
+    {
+        UpdateLCDline1("Prime number");
+        UpdateLCDline2("Ent to continue");
+        KeyPress2=wait();
+        if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) return;
+    }
+    
+    memset(s, '\0', sizeof(s));
+	  while ( strlen(s) < MaxLCDdigits )
+	               strcat( s, " " );
+    *s2 = 0;
+
+
+
+	int roller[][8] = {
+	
+		{ 0x04, 0x04, 0x04, 0x04, 0x04, 0x00, 0x00, 0x00 },
+		{ 0x01, 0x02, 0x04, 0x08, 0x10, 0x00, 0x00, 0x00 },
+		{ 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x00 },
+		{ 0x10, 0x08, 0x04, 0x02, 0x01, 0x00, 0x00, 0x00 },
+	};
+	
+	for ( i = 0; i < 4; i++ )
+		custom_character( i+1, &( roller[i][0] ));
+	
+
+    int strobe = 0;
+	unsigned int akey = 0;
+
+
+	// sqrt moved outside loop so it's not calculated every time!
+
+	unsigned long int sqr = sqrt( n );
+    char fct[MaxLCDdigits];
+
+    for( i=2; i <= sqr; i += 2 ) {
+
+		if ( i == 4 ) i--;
+
+       // allow an early abort, but only check periodically for speed purposes
+       //if ( !(i % 100)) {
+
+		    akey = KeyScan2( FALSE );
+
+		    if ( akey == KeyClear )
+			    break;
+
+		    else if ( akey ) {
+				s[15]='P';
+				UpdateLCDline1(s);
+			    while ( KeyScan2(FALSE ) );		// pause under key control
+				s[ 15 ] = (strobe&3)+1;
+				UpdateLCDline1(s);
+
+		  }
+	  //}
+
+
+		unsigned long int fact = n / i;
+        if ( fact * i == n ) {
+
+          sprintf(fct, "%lu", i );
+
+          if ( strlen( s2 ) + strlen( fct ) >= MaxLCDdigits ) {
+              strcpy( s, s2 );
+			  while ( strlen(s) < MaxLCDdigits )
+                  strcat( s, " " );
+              s[ 15 ] = (strobe&3)+1;
+              UpdateLCDline1( s );
+              *s2 = 0;
+          }
+
+	      strcat( s2, fct );
+
+		  if ( fact != i ) {
+
+	          sprintf(fct, " %lu", fact );
+	
+	          if ( strlen( s2 ) + strlen( fct ) >= MaxLCDdigits ) {
+	              strcpy( s, s2 );
+				  while ( strlen(s) < MaxLCDdigits )
+    	              strcat( s, " " );
+	              s[ 15 ] = (strobe&3)+1;
+	              UpdateLCDline1( s );
+	              *s2 = 0;
+	          }
+		      strcat( s2, fct );
+	          factors++;
+		  }
+       
+          if ( strlen( s2 ) < MaxLCDdigits-1 )
+				strcat( s2, " " );
+
+		  UpdateLCDline2( s2 );
+
+          factors++;
+       }
+
+
+		if ( !( (i-1)%20 )) {
+            s[ 15 ] = (strobe++&3)+1;
+	        UpdateLCDline1( s );
+		}
+
+    }
+    
+	if ( akey != KeyClear ) {
+
+	    if (factors == 0 )
+	    {
+	        UpdateLCDline1("Prime number");
+	        UpdateLCDline2("Ent to continue");
+	        KeyPress2=wait();
+	        if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) return;
+	
+	    } else {
+	
+			s[ 15 ] = ' ';
+			UpdateLCDline1( s );
+		
+			sprintf( fct, "= %d factors", factors );
+		
+			if ( strlen( s2 ) + strlen( fct ) >= MaxLCDdigits ) {
+			    strcpy( s, s2 );
+			    UpdateLCDline1( s );
+			    *s2 = 0;
+			}
+		
+			strcat( s2, fct );
+		    UpdateLCDline2( s2 );
+		}
+	} else {
+
+		UpdateLCDline1( s2 );
+        UpdateLCDline2( "HALTED" );
+	}
+
+	// one should never wait for a key release at the end of stuff -- this causes delays in UI responsiveness
+	// this release is automatically catered for when the next keypress is detected.
+	KeyPress2=wait();
+
+}
+
+
 //***********************************
 // The main tools mode routine
 // Note that all variables are global
@@ -223,72 +403,11 @@ void ToolsMode(void)
                return;
             }
         } break;
+
         case 1:   //factor
-        {
-            int i;
-            int n;
-            int tmp;
-            int factors=0;
-            char s2[MaxLCDdigits + 1];
-            
-            UpdateLCDline1("Type number:");
-            Xreg = 0;
-            tmp = OneLineNumberEntry();
-            n = Xreg;
-            Xreg = 0;
-            
-            if (n>65535) //checks if number > 32 bit unsigned integer
-            {
-                UpdateLCDline1("Number too large");
-                UpdateLCDline2("Ent to continue");
-                KeyPress2=wait();
-                if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) break;
-            }
-            
-            if (n<0) //checks for negative
-            {
-                UpdateLCDline1("Negative number");
-                UpdateLCDline2("Ent to continue");
-                KeyPress2=wait();
-                if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) break;
-            }
-            
-            if (n==1 || n==2)   //skips calculations if n=1 or 2
-            {
-                UpdateLCDline1("Prime number");
-                UpdateLCDline2("Ent to continue");
-                KeyPress2=wait();
-                if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) break;
-            }
-            
-            memset(s, '\0', sizeof(s));
-            
-            for(i=1;i<sqrt(n) || i<1000;i++)  //perform factor operation
-            {
-               if(n%i==0)
-               {
-                  sprintf(s2, "%d", i);
-                  strcat(s, s2);
-                  strcat(s, " ");
-                  factors++;
-               }
-            }
-            
-            if (factors!=0)
-            {
-              UpdateLCDline1("Factors:");
-              UpdateLCDline2(s);
-            }
-            
-            else
-            {
-                UpdateLCDline1("Prime number");
-                UpdateLCDline2("Ent to continue");
-                KeyPress2=wait();
-                if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) break;
-            }
-            KeyPress2=wait();
-        } break;
+			factor();
+			break;
+
         case 2:   //stopwatch
         {
 			StopWatch();
