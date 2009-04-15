@@ -1090,7 +1090,7 @@ int search(int alpha, int beta, int depth, int top, PVLine* ppv)
                 {
                     if (v >= beta)
                     {
-                        if (!mv->toPos && ply < MAX_PV)
+                        if (!mv->toPos && ply < MAX_PV && !NullMove)
                             Killer[ply] = *mv;
                         break;
                     }

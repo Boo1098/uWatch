@@ -70,15 +70,15 @@ int lcd_puts(const char * s, int lmax)
 }
 
 
-int custom_character( int charctr, int *custom ) {
-
-	int i;
-	ClearLCD_RS;
-	lcd_write( 0x40 + charctr * 8 );
+int custom_character( int charctr, const unsigned char* custom ) 
+{
+    int i;
+    ClearLCD_RS;
+    lcd_write( 0x40 + charctr * 8 );
     SetLCD_RS;
-	for ( i = 0; i < 8; i++ )
-		lcd_write( custom[i] );
-	return charctr | 8;			// avoid '0' problem
+    for ( i = 0; i < 8; i++ )
+        lcd_write( custom[i] );
+    return charctr | 8;			// avoid '0' problem
 }
 
 // move cursor to a specified position
