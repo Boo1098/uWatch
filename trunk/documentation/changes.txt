@@ -176,3 +176,7 @@ uWatch Revisions:
 - display cleaner, no cursor when updating screen
 - display update on return from sleep is immediate
   (no more cursor/blackness weirdness)
+  
+  1.5.(next)
+    - "twenty one" bug called winner as dealer due to missing "else" -- fixed.
+    
