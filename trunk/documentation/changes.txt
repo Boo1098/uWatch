@@ -177,6 +177,8 @@ uWatch Revisions:
 - display update on return from sleep is immediate
   (no more cursor/blackness weirdness)
   
-  1.5.(next)
-    - "twenty one" bug called winner as dealer due to missing "else" -- fixed.
-    
+1.5.(next)
+- "twenty one" bug called winner as dealer due to missing "else" -- fixed.
+- 2nd in second menus changed to 1st
+- Factor optimized
+- Key delay increased to 200ms (was too sensitive)
