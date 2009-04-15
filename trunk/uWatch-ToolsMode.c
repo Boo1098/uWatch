@@ -43,27 +43,17 @@ void StopWatch(void) {
 
 
 	rtccTime before;
-	rtccTime after;
 	
 	int startSeconds;
 	int mask;
 	int hours;
 	int minutes;
 	int seconds;
-	int c;
-	char s2[MaxLCDdigits + 1];
 
 
 	
 	void displayElasped( int displaySeconds )
 	{
-
-//   		after=Time;
-//    	RtccReadTime(&Time);
-
-//		if ( displayL && after.l != Time.l) {
-//			seconds = BCDtoDEC(Time.f.hour) * 60 * 60 + BCDtoDEC(Time.f.min) * 60 + BCDtoDEC(Time.f.sec) - startSeconds;
-			
 			hours = (int) ( displaySeconds / ( 60 * 60 ));
 			displaySeconds -= hours * 60 * 60;
 			minutes = (int) ( displaySeconds / 60 );
@@ -72,7 +62,6 @@ void StopWatch(void) {
 			sprintf( s, "        %02d:%02d:%02d", hours, minutes, displaySeconds );
 			
 			UpdateLCDline2(s);
-		//}
 	}
 	
 	UpdateLCDline1("Stopwatch \x7E[ENT]");
@@ -91,7 +80,6 @@ void StopWatch(void) {
 
 	mask = 0;
 
-	BOOL displayCurrent = TRUE;
 	BOOL displayLap = FALSE;
 	BOOL displaySplit = FALSE;
 
@@ -170,7 +158,6 @@ void StopWatch(void) {
 
 }
 
-
 //***********************************
 // The main tools mode routine
 // Note that all variables are global
@@ -239,7 +226,7 @@ void ToolsMode(void)
         case 1:   //factor
         {
             int i;
-            int num;
+            int n;
             int tmp;
             int factors=0;
             char s2[MaxLCDdigits + 1];
@@ -247,14 +234,38 @@ void ToolsMode(void)
             UpdateLCDline1("Type number:");
             Xreg = 0;
             tmp = OneLineNumberEntry();
-            num = Xreg;
+            n = Xreg;
             Xreg = 0;
+            
+            if (n>65535) //checks if number > 32 bit unsigned integer
+            {
+                UpdateLCDline1("Number too large");
+                UpdateLCDline2("Ent to continue");
+                KeyPress2=wait();
+                if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) break;
+            }
+            
+            if (n<0) //checks for negative
+            {
+                UpdateLCDline1("Negative number");
+                UpdateLCDline2("Ent to continue");
+                KeyPress2=wait();
+                if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) break;
+            }
+            
+            if (n==1 || n==2)   //skips calculations if n=1 or 2
+            {
+                UpdateLCDline1("Prime number");
+                UpdateLCDline2("Ent to continue");
+                KeyPress2=wait();
+                if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) break;
+            }
             
             memset(s, '\0', sizeof(s));
             
-            for(i=1;i<num;i++)
+            for(i=1;i<sqrt(n) || i<1000;i++)  //perform factor operation
             {
-               if(num%i==0)
+               if(n%i==0)
                {
                   sprintf(s2, "%d", i);
                   strcat(s, s2);
@@ -269,12 +280,14 @@ void ToolsMode(void)
               UpdateLCDline2(s);
             }
             
-            if (factors==0)
+            else
             {
-              UpdateLCDline1("No Factors");
-              UpdateLCDline2("Number is prime");
+                UpdateLCDline1("Prime number");
+                UpdateLCDline2("Ent to continue");
+                KeyPress2=wait();
+                if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) break;
             }
-            KeyPress2 = GetDebouncedKey();
+            KeyPress2=wait();
         } break;
         case 2:   //stopwatch
         {
