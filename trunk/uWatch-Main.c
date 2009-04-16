@@ -41,7 +41,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #include <string.h>
 #include "uWatch-op.h"
 
-#define RevString   "Rev 1.5.8"
+#define RevString   "Rev 1.5.9"
 
 //define all the I/O pins
 #define Row1        _RB10
@@ -264,6 +264,23 @@ int opPrec(int op)
 }
 
 
+
+
+// Custom character symbols for menus
+static const unsigned char character_squaring[] =	{ 0x0E, 0x01, 0x06, 0x08, 0x0F, 0x00, 0x00, 0x00 };		// as in x^2
+static const unsigned char character_squareRoot1[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x05, 0x02 };
+static const unsigned char character_squareRoot2[] = { 0x1f, 0x00, 0x11, 0x0A, 0x04, 0x0A, 0x11, 0x00 };
+static const unsigned char character_powerx[] = { 0x0A, 0x04, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00 }; 
+static const unsigned char character_pi[] = { 0x00, 0x00, 0x1F, 0x0A, 0x0A, 0x0A, 0x0A, 0x12 }; 
+static const unsigned char character_nd1[] = { 0x00, 0x0E, 0x09, 0x09, 0x09, 0x00, 0x00, 0x00 };
+static const unsigned char character_nd2[] = { 0x02, 0x0E, 0x12, 0x12, 0x0E, 0x00, 0x00, 0x00 };
+static const unsigned char character_minus1[] = { 0x01, 0x01, 0x19, 0x01, 0x01, 0x00, 0x00, 0x00 }; 
+static const unsigned char character_minus1b[] = { 0x04, 0x04, 0x14, 0x04, 0x04, 0x00, 0x00, 0x00 }; 
+static const unsigned char character_arrow[] = { 0x00, 0x04, 0x02, 0x1F, 0x02, 0x04, 0x00, 0x00 }; 
+static const unsigned char character_submenu[] = { 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }; 
+static const unsigned char character_1x1[] = { 0x11, 0x12, 0x12, 0x14, 0x14, 0x00, 0x00, 0x00 }; 
+static const unsigned char character_1x2[] = { 0x11, 0x0A, 0x04, 0x0A, 0x11, 0x00, 0x00, 0x00 }; 
+
 // signal this choice trigger the optional "extra" menu.
 #define MENU_EXTRA_FLAG   0x80
 
@@ -271,6 +288,7 @@ typedef struct
 {
     char*       lines[6];
     unsigned char ops[16];
+	const unsigned char *custom[8];				// up to 8 custom characters for each menu
 } CalcMenuInfo;
 
 
@@ -278,10 +296,10 @@ CalcMenuInfo MainMenus[] =
 {
  
     { // menu 0
-        {" 1/x  x^2   Sqrt",   
-         " 2nd  y^x   Exp ", 
-         " Abs  Log10 10^x", 
-         " 1st  y^1/x Ln  "
+        {"   \006\007  x\010  \001\002",			// 010 == 000   
+         "  2\003\004  y\005  e\005", 
+         " abs  log  10\005", 
+         " 2\003\004  y\006\007  ln"
         },
 
         { CALC_OP_RECIPROCAL, 
@@ -294,16 +312,28 @@ CalcMenuInfo MainMenus[] =
           CALC_OP_10X,
           CALC_OP_NROOT,
           CALC_OP_LN,
-        }
+        },
+
+		{	character_squaring,
+			character_squareRoot1,
+			character_squareRoot2,
+			character_nd1,
+			character_nd2,
+			character_powerx,
+			character_1x1,
+			character_1x2
+		}
+
+
     },
 
     { // menu 1
-        {" Sin  Cos  Tan  ",   
-         " 2nd  Pi   Deg  ", 
-         " aSin aCos aTan ", 
-         " 1st  Hyp  Rad  ",
-         " Sinh Cosh Tanh ",
-         " aSnh aCsh aTnh ",
+        {" sin  cos  tan  ",   
+         " 2\010\001   \002   deg  ", 
+         " sin\003 cos\003 tan\003 ", 
+         " 2\010\001  hyp  rad  ",
+         " sinh cosh canh ",
+         " sinh\003cosh\003tanh\003",
         },
 
         { CALC_OP_SIN,
@@ -324,14 +354,25 @@ CalcMenuInfo MainMenus[] =
           CALC_OP_HYP_ASIN,
           CALC_OP_HYP_ACOS,
           CALC_OP_HYP_ATAN
-        }
+        },
+
+		{	character_nd1,
+			character_nd2,
+			character_pi,
+			character_minus1b,
+			0,
+			0,
+			0,
+			0
+		}
+
     },
 
     { // menu 2
-        {" HMS       R>P  ",   
-         " 2nd  x!   ->D  ", 
-         " ->H       P>R  ", 
-         " 1st  Sun  DMY  "
+        {" HMS         R\002P",   
+         " 2\010\001  x!    \002D", 
+         " \002H        P\002R", 
+         " 2\010\001 Sunset DMY"
         },
 
         { CALC_OP_HMS,
@@ -344,14 +385,24 @@ CalcMenuInfo MainMenus[] =
           CALC_OP_P2R,
           CALC_OP_SUNSET,
           CALC_OP_DMY,
-        }
+        },
+
+		{	character_nd1,
+			character_nd2,
+			character_arrow,
+			0,
+			0,
+			0,
+			0,
+			0
+		}
     },
 
     { // menu 3
-        {" Play R>C  Conv ",   
-         " 2nd  Base //   ", 
-         " Rec  C>R  Conj ", 
-         " 1st  Real      ", 
+        {" Play R\010C  Conv ",   
+         " 2\001\002 \003Base //   ", 
+         " Rec  C\010R  Conj ", 
+         " 2\001\002  Real      ", 
         },
 
         { CALC_OP_PLAY,
@@ -365,9 +416,22 @@ CalcMenuInfo MainMenus[] =
           CALC_OP_CONJUGATE,
           CALC_OP_REAL_PART,
           CALC_OP_NULL,
-        }
+        },
+
+		{	character_arrow,
+			character_nd1,
+			character_nd2,
+			character_submenu,
+			0,
+			0,
+			0,
+			0
+		}
     },
 };
+
+
+
 
 char LCDhistory1[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
 char LCDhistory2[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
@@ -1018,11 +1082,19 @@ int ReturnNumber(int key)
 // if we escape or change modes, return -keypress
 int DriveMenu2(CalcMenuInfo* mifo)
 {
+    int i;
     int mi = -1;
     int key;
     int inv = 0;
     int extra = 0;
     char** lines = mifo->lines;
+
+
+    // copy the menu's custom characters to GRAM
+    for ( i = 0; i < 8; i++ )
+        if ( mifo->custom[i] )
+            custom_character( i, (unsigned char *) mifo->custom[i] );
+
 
     /* Display `line1' and `line2' consisting of 6 menu items
      * corresponding to the function keys.
@@ -1503,55 +1575,92 @@ void TimeDateDisplay(void)
 			{ 0x11, 0x1B, 0x15, 0x11, 0x11, 0x00, 0x00, 0x00 }		// "M"
 		};
 
-        s[BASE+8] = custom_character( 0, &( AMPM[cbase][0] ));
+<<<<<<< .mine        s[BASE+8] = custom_character( 0, (unsigned char *)&( AMPM[cbase][0] ));
+        s[BASE+9] = custom_character( 2, (unsigned char *)&( AMPM[2][0] ));
+=======        s[BASE+8] = custom_character( 0, &( AMPM[cbase][0] ));
         s[BASE+9] = custom_character( 2, &( AMPM[2][0] ));
-
-        point += 2;
+>>>>>>> .theirs
+<<<<<<< .mine        point += 2;
     }
 
-    if (!DST) {
+    if ( DST) {
+        static const unsigned char dst[] = { 0x00, 0x04, 0x1F, 0x0E, 0x0A, 0x00, 0x00, 0x00 };
+        s[ point ] = custom_character( 3, (unsigned char *)dst );		// star after time if DST
+=======        point += 2;
+>>>>>>> .theirs    }
+
+<<<<<<< .mine    static const unsigned char moons[][8] = {
+=======    if (!DST) {
         static const unsigned char dst[] = { 0x00, 0x04, 0x1F, 0x0E, 0x0A, 0x00, 0x00, 0x00 };
         custom_character( 3, dst );
         s[ point ] = 3;  // put a little star after the time if DST
     }
-
-    static const unsigned char moons[][8] = {
-
-        // new
+>>>>>>> .theirs
+<<<<<<< .mine        // new
         { 0x03, 0x0C, 0x10, 0x10, 0x10, 0x10, 0x0C, 0x03 },		// (--)
         { 0x18, 0x06, 0x01, 0x01, 0x01, 0x01, 0x06, 0x18 },
-
-        // crescent
+=======    static const unsigned char moons[][8] = {
+>>>>>>> .theirs
+<<<<<<< .mine        // crescent
         { 0x03, 0x0F, 0x1F, 0x1F, 0x10, 0x10, 0x0C, 0x03 },		// (^-)
         { 0x18, 0x06, 0x01, 0x01, 0x01, 0x01, 0x06, 0x18 },
-
-
-        // quarter
+=======        // new
+        { 0x03, 0x0C, 0x10, 0x10, 0x10, 0x10, 0x0C, 0x03 },		// (--)
+        { 0x18, 0x06, 0x01, 0x01, 0x01, 0x01, 0x06, 0x18 },
+>>>>>>> .theirs
+<<<<<<< .mine=======        // crescent
+        { 0x03, 0x0F, 0x1F, 0x1F, 0x10, 0x10, 0x0C, 0x03 },		// (^-)
+        { 0x18, 0x06, 0x01, 0x01, 0x01, 0x01, 0x06, 0x18 },
+>>>>>>> .theirs
+<<<<<<< .mine        // quarter
         { 0x03, 0x0F, 0x1F, 0x1F, 0x1F, 0x1F, 0x0F, 0x03 },		// (0-)
         { 0x18, 0x06, 0x01, 0x01, 0x01, 0x01, 0x06, 0x18 },
-
-
-        // Waxing
+=======>>>>>>> .theirs
+<<<<<<< .mine=======        // quarter
+        { 0x03, 0x0F, 0x1F, 0x1F, 0x1F, 0x1F, 0x0F, 0x03 },		// (0-)
+        { 0x18, 0x06, 0x01, 0x01, 0x01, 0x01, 0x06, 0x18 },
+>>>>>>> .theirs
+<<<<<<< .mine        // Waxing
         { 0x03, 0x0F, 0x1F, 0x1F, 0x1F, 0x1F, 0x0F, 0x03 },		// (0^)
         { 0x18, 0x1E, 0x1F, 0x1F, 0x01, 0x01, 0x06, 0x18 },
             
         // Full
         { 0x03, 0x0F, 0x1F, 0x1F, 0x1F, 0x1F, 0x0F, 0x03 },		// (00)
         { 0x18, 0x1E, 0x1F, 0x1F, 0x1F, 0x1F, 0x1E, 0x18 },
-
-        // waning
+=======>>>>>>> .theirs
+<<<<<<< .mine        // waning
         { 0x03, 0x0F, 0x1F, 0x1F, 0x10, 0x10, 0x0C, 0x03 },		// (^0)
         { 0x18, 0x1E, 0x1F, 0x1F, 0x1F, 0x1F, 0x1E, 0x18 },
-
-        // second quarter
+=======        // Waxing
+        { 0x03, 0x0F, 0x1F, 0x1F, 0x1F, 0x1F, 0x0F, 0x03 },		// (0^)
+        { 0x18, 0x1E, 0x1F, 0x1F, 0x01, 0x01, 0x06, 0x18 },
+            
+        // Full
+        { 0x03, 0x0F, 0x1F, 0x1F, 0x1F, 0x1F, 0x0F, 0x03 },		// (00)
+        { 0x18, 0x1E, 0x1F, 0x1F, 0x1F, 0x1F, 0x1E, 0x18 },
+>>>>>>> .theirs
+<<<<<<< .mine        // second quarter
         { 0x03, 0x0C, 0x10, 0x10, 0x10, 0x10, 0x0C, 0x03 },		// (-0)
         { 0x18, 0x1E, 0x1F, 0x1F, 0x1F, 0x1F, 0x1E, 0x18 },
-
-        // final crescent
+=======        // waning
+        { 0x03, 0x0F, 0x1F, 0x1F, 0x10, 0x10, 0x0C, 0x03 },		// (^0)
+        { 0x18, 0x1E, 0x1F, 0x1F, 0x1F, 0x1F, 0x1E, 0x18 },
+>>>>>>> .theirs
+<<<<<<< .mine        // final crescent
         { 0x03, 0x0C, 0x10, 0x10, 0x10, 0x10, 0x0C, 0x03 },		// (-^)
         { 0x18, 0x1E, 0x1F, 0x1F, 0x01, 0x01, 0x06, 0x18 },
     };
-
+=======        // second quarter
+        { 0x03, 0x0C, 0x10, 0x10, 0x10, 0x10, 0x0C, 0x03 },		// (-0)
+        { 0x18, 0x1E, 0x1F, 0x1F, 0x1F, 0x1F, 0x1E, 0x18 },
+>>>>>>> .theirs
+<<<<<<< .mine    s[14] = custom_character( 4, (unsigned char *) moons[MoonPhase*2] );
+    s[15] = custom_character( 5, (unsigned char *) moons[MoonPhase*2+1] );
+=======        // final crescent
+        { 0x03, 0x0C, 0x10, 0x10, 0x10, 0x10, 0x0C, 0x03 },		// (-^)
+        { 0x18, 0x1E, 0x1F, 0x1F, 0x01, 0x01, 0x06, 0x18 },
+    };
+>>>>>>> .theirs
     custom_character( 4, moons[MoonPhase*2] );
     custom_character( 5, moons[MoonPhase*2+1] );
 
@@ -1614,8 +1723,8 @@ void TimeDateDisplay(void)
         break;
     }
 
-	custom_character( 6, &( left[ cindex*8 ] ));
-	custom_character( 7, &( right[ cindex*8 ] ));
+	custom_character( 6, (unsigned char *)&( left[ cindex*8 ] ));
+	custom_character( 7, (unsigned char *)&( right[ cindex*8 ] ));
 
 	s[7]=6;
 	s[8]=7;
@@ -1693,6 +1802,10 @@ void __attribute__((__interrupt__)) _T1Interrupt( void )
 
     ResetSleepTimer();
     StartSleepTimer();            //switch the SLEEP timer back on
+
+
+	// restore any custom characters to LCD GRAM
+	restoreCustomCharacters();
 
 	// removed by BOO
 	// this is the ugly delay after wakeup where we see garbage...
