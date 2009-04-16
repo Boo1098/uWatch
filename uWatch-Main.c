@@ -372,7 +372,7 @@ CalcMenuInfo MainMenus[] =
 char LCDhistory1[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
 char LCDhistory2[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
 
-//BOOL NextMode;          //TRUE if MODE button switches to next mode. FALSE returns to Time/Date mode.
+BOOL NextMode;          //TRUE if MODE button switches to next mode. FALSE returns to Time/Date mode.
 BOOL TwelveHour;        //TRUE if 12 hour mode
 BOOL last12;			// COPY for time display
 int RPNmode;           //TRUE if RPN mode, otherwise Algebraic
@@ -980,7 +980,7 @@ int DriveMenu(const char* title, const char** Menu, int n)
         if (key==KeyClear || key == KeyMode) return -1;
 
         //user pressed some key other than MODE, so ensure that when exit we go back to the time/date display
-        //NextMode=FALSE; 
+        NextMode=FALSE; 
 
         if (key == KeyPlus || key == KeySign )
         {
@@ -1911,7 +1911,7 @@ int main(void)
         }
 
         //user did something in the calc mode, so return to time/date
-        //if (NextMode==FALSE) continue; 
+        if (NextMode==FALSE) continue; 
     
         WatchMode=WATCH_MODE_APPS;
         AppsMode();
