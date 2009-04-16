@@ -1899,7 +1899,8 @@ int main(void)
                 
         } while (Key!=KeyMode); //loop until a key has been pressed
 
-        WatchMode=WATCH_MODE_CALC;    
+        WatchMode=WATCH_MODE_CALC;
+        NextMode=TRUE;    
 
 		if (RPNmode)
         { 
