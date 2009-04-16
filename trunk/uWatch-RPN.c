@@ -58,7 +58,7 @@ void RPNcalculator(void)
         }
 
         //user pressed some key other than MODE, so ensure that when exit we go back to the time/date display
-        //NextMode=FALSE;		
+        NextMode=FALSE;		
 
         // common menu mode or not
         while (Key == KeyMenu)
