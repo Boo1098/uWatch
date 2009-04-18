@@ -1763,10 +1763,6 @@ void __attribute__((__interrupt__)) _T1Interrupt( void )
     ResetSleepTimer();
     StartSleepTimer();            //switch the SLEEP timer back on
 
-
-	// restore any custom characters to LCD GRAM
-	restoreCustomCharacters();
-
 	// removed by BOO
 	// this is the ugly delay after wakeup where we see garbage...
   //  DelayMs(500);               //add a key delay
