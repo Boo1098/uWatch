@@ -97,7 +97,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #define RXD         _RB5
 #define IRLED       _RB7
 
-#define KeyDelay        200     //200ms key delay
+#define KeyDelay        250     //250ms key delay
 #define MaxLCDdigits    16
 #define XBufSize        32
 
