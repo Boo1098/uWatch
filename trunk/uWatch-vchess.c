@@ -23,7 +23,7 @@
 
 /***************************************************************************
 
-* This is VoidCHESS  v1.2
+* This is VoidCHESS  v1.4
 * 
 * Vchess has been designed to run in a small code and data footprint. for
 * example, embedded applications.  vchess does not have an abundance of static
@@ -110,7 +110,8 @@ typedef unsigned char uchar;
 typedef signed char byte;
 typedef unsigned int uint;
 typedef unsigned long uint4;
-#define VERSION "VoidCHESS 1.3"
+
+#define VERSION "VoidCHESS 1.4"
 
 // canonial piece codes
 typedef enum
@@ -164,7 +165,7 @@ typedef struct
 #define BLACKPOS 0x40
 
 // maximum moves in tree search
-#define MAX_STACK       128
+#define MAX_STACK       100
 #define MAX_PV          10
 #define MAX_DEPTH       10
 #define WIN_SCORE       10000
@@ -201,7 +202,6 @@ uint MatScore[2];
 uint EP;
 PVLine MainPV;
 int UsePV;
-int NullMove; // in a null move
 uint Castle;
 Move Killer[MAX_PV];
 
@@ -358,7 +358,7 @@ int attackTest(int cases, int side, int pos)
             if (!(p & 0x88))
             {
                 int p2 = Board[p];
-                if (SIDEOF(p2) == side && Board[p2 + POSMAT] == knight)
+                if (p2 && SIDEOF(p2) == side && Board[p2 + POSMAT] == knight)
                     return 1;
             }
         }
@@ -666,21 +666,9 @@ int opponentCheck(int side)
     // is other side in check
     return attackTest(CASE_ALL, side,
                       Board[POSKING + (side == WHITE ? BLACKPOS : 0)]);
-
-    // assume legal
-
-
-    // find out if this is a checking move
-
-    // if we've moved a slider, only need to check them,
-    // otherwise check all pieces.
-        // opponent in check with this move.
-
-    // undo the move
-        
 }
 
-void makeMove(Move m, int* ep)
+int makeMove(Move m, int* ep)
 {
     int from = m.from;
     int to = m.to;
@@ -755,11 +743,12 @@ void makeMove(Move m, int* ep)
     MOVE(from, to, fromPos, 0);
     if (toPos) Board[toPos] = -1;
 
-        // was a promotion. need to perform check test again
     InCheck = opponentCheck(Side);
 
     // switch sides
     Side = !Side;
+
+    return InCheck;
 }
 
 void unmakeMove(Move m, int ep)
@@ -827,7 +816,6 @@ void playMove(Move m)
     for (i = 0; i < MAX_PV-1; ++i) Killer[i] = Killer[i+1];
     makeMove(m, &ep);
 }
-
 
 #define MS(_p, _m) { *(_p)++ = ((_m)&7)+'a';  *(_p)++ = ((_m)>>4)+'1'; }
 
@@ -918,31 +906,28 @@ Move* bestMove(Move* first, Move* last, int ply)
     Move* best = 0;
     Move* mv;
 
-    if (!NullMove)
+    if (UsePV)
     {
-        if (UsePV)
+        for (mv = first; mv != last; ++mv)
         {
-            for (mv = first; mv != last; ++mv)
+            if (COMPARE_MOVES(*mv, MainPV.m[ply]))
             {
-                if (COMPARE_MOVES(*mv, MainPV.m[ply]))
-                {
-                    best = mv;
-                    break;
-                }
+                best = mv;
+                break;
             }
-            if (!best) UsePV = 0; // dont use the pv anymore.
         }
-
-        if (!best)
-            for (mv = first; mv != last; ++mv)
-            {
-                if (COMPARE_MOVES(*mv, Killer[ply])) 
-                {
-                    best = mv;
-                    break;
-                }
-            }            
+        if (!best) UsePV = 0; // dont use the pv anymore.
     }
+
+    if (!best)
+        for (mv = first; mv != last; ++mv)
+        {
+            if (COMPARE_MOVES(*mv, Killer[ply])) 
+            {
+                best = mv;
+                break;
+            }
+        }            
     return best;
 }
 
@@ -954,23 +939,28 @@ int quiesce(int alpha, int beta, int depth)
     int ep;
     int castle;
     int done;
-    int bv;
+    int bv = -WIN_SCORE;
 
     ++Nodes;
 
     // generate moves
-    MoveCount[Side] = moveGen(CASE_MIN, Side);
-    
+    // if we're in check, consider legal moves incase there is no escape.
+    MoveCount[Side] = moveGen(InCheck ? CASE_ALL : CASE_MIN, Side);
+
     // give up if we're going too deep whatever
     done = (first == moveStackPtr) || (depth < -MAX_DEPTH);
 
-    bv = scoreStatic();
-    
-    if (bv > alpha)
+    // only consider the stand-pat if we're not in check
+    if (!InCheck)
     {
-        alpha = bv;
-        if (bv >= beta)
-            done = 1;
+        bv = scoreStatic();
+    
+        if (bv > alpha)
+        {
+            alpha = bv;
+            if (bv >= beta)
+                done = 1;
+        }
     }
     
     if (!done)
@@ -1006,11 +996,15 @@ int quiesce(int alpha, int beta, int depth)
         }
     }
 
+    // if we're still in check, we've lost
+    if (InCheck)
+        bv = -WIN_SCORE + 1;
+
     moveStackPtr = first;
     return bv;
 }
     
-int search(int alpha, int beta, int depth, int top, PVLine* ppv)
+int search(int alpha, int beta, int depth, int top, int nullDepth, int tryPV, PVLine* ppv)
 {
     Move* first;
     Move* mv;
@@ -1022,6 +1016,7 @@ int search(int alpha, int beta, int depth, int top, PVLine* ppv)
     int ply;
     int i;
     int moves;
+    int chk;
 
     ppv->n = 0;
 
@@ -1034,16 +1029,14 @@ int search(int alpha, int beta, int depth, int top, PVLine* ppv)
     ++Nodes;
 
     // try null moves
-    if (ply > 0 && depth > 2 && !InCheck && !NullMove)
+    if (ply > 0 && depth > 2 && !InCheck && !(nullDepth&1))
     {
         // check we have sensible material for null move
         if (MatScore[Side] >= 400)
         {
-            NullMove = 1;
             Side = !Side;
-            v = -search(-beta, 1-beta, depth-1-2, top, &pv);
+            v = -search(-beta, 1-beta, depth-1-2, top, nullDepth+1, 0, &pv);
             Side = !Side;
-            NullMove = 0;
             if (v >= beta)
                 return v;
         }
@@ -1059,7 +1052,8 @@ int search(int alpha, int beta, int depth, int top, PVLine* ppv)
         for (mv = first; mv != moveStackPtr; ++mv)
         {
             // try to search the moves in a better order
-            Move* m2 = bestMove(mv, moveStackPtr, ply);
+            Move* m2 = 0;
+            if (!nullDepth) m2 = bestMove(mv, moveStackPtr, ply);
             if (!m2) m2 = bestMoveVal(mv, moveStackPtr);
             if (m2 != mv)
             {
@@ -1069,16 +1063,22 @@ int search(int alpha, int beta, int depth, int top, PVLine* ppv)
             }
             
             castle = Castle;
-            makeMove(*mv, &ep);
-            
-            if (newPV)
+            chk = makeMove(*mv, &ep);
+
+            // if we are inside a null make even
+            if (nullDepth) nullDepth = (nullDepth + 2) & ~1;
+
+            if (depth > 2 && tryPV && newPV)
             {
-                v = -search(-alpha-1, -alpha, depth-1, top, &pv);
+                v = -search(-alpha-1, -alpha, depth-1, top, nullDepth, 0, &pv);
                 if (v > alpha && v < beta)
-                    v = -search(-beta, -alpha, depth-1, top, &pv);
+                {
+                    InCheck = chk;
+                    v = -search(-beta, -alpha, depth-1, top, nullDepth, 1, &pv);
+                }
             }
             else
-                v = -search(-beta, -alpha, depth-1, top, &pv);
+                v = -search(-beta, -alpha, depth-1, top, nullDepth, tryPV, &pv);
             
             Castle = castle;
             unmakeMove(*mv, ep);
@@ -1090,8 +1090,8 @@ int search(int alpha, int beta, int depth, int top, PVLine* ppv)
                 {
                     if (v >= beta)
                     {
-                        if (!mv->toPos && ply < MAX_PV && !NullMove)
-                            Killer[ply] = *mv;
+                        if (!mv->toPos && ply < MAX_PV && !nullDepth)
+                            Killer[ply] = *mv; // update killer move
                         break;
                     }
 
