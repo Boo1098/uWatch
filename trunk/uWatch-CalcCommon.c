@@ -177,7 +177,7 @@ int EnterNumber(int Key)
     // handle numbers
     int l;
     int c = ReturnNumber(Key);
-    if (c >= 0)
+    if (c >= 0 && c <= 9)
     {
         // ignore anything but 0 & 1 in binary mode
         if (CalcDisplayBase == 2)
@@ -796,7 +796,7 @@ void StoreRecall(void)
 
 		KeyPress2 = GetDebouncedKey();
         num = ReturnNumber(KeyPress2);
-        if(num >= 0)
+        if(num >= 0 && num <= 9)
         {
             //store the Xreg value in the appropriate Sreg
             Sreg[num]=Xreg; iSreg[num] = iXreg;
@@ -805,7 +805,7 @@ void StoreRecall(void)
     else //do the RCL function
     {
         num = ReturnNumber(KeyPress2);
-        if (num >= 0)
+        if (num >= 0 && num <= 9 )
         {
             Push();
 
@@ -990,20 +990,32 @@ void HexEntry(void)
 
 static const char* ConversionsMenu[] = 
 {
-    "mils -> mm",
-    "mm -> mils",
-    "Deg F -> Deg C",
-    "Deg C -> Deg F",
-    "kg -> lb",
-    "lb -> kg"
+    "mils \2 mm",
+    "mm \2 mils",
+    "\1F \2 \1C",
+    "\1C \2 \1F",
+    "kg \2 lb",
+    "lb \2 kg"
 };
 
 //**********************************
 // display the conversions menu
-void Conversions(void)
+int Conversions(void)
 {
-    int Mode;
-    Mode= DriveMenu("CONV: +/- & ENT", ConversionsMenu, DIM(ConversionsMenu));
+	static const unsigned char deg[] = { 0x06, 0x09, 0x09, 0x06, 0x00, 0x00, 0x00, 0x00 };
+	custom_character( 1, (unsigned char *) deg );
+	static const unsigned char arrow[] = { 0x00, 0x04, 0x02, 0x1F, 0x02, 0x04, 0x00, 0x00 };
+	custom_character( 2, (unsigned char *) arrow );
+
+    char *printConv( int *sel, int max ) {
+        strcpy( out, ConversionsMenu[ *sel ] );
+        return out;
+    }
+
+    int Mode = 0;
+    if ( genericMenu( "Convert:", &printConv, &increment, &decrement, DIM( ConversionsMenu ), &Mode ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+
     switch(Mode)                
     {
     case 0: 
@@ -1038,6 +1050,8 @@ void Conversions(void)
             break;
         }
     }
+
+    return MODE_EXIT;
 } 
 
 void BaseMode(void)

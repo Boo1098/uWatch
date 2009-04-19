@@ -66,7 +66,7 @@ static double minisun(double t, double* ra, double* dec)
 {
 /*-----------------------------------------------------------------------*/
 /* MINI_SUN: low precision solar coordinates (approx. 1')                */
-/*           T  : time in MJD
+/*           T  : time in MJD                                            */
 /*           RA : right ascension (in h; equinox of date)                */
 /*           DEC: declination (in deg; equinox of date)                  */
 /*-----------------------------------------------------------------------*/
