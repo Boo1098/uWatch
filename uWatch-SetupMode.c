@@ -182,14 +182,6 @@ int changeTime() {
     return MODE_EXIT;
 }
 
-void incYear( int *year, int max ) {
-    (*year)++;    
-}
-
-void decYear( int *year, int max ) {
-    (*year)--;
-}
-
 
 char *printMonth( int *month, int max ) {
     strcpy( out, monthName[ *month ] );         // make a COPY so we don't have ROM limitation
@@ -283,7 +275,7 @@ int changeDate() {
     int month = BCDtoDEC( Date.f.mon );
     int day = BCDtoDEC( Date.f.mday ) - 1;          // 0-based
 
-    if ( genericMenu( "Year:", &printNumber, &incYear, &decYear, 0, &year ) == MODE_KEYMODE )
+    if ( genericMenu( "Year:", &printNumber, &increment, &decrement, 0, &year ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     sprintf( out, "%d, Month:", year );
@@ -302,46 +294,44 @@ int changeDate() {
 }
 
 
-char *printCal( int *selection, int max ) {
-    sprintf( out, "CAL=%d", RCFGCALbits.CAL );
-    return out;
-}
         
-void incCal( int *selection, int max ) {
-    RCFGCALbits.CAL++;
-}
-
-void decCal( int *selection, int max ) {
-    RCFGCALbits.CAL--;
-}
-
 int changeCalibration() {
-    if ( genericMenu( "Calibration", &printCal, &incCal, &decCal, 0, 0 ) == MODE_KEYMODE )
+
+    char *printCal( int *selection, int max ) {
+        sprintf( out, "CAL=%d", RCFGCALbits.CAL );
+        return out;
+    }
+
+    int cal = RCFGCALbits.CAL;
+    if ( genericMenu( "Calibration", &printCal, increment, decrement, 256, &cal ) == MODE_KEYMODE )
         return MODE_KEYMODE;
+    RCFGCALbits.CAL = (char) cal;
     I2CmemoryWRITE( 63535,RCFGCALbits.CAL );      //store value in last byte
     return MODE_EXIT;
 }
 
 
-char *print1224( int *sel, int max ) {
-    if ( *sel ) {
-        sprintf( out, "12h 8:34:00%c%c",
-            custom_character( 2, &( AMPM[1][0] )),
-            custom_character( 3, &( AMPM[2][0] )) );
-    }
-    else
-        sprintf( out, "24h 20:34:00" );
-
-    return out;
-}
-
-void sel1224( int *sel, int max ) {
-    (*sel) = !(*sel);
-}
 
 int change1224() {
+
+    char *print1224( int *sel, int max ) {
+        if ( *sel ) {
+            sprintf( out, "12h 8:34:00%c%c",
+                custom_character( 2, &( AMPM[1][0] )),
+                custom_character( 3, &( AMPM[2][0] )) );
+        }
+        else
+            sprintf( out, "24h 20:34:00" );
+    
+        return out;
+    }
+    
+    void sel1224( int *sel, int max ) {
+        (*sel) = !(*sel);
+    }
+
     int mode1224 = TwelveHour ? 1 : 0;
-    if ( genericMenu( "Set Time Format", &print1224, &sel1224, &sel1224, 0, &mode1224 ) == MODE_KEYMODE )
+    if ( genericMenu( "Set Time Format", print1224, sel1224, sel1224, 0, &mode1224 ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     TwelveHour = mode1224 ? TRUE : FALSE;
     return MODE_EXIT;
@@ -353,9 +343,11 @@ int changeDST() {
         return (char * ) TimeZones[ *zone ].region;
     }
 
-    if ( genericMenu( "DST Zone:", printDST, &increment, &decrement, DIM( TimeZones ), &dstRegion ) == MODE_KEYMODE )
+    int region = dstRegion;
+    if ( genericMenu( "DST Zone:", printDST, increment, decrement, DIM( TimeZones ), &region ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
+    dstRegion = region;
     DST = inDST( &dstRegion );
     return MODE_EXIT;
 }
