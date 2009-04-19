@@ -69,9 +69,8 @@ static int computerMoves()
     {
         UsePV = 1;
         InCheck = chk;
-        NullMove = 0;
         moveStackPtr = MoveStack;
-        v = search(-WIN_SCORE, WIN_SCORE, i, i, &MainPV);
+        v = search(-WIN_SCORE, WIN_SCORE, i, i, 0, 1, &MainPV);
     }
 
     /* and back again to slow.. */
@@ -391,7 +390,7 @@ void GamesMode(void)
         } break;
     case 2: // VoidCHESS!
         {
-            UpdateLCDline1("- VCHESS v1.3  -");
+            UpdateLCDline1("- VCHESS v1.4  -");
             UpdateLCDline2("Ent to continue");
             if ((KeyPress2 = wait()) == KeyMode) return;
             

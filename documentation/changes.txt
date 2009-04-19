@@ -197,3 +197,7 @@ uWatch Revisions:
    the pattern waxes from the left and wanes on the right. i reflected the quarter glyph to get the other side.
 
    
+1.5.9
+- Andrew starts the new menu changed.
+- improvements to the vchess game.
+
