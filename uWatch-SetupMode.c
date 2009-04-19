@@ -84,16 +84,10 @@ void SetDateBCDandUpdate(int y, int m, int d)
 
 static const char* SetupMenu[] = 
 {
-    "Set Time",
-    "Set Date",
     "Calc Mode",
     "Clear EEPROM",
     "Self Test",
     "LCD timeout",
-    "ClockCalibration",
-    "12/24hr Time",
-    "DST Zone",
-    "Location",
     "About",
 };
 
@@ -121,8 +115,7 @@ int OneLineNumberEntry()
                 
         c = EnterNumber(key);
 
-        if (c == KeyMode || c == KeyClear || c == KeyMenu)
-            return c;
+        IFEXIT( c );
 
         if (c == KeyEnter)
         {
@@ -130,77 +123,395 @@ int OneLineNumberEntry()
             
             UpdateXregDisplay();
             UpdateLCDline2(DisplayXreg);
-            return c;
+            return MODE_EXIT;
         }
     }
 }
 
+
+
+
+
+
+
+char *printNumber( int *number, int max ) {
+    sprintf( out, "%d", *number );
+    return out;
+}
+
+char *printHour( int *hour, int max ) {
+
+    // 12AM, 1AM... 12PM.. etc
+    // OR 24 hour 
+
+    if ( TwelveHour ) {
+
+		int cbase = (*hour) > 11 ? 1 : 0;
+        int h = (*hour) % 12;
+        if ( !h ) h = 12;
+
+        sprintf( out, "%2d%c%c", h,
+            custom_character( 2, &( AMPM[ cbase ][0] ) ),
+            custom_character( 3, &( AMPM[ 2 ][0] ) ));
+
+    } else
+        sprintf( out, "%2d", (*hour) );
+
+    return out;
+}
+
+
+int changeTime() {
+
+    RtccReadTime(&Time);            //read the RTCC registers
+
+    int h = BCDtoDEC( Time.f.hour );
+    int m = BCDtoDEC( Time.f.min );
+    int s = BCDtoDEC( Time.f.sec );
+
+    if ( genericMenu( "Select Hour:", &printHour, &increment, &decrement, 24, &h ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+
+    if ( genericMenu( "Select Minute:", &printNumber, &increment, &decrement, 60, &m ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+
+    if ( genericMenu( "Select Second:", &printNumber, &increment, &decrement, 60, &s ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+
+    SetTimeBCD( DECtoBCD(h), DECtoBCD(m), DECtoBCD(s) );
+    return MODE_EXIT;
+}
+
+void incYear( int *year, int max ) {
+    (*year)++;    
+}
+
+void decYear( int *year, int max ) {
+    (*year)--;
+}
+
+
+char *printMonth( int *month, int max ) {
+    strcpy( out, monthName[ *month ] );         // make a COPY so we don't have ROM limitation
+    return out;
+}
+
+void drawDay( char *s, int cc, int day, int dayOfWeek, char highlight, BOOL bold ) {
+
+    char q[5];
+
+    Clock250KHz();
+    custom_character( cc, qday[ dayOfWeek ] );
+    Clock4MHz();
+
+    day++;               // 1-based
+
+    if ( bold ) {
+
+        int bd1 = day / 10;
+        if ( !bd1 )
+            bd1 = 10;
+
+        int bd2 = day % 10;
+
+        Clock250KHz();
+        custom_character( 5, boldDigit[ bd1 ] );
+        custom_character( 6, boldDigit[ bd2 ] );
+        Clock4MHz();
+
+        sprintf( q, "%c%c\005\006", highlight, cc );
+
+    } else
+        sprintf( q, "%c%c%-2d", highlight, cc, day );
+
+    strcat( s, q );
+}
+
+char *processCalendar( int *pDay, int max ) {
+
+// day 0-based
+
+    int day = *pDay;
+    int today = 12;
+
+
+    Clock4MHz();
+
+    BOOL selecting = TRUE;     //temp
+    if ( selecting )
+        today = day;
+
+    int cc = 2;                     // custom char #
+    int dayOfWeek = day%7;
+
+    int dd;
+
+    *out = 0;
+
+    int limit = day + 3;
+    for ( dd = day; dd < limit && dd < max ; dd++ ) {
+
+
+        BOOL bold = ( dd == today ) || ( dd == day && selecting );
+
+        char highlight = ' ';
+        if ( dd == today )
+            highlight = '(';
+        else if ( dd == today+1 )
+            highlight = ')';
+        
+        drawDay( out, cc, dd, dayOfWeek, highlight, bold );
+
+        cc++;
+
+        dayOfWeek = ( dayOfWeek + 1 ) % 7;
+
+
+        if ( dd == limit && dd == today )
+            strcat( out, ")" );
+    }
+
+    Clock250KHz();
+
+    return out;
+}
+
+
+int changeDate() {
+
+    int year = BCDtoDEC( Date.f.year ) + 2000;
+    int month = BCDtoDEC( Date.f.mon );
+    int day = BCDtoDEC( Date.f.mday ) - 1;          // 0-based
+
+    if ( genericMenu( "Year:", &printNumber, &incYear, &decYear, 0, &year ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+
+    sprintf( out, "%d, Month:", year );
+    if ( genericMenu( out, &printMonth, &increment, &decrement, 12, &month ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+    
+    sprintf( out, "%d, %s", year, monthName[ month ] );
+    if ( genericMenu( out, &processCalendar, &increment, &decrement, 32, &day ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+
+    //TODO: year should be absolute, not limited from 2000...
+
+    SetDateBCDandUpdate( DECtoBCD( year - 2000 ), DECtoBCD( month ), DECtoBCD( day + 1 ) );
+
+    return MODE_EXIT;
+}
+
+
+char *printCal( int *selection, int max ) {
+    sprintf( out, "CAL=%d", RCFGCALbits.CAL );
+    return out;
+}
+        
+void incCal( int *selection, int max ) {
+    RCFGCALbits.CAL++;
+}
+
+void decCal( int *selection, int max ) {
+    RCFGCALbits.CAL--;
+}
+
+int changeCalibration() {
+    if ( genericMenu( "Calibration", &printCal, &incCal, &decCal, 0, 0 ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+    I2CmemoryWRITE( 63535,RCFGCALbits.CAL );      //store value in last byte
+    return MODE_EXIT;
+}
+
+
+char *print1224( int *sel, int max ) {
+    if ( *sel ) {
+        sprintf( out, "12h 8:34:00%c%c",
+            custom_character( 2, &( AMPM[1][0] )),
+            custom_character( 3, &( AMPM[2][0] )) );
+    }
+    else
+        sprintf( out, "24h 20:34:00" );
+
+    return out;
+}
+
+void sel1224( int *sel, int max ) {
+    (*sel) = !(*sel);
+}
+
+int change1224() {
+    int mode1224 = TwelveHour ? 1 : 0;
+    if ( genericMenu( "Set Time Format", &print1224, &sel1224, &sel1224, 0, &mode1224 ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+    TwelveHour = mode1224 ? TRUE : FALSE;
+    return MODE_EXIT;
+}
+
+int changeDST() {
+    unsigned int KeyPress2;
+    int Mode = 0;       //???? for inDST();
+
+    custom_character( 0, character_arrow );
+    custom_character( 1, left_menu );
+    custom_character( 2, right_menu );
+
+    UpdateLCDline1("Select DST Zone");
+    while(TRUE)
+    {
+        sprintf( out, "%-14s\1\2", TimeZones[(int)dstRegion].region );
+        UpdateLCDline2(out);
+
+        KeyPress2 = GetDebouncedKey();
+        if (KeyPress2==KeyEnter) 
+        {
+            //TODO:  ????
+            DST = inDST(&Mode); // dummy
+            return MODE_EXIT;
+        }
+    
+        if ( NEXT( KeyPress2 )) {
+            if (++dstRegion >= DIM(TimeZones))
+                dstRegion = 0;
+        }
+
+        else if ( PREVIOUS( KeyPress2 )) {
+            if (--dstRegion < 0)
+                dstRegion += DIM(TimeZones);
+        }
+
+        IFEXIT( KeyPress2 );
+
+    }
+    return MODE_EXIT;
+}
+
+
+int changeLocation() {
+
+    int c;
+    /* The location feature will be expanded to provide a 
+     * selectable menu of major world cities. These will feed
+     * the world time, the DST and the long/lat.
+     *
+     * However, in any case there should be a CUSTOM selector
+     */
+
+    /* only implement the CUSTOM for now.. */
+
+    custom_character( 0, characterEnter );
+    custom_character( 1, characterEllipsis );
+    custom_character( 2, characterEllipsis2 );
+
+
+    double originalLongitude = Longitude;
+
+    BOOL ok = FALSE;
+    do
+    {
+        UpdateLCDline1("Longitude (E<0)?");
+        
+        // Display old Long and enter new value
+        Xreg = hms(Longitude);
+        
+        c = OneLineNumberEntry();
+        if (c != MODE_EXIT) return c; // escape
+        
+        // validate longitude -180 <= long <= +180
+        if (Xreg < -180 || Xreg > 180)
+        {
+            UpdateLCDline1("Longitude range:" );
+            UpdateLCDline2("-180\xDF\001\002+180\xDF   \010");                
+            GetDebouncedKey();
+        }
+        else
+        {
+            // assume HMS format
+            Longitude = hr(Xreg);
+//            UpdateLCDline1("Longitude SET   ");
+            ok = TRUE;
+        }
+//        DelayMs(2000); // visual delay
+    } while (!ok);
+    
+    ok = FALSE;
+    do
+    {
+        // display old lat and enter new value
+        UpdateLCDline1("Latitude?");
+
+        Xreg = hms(Latitude);
+
+        c = OneLineNumberEntry();            
+        if (c != MODE_EXIT) {
+            Longitude = originalLongitude;      // undo any longitude change
+            return c; // escape
+        }
+
+        // validate lat -90 <= lat <= +90
+
+        if (Xreg < -90 || Xreg > 90)
+        {
+            UpdateLCDline1("Latitude range:" );
+            UpdateLCDline2("-90\xDF\001\002+90\xDF     \010");  
+            GetDebouncedKey();
+        }
+        else
+        {
+            Latitude = hr(Xreg);
+            ok = TRUE;
+        }
+    } while (!ok);
+
+    return MODE_EXIT;
+}
+
+
+
+
+
 //***********************************
 // The main setup mode routine
 // Note that all variables are global
-void SetupMode(void)
+int SetupMode(void)
 {
     unsigned int KeyPress2;        //keypress variables
-    char s[MaxLCDdigits + 1];
-    int Mode;
     int c,c2;
 
-    Mode= DriveMenu("SETUP: +/- & ENT", SetupMenu, DIM(SetupMenu));
+    char *printSet( int *sel, int max ) {
+        strcpy( out, SetupMenu[ *sel ] );
+        return out;
+    }
+
+    int Mode = 0;
+    if ( genericMenu( "Apps Option:", &printSet, &increment, &decrement, DIM( SetupMenu ), &Mode ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+
+    custom_character( 1, left_menu );
+    custom_character( 2, right_menu );
+
 
     switch(Mode)                
     {
-    case 0:                 //change time
+    case 0: // calc mode
         {
-            int h, m, s;
-            UpdateLCDline2("(Press 2 Digits)");
-            UpdateLCDline1("Enter Hours: ");
-            h = GetNumBCD();
+            //TODO: genericMenu
+            UpdateLCDline1( "Calculator type:" );
+            do {
 
-            if (h < 0) return; // escape
-
-            UpdateLCDline1("Enter Minutes: ");
-            m = GetNumBCD();
-        
-            UpdateLCDline1("Enter Seconds: ");
-            s = GetNumBCD();
-                    
-            SetTimeBCD(h, m, s);
-        }
-        break;
-    case 1:                 //change date
-        {
-            int y, m, d;
-            UpdateLCDline2("(Press 2 Digits)");
-            UpdateLCDline1("Enter Month: ");
-
-            m = GetNumBCD();
-            if (m < 0) return; // escape
-
-            UpdateLCDline1("Enter Day: ");
-            d = GetNumBCD();
-
-            UpdateLCDline1("Enter Year: ");
-            y = GetNumBCD();
-
-            SetDateBCDandUpdate(y, m, d);
-        }
-        break;
-    case 2: // calc mode
-        {
-            UpdateLCDline2("  +/- & ENTER");
-            while(TRUE)
-            {
                 if (RPNmode) 
-                    UpdateLCDline1("Calc Mode = RPN");
-                else UpdateLCDline1("Calc Mode = ALG");
+                    UpdateLCDline2(  "RPN           \1\2" );
+                else UpdateLCDline2( "Algebraic     \1\2" );
+
                 KeyPress2 = GetDebouncedKey();
-                if (KeyPress2==KeyEnter) return;
-                if ((KeyPress2==KeyPlus)||(KeyPress2==KeyMinus))
-                    RPNmode=!RPNmode;
-            }
+
+                if ( NEXT( KeyPress2 ) || PREVIOUS( KeyPress2 ))
+                    RPNmode = !RPNmode;
+
+            } while ( KeyPress2 != KeyEnter );
+
         }
         break;
-    case 3:                 //clear the EEPROM contents
+    case 1:                 //clear the EEPROM contents
         {
             UpdateLCDline1("Erase EEPROM ?");
             UpdateLCDline2("ENTER or Cancel");
@@ -220,15 +531,15 @@ void SetupMode(void)
                     c2++;
                     if (c2>=100)    
                     {
-                        sprintf(s,"%5u of 65535",c);    
-                        UpdateLCDline2(s);
+                        sprintf( out,"%5u of 65535",c);    
+                        UpdateLCDline2(out);
                         c2=0;
                     }
                 }
             }
         }
         break;
-    case 4: // self test
+    case 2: // self test
         {
             I2CmemoryWRITE(65530, 0xAA);
             c=I2CmemoryREAD(65530);
@@ -239,7 +550,7 @@ void SetupMode(void)
                 UpdateLCDline1("EEPROM failed!");
                 UpdateLCDline2("Press ENTER");
                 KeyPress2 = GetDebouncedKey();
-                return;
+                return MODE_EXIT;
             }
             UpdateLCDline1("EEPROM passed");
             UpdateLCDline2("Press ENTER");
@@ -276,161 +587,46 @@ void SetupMode(void)
                 case KeyLP: UpdateLCDline2("(ROLL"); break;
                 case KeyRP: UpdateLCDline2(")"); break;
                 case KeyXY: UpdateLCDline2("X-Y"); break;
-                case KeyMode: return;
+                case KeyMode: return MODE_KEYMODE;
                 }
             }
         }
         break;
-    case 5: // LCD timeout
-        {
-            UpdateLCDline1("+/- Adj Timeout");
-            do
-            {
-                sprintf(s,"%3i Seconds",PR1/128);
-                UpdateLCDline2(s);
+
+        case 3: // LCD timeout
+
+            UpdateLCDline1("LCD Timeout:");
+
+            do {
+
+                sprintf(out,"%3d seconds   \001\002",PR1/128);
+                UpdateLCDline2(out);
+
                 KeyPress2 = GetDebouncedKey();
-                if ((KeyPress2==KeyPlus)&&(PR1<53760)) PR1=PR1+1280;        //increment by 10 seconds
-                if ((KeyPress2==KeyMinus)&&(PR1>1280)) PR1=PR1-1280;        //decrement by 10 seconds
-                if (KeyPress2==KeyEnter) break;
-            }
-            while(1);   
-        }
-        break; // Clock calibration
-    case 6:
-        {
-            UpdateLCDline1("+/- Adjust CAL");
-            do
-            {
-                sprintf(s,"CAL=%4i",RCFGCALbits.CAL);
-                UpdateLCDline2(s);
-                KeyPress2 = GetDebouncedKey();
-                if (KeyPress2==KeyPlus) RCFGCALbits.CAL++;
-                if (KeyPress2==KeyMinus) RCFGCALbits.CAL--;
-                if (KeyPress2==KeyEnter) break;
-            }
-            while(1);   
-            I2CmemoryWRITE(63535,RCFGCALbits.CAL);      //store value in last byte
-        }
-        break;
-    case 7: // 12/24 hour mode
-        {
-            UpdateLCDline2("  +/- & ENTER");
-            while(TRUE)
-            {
-                if (TwelveHour) 
-                    UpdateLCDline1("Time Mode = 12h");
-                else UpdateLCDline1("Time Mode = 24h");
-                KeyPress2 = GetDebouncedKey();
-                if (KeyPress2==KeyEnter) return;
-                if (KeyPress2==KeyPlus||KeyPress2==KeyMinus)
-                    TwelveHour=!TwelveHour;
-            }
-        }
-        break;
-    case 8: // DST Zone
-        {
-            UpdateLCDline2("  +/- & ENTER");
-            while(TRUE)
-            {
-                UpdateLCDline1(TimeZones[(int)dstRegion].region);
-                        
-                KeyPress2 = GetDebouncedKey();
-                if (KeyPress2==KeyEnter) 
-                {
-                    DST = inDST(&Mode); // dummy
-                    return;
-                }
 
-                if (KeyPress2 == KeyPlus)
-                {
-                    if (++dstRegion >= DIM(TimeZones))
-                        dstRegion = 0;
-                }
-                else if (KeyPress2 == KeyMinus)
-                {
-                    if (--dstRegion < 0)
-                        dstRegion += DIM(TimeZones);
-                }
-            }
-        }
-        break;
-    case 9: // location
-        {
-            int c;
-            /* The location feature will be expanded to provide a 
-             * selectable menu of major world cities. These will feed
-             * the world time, the DST and the long/lat.
-             *
-             * However, in any case there should be a CUSTOM selector
-             */
+                if ( NEXT( KeyPress2 ) && PR1<53760 )
+                    PR1 = PR1 + 1280;                           //increment by 10 seconds
 
-            /* only implement the CUSTOM for now.. */
+                if ( PREVIOUS( KeyPress2 ) && PR1>1280 )
+                    PR1 = PR1 - 1280;                           //decrement by 10 seconds
 
-            BOOL ok = FALSE;
-            do
-            {
-                UpdateLCDline1("Longitude (E<0) ");
-                
-                // Display old Long and enter new value
-                Xreg = hms(Longitude);
-                
-                c = OneLineNumberEntry();
-                if (c != KeyEnter) return; // escape
-                
-                // validate longitude -180 <= long <= +180
-                if (Xreg < -180 || Xreg > 180)
-                {
-                    UpdateLCDline1("long [-180,+180]");                
-                }
-                else
-                {
-                    // assume HMS format
-                    Longitude = hr(Xreg);
-                    UpdateLCDline1("Longitude SET   ");
-                    ok = TRUE;
-                }
-                DelayMs(2000); // visual delay
-            } while (!ok);
-            
-            ok = FALSE;
-            do
-            {
-                // display old lat and enter new value
-                UpdateLCDline1("Latitude        ");
+                IFEXIT( KeyPress2 );
 
-                Xreg = hms(Latitude);
+            } while( KeyPress2 != KeyEnter );   
 
-                c = OneLineNumberEntry();            
-                if (c != KeyEnter) return; // escape
+            break;
 
-                // validate lat -90 <= lat <= +90
 
-                if (Xreg < -90 || Xreg > 90)
-                {
-                    UpdateLCDline1("lat [-90,+90]   ");
-                }
-                else
-                {
-                    Latitude = hr(Xreg);
-                    UpdateLCDline1("Latitude SET    ");
-                    ok = TRUE;
-                }
-                DelayMs(2000); // visual delay
-            } while (!ok);
-        }
-        break;
-    case 10: // about
-        {
-            strcpy(s," Watch ");
-            strcat(s,RevString);
-            s[0]=228;               //mu symbol
-            UpdateLCDline1(s);
+        case 4:     //about
+
+            sprintf( out, "\xE4Watch %s", RevString );
+            UpdateLCDline1( out );
             UpdateLCDline2("(c)David L Jones");
-			KeyPress2 = GetDebouncedKey();
-            //do KeyPress2=KeyScan(); while(KeyPress2==0);
-        }
-        break;
+    		GetDebouncedKey();
+            break;
 
     }
+
+    return MODE_EXIT;
 }
 

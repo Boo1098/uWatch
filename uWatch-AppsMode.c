@@ -34,37 +34,41 @@ static const char* AppsMenu[] =
 {
     "Tools",
     "Games",
-    "Setup",
+    "Options",
 };
 
-extern void ToolsMode(void);
-extern void GamesMode(void);
-extern void SetupMode(void);
+extern int ToolsMode(void);
+extern int GamesMode(void);
+extern int SetupMode(void);
 
 //***********************************
 // The main apps mode routine
 // Note that all variables are global
-void AppsMode(void)
-{
-    int Mode= DriveMenu("APPS: +/- & ENT", AppsMenu, DIM(AppsMenu));
+int AppsMode(void) {
 
-    switch(Mode)                
-    {
-    case 0:     //tools
-        {
-            ToolsMode();
-        }
-        break;
-    case 1:     //games
-        {
-            GamesMode();
-        }
-        break;
-    case 2:     // setup
-        {
-            SetupMode();
-        }
-        break;
+    char *printApp( int *app, int max ) {
+        return (char *) AppsMenu[ *app ];
     }
+
+    int mode = 0;
+    if ( genericMenu( "Applications:", &printApp, &increment, &decrement, DIM( AppsMenu ), &mode ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+
+    switch( mode ) {
+       
+        case 0:
+            ToolsMode();
+            break;
+    
+        case 1:
+            GamesMode();
+            break;
+    
+        case 2:
+            SetupMode();
+            break;
+    }
+
+    return MODE_EXIT;
 }
 

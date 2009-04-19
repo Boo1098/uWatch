@@ -73,6 +73,7 @@ static int computerMoves()
         v = search(-WIN_SCORE, WIN_SCORE, i, i, 0, 1, &MainPV);
     }
 
+
     /* and back again to slow.. */
     Clock250KHz();
     EnableSleepTimer();
@@ -107,22 +108,28 @@ static int computerMoves()
 //***********************************
 // The main games mode routine
 // Note that all variables are global
-void GamesMode(void)
+int GamesMode(void)
 {
     unsigned int KeyPress2;        //keypress variables
-    char s[MaxLCDdigits + 1];
-    int Mode;
 
-    Mode= DriveMenu("GAMES: +/- & ENT", GamesMenu, DIM(GamesMenu));
+    char *printGame( int *sel, int max ) {
+        return (char *) GamesMenu[ *sel ];
+    }
+
+    int Mode = 0;
+    if ( genericMenu( "Game:", &printGame, &increment, &decrement, DIM( GamesMenu ), &Mode ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
 
     switch(Mode)                
     {
         case 0: //lunar lander
         {
+            char s[ MaxLCDdigits + 1 ];
+
             UpdateLCDline1("--LUNAR LANDAR--");
             UpdateLCDline2(" By Shaun Chong ");
             KeyPress2=wait();
-            if (KeyPress2==KeyMode) return;
+            if (KeyPress2==KeyMode) return MODE_KEYMODE;
             
             int elapsedTime   = 0;
             int height        = 1000;
@@ -142,20 +149,20 @@ void GamesMode(void)
                     UpdateLCDline1("ENT - burn fuel");
                     UpdateLCDline2("MENU - stats");
                     KeyPress2=wait();
-                    if (KeyPress2==KeyMode) return;
+                    if (KeyPress2==KeyMode) return MODE_KEYMODE;
                     if (KeyPress2==KeyMenu) //stats menu
                     {
                         UpdateLCDline1("1=Time  2=Height");
                         UpdateLCDline2("3=Speed 4=Fuel");
                         KeyPress2=wait();
-                        if (KeyPress2==KeyMode) return;
+                        if (KeyPress2==KeyMode) return MODE_KEYMODE;
                         if (KeyPress2==Key1)
                         {
                             UpdateLCDline1("Time (seconds):");
                             sprintf(s, "%i", elapsedTime);
                             UpdateLCDline2(s);
                             KeyPress2=wait();
-                            if (KeyPress2==KeyMode) return;
+                            if (KeyPress2==KeyMode) return MODE_KEYMODE;
                         }
                         if (KeyPress2==Key2)
                         {
@@ -163,7 +170,7 @@ void GamesMode(void)
                             sprintf(s, "%i", height);
                             UpdateLCDline2(s);
                             KeyPress2=wait();
-                            if (KeyPress2==KeyMode) return;
+                            if (KeyPress2==KeyMode) return MODE_KEYMODE;
                         }
                         if (KeyPress2==Key3)
                         {
@@ -171,7 +178,7 @@ void GamesMode(void)
                             sprintf(s, "%i", velocity);
                             UpdateLCDline2(s);
                             KeyPress2=wait();
-                            if (KeyPress2==KeyMode) return;
+                            if (KeyPress2==KeyMode) return MODE_KEYMODE;
                         }
                         if (KeyPress2==Key4)
                         {
@@ -179,7 +186,7 @@ void GamesMode(void)
                             sprintf(s, "%i", fuelRemaining);
                             UpdateLCDline2(s);
                             KeyPress2=wait();
-                            if (KeyPress2==KeyMode) return;
+                            if (KeyPress2==KeyMode) return MODE_KEYMODE;
                         }
                         goto lunar;
                     }
@@ -209,7 +216,7 @@ void GamesMode(void)
                 strcat(s, " fuel left");
                 UpdateLCDline2(s);
                 KeyPress2 = GetDebouncedKey();
-                if (KeyPress2==KeyMode) return;
+                if (KeyPress2==KeyMode) return MODE_KEYMODE;
             }
 
             /* Touchdown. Calculate landing parameters. */
@@ -226,25 +233,25 @@ void GamesMode(void)
             UpdateLCDline1("Touchdown!");
             UpdateLCDline2("ENT to see stats");
             KeyPress2=wait();
-            if (KeyPress2==KeyMode) return;
+            if (KeyPress2==KeyMode) return MODE_KEYMODE;
             
             UpdateLCDline1("Time taken(sec):");
             sprintf(s, "%i", elapsedTime + delta);
             UpdateLCDline2(s);
             KeyPress2=wait();
-            if (KeyPress2==KeyMode) return;
+            if (KeyPress2==KeyMode) return MODE_KEYMODE;
                 
             UpdateLCDline1("Speed (feet/s):");
             sprintf(s, "%i", newVelocity);
             UpdateLCDline2(s);
             KeyPress2=wait();
-            if (KeyPress2==KeyMode) return;
+            if (KeyPress2==KeyMode) return MODE_KEYMODE;
                 
             UpdateLCDline1("Fuel left:");
             sprintf(s, "%i", fuelRemaining);
             UpdateLCDline2(s);
             KeyPress2=wait();
-            if (KeyPress2==KeyMode) return;
+            if (KeyPress2==KeyMode) return MODE_KEYMODE;
 
             if (newVelocity <= 0)
                 {
@@ -276,7 +283,7 @@ void GamesMode(void)
             UpdateLCDline1("--TWENTY ONE--");
             UpdateLCDline2(" By Shaun Chong ");
             KeyPress2 = wait();
-            if (KeyPress2==KeyMode) return;
+            if (KeyPress2==KeyMode) return MODE_KEYMODE;
             
             char s2[MaxLCDdigits+1];
             int player_total=0;
@@ -287,14 +294,8 @@ void GamesMode(void)
             void bust_player(void)
             {
                done=1;
-               memset(s, '\0', sizeof(s)); //clear string
-               sprintf(s2, "%i", player_total);
-               strcat(s, "You:");
-               strcat(s, s2);
-               sprintf(s2, "%i", dealer_total);
-               strcat(s, " Dealer:");
-               strcat(s, s2);
-               UpdateLCDline1(s);
+               sprintf( out, "You: %d Dealer: %d", player_total, dealer_total );             
+               UpdateLCDline1( out);
                UpdateLCDline2("Player bust!");
                wait();
             }
@@ -302,14 +303,8 @@ void GamesMode(void)
             void bust_dealer(void)
             {
                done=1;
-               memset(s, '\0', sizeof(s)); //clear string
-               sprintf(s2, "%i", player_total);
-               strcat(s, "You:");
-               strcat(s, s2);
-               sprintf(s2, "%i", dealer_total);
-               strcat(s, " Dealer:");
-               strcat(s, s2);
-               UpdateLCDline1(s);
+               sprintf( out, "You: %d Dealer: %d", player_total, dealer_total );
+               UpdateLCDline1( out );
                UpdateLCDline2("Dealer bust!");
                wait();
             }
@@ -345,14 +340,9 @@ void GamesMode(void)
             {
                while (dealer_total<17) hit_dealer(); //The dealer's play, always hits when lower than 17 (vegas rules)
                done=1;
-               memset(s, '\0', sizeof(s)); //clear string
-               sprintf(s2, "%i", player_total);
-               strcat(s, "You:");
-               strcat(s, s2);
-               sprintf(s2, "%i", dealer_total);
-               strcat(s, " Dealer:");
-               strcat(s, s2);
-               UpdateLCDline1(s);
+
+               sprintf( out, "You: %d Dealer: %d", player_total, dealer_total );
+               UpdateLCDline1( out );
                if (player_total>dealer_total)
                   UpdateLCDline2("Player wins!");
                else if (player_total==dealer_total)
@@ -366,15 +356,11 @@ void GamesMode(void)
             
             while (done==0)
             {
-               memset(s, '\0', sizeof(s)); //clear string
-               sprintf(s2, "%i", player_total);
-               strcat(s, "You:");
-               strcat(s, s2);
-               strcat(s, " Dealer:?");
-               UpdateLCDline1(s);
+               sprintf( out, "You: %d Player: ?", player_total );
+               UpdateLCDline1( out );
                UpdateLCDline2("Hit=1 Stand=2");
                KeyPress2 = wait();
-               if (KeyPress2==KeyMode) return;
+               if (KeyPress2==KeyMode) return MODE_KEYMODE;
                if (KeyPress2==Key1) hit_player();
                if (KeyPress2==Key2) stand();
                if (done==1)
@@ -382,7 +368,7 @@ void GamesMode(void)
                   UpdateLCDline1("Deal again?");
                   UpdateLCDline2("Yes=1 No=2");
                   KeyPress2 = wait();
-                  if (KeyPress2==KeyMode) return;
+                  if (KeyPress2==KeyMode) return MODE_KEYMODE;
                   if (KeyPress2==Key1) prepare();
                   if (KeyPress2==Key2) break;
                }
@@ -390,9 +376,10 @@ void GamesMode(void)
         } break;
     case 2: // VoidCHESS!
         {
-            UpdateLCDline1("- VCHESS v1.4  -");
+
+            UpdateLCDline1("- VCHESS v1.3  -");
             UpdateLCDline2("Ent to continue");
-            if ((KeyPress2 = wait()) == KeyMode) return;
+            if ((KeyPress2 = wait()) == KeyMode) return MODE_KEYMODE;
             
             int computer = BLACK;
             int moveok;
@@ -404,14 +391,14 @@ void GamesMode(void)
             
             UpdateLCDline1("Play which color");
             UpdateLCDline2("White=1, Black=2");
-            if ((KeyPress2 = wait()) == KeyMode) return;
+            if ((KeyPress2 = wait()) == KeyMode) return MODE_KEYMODE;
             if (KeyPress2 == Key2) computer = WHITE;
 
             for (;;)
             {
                 int lev;
                 UpdateLCDline1("Level 1,2 or 3 ?");
-                if (OneLineNumberEntry() == KeyMode) return; // escape
+                if (OneLineNumberEntry() == KeyMode) return MODE_KEYMODE; // escape
                 lev = Xreg;
                 if (lev >= 1 && lev <= 3)
                 {
@@ -447,7 +434,7 @@ void GamesMode(void)
                     moveok = 0;
 
                     // get move
-                    if (OneLineNumberEntry() == KeyMode) return; // escape
+                    if (OneLineNumberEntry() == KeyMode) return MODE_KEYMODE; // escape
                     
                     // parse move
                     from = moveToBoard(DisplayXreg);
@@ -475,4 +462,5 @@ void GamesMode(void)
         }
         break;
     }
+    return MODE_EXIT;
 }

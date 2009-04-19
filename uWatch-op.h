@@ -50,7 +50,7 @@ extern void Push();
 extern void Drop();
 extern void KeyRecord(void);
 extern void KeyReplay(void);
-extern void Conversions(void);
+extern int Conversions(void);
 extern void BaseMode(void);
 extern void SwapXY();
 

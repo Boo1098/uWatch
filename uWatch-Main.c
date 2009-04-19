@@ -97,7 +97,7 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 #define RXD         _RB5
 #define IRLED       _RB7
 
-#define KeyDelay        250     //250ms key delay
+#define KeyDelay        200     //200ms key delay
 #define MaxLCDdigits    16
 #define XBufSize        32
 
@@ -191,7 +191,12 @@ _CONFIG2(IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSC
 
 #define DIM(_x) (sizeof(_x)/sizeof((_x)[0]))
 
-#define BACKLIGHT_TOGGLE 1000
+#define BACKLIGHT_TOGGLE 80
+#define MODE_NONE 0
+#define MODE_EXIT -1
+#define MODE_KEYMODE -2
+#define MODE_KEYCLEAR -3
+
 
 // these flags were "char" except that makes bigger code!
 int CurrentMenu;               // The number of the currently active menu line. 0 to MaxRPNmenuItems
@@ -208,6 +213,9 @@ char DisplayYreg[XBufSize+1];   //holds the value currently in Yreg
 
 // decls
 BOOL inDST(int* gap);
+void TimeDateDisplay(void);
+
+
 
 //the working registers (Treg not used for Algebraic)
 double Regs[4], iRegs[4];
@@ -231,12 +239,22 @@ int OperatorsZT[PAREN_LEVELS+1];
 #define OperatorYZ OperatorsYZ[0]
 #define OperatorZT OperatorsZT[0]
 
+
+#define NEXT( key ) ( (key) == KeyMenu || (key) == KeyPlus || (key) == KeySign )
+#define PREVIOUS( key ) ( (key) == KeyRP || (key) == KeyMinus )
+#define IFEXIT( key ) if ( (key) == KeyMode || (key) == KeyClear ) return MODE_KEYMODE;
+
+
 double Yregs[PAREN_LEVELS], Zregs[PAREN_LEVELS], Tregs[PAREN_LEVELS];
 double iYregs[PAREN_LEVELS], iZregs[PAREN_LEVELS], iTregs[PAREN_LEVELS];
 
 #define WATCH_MODE_TIME         0
 #define WATCH_MODE_CALC         1
 #define WATCH_MODE_APPS         2
+
+
+char out[ MaxLCDdigits + 1 ];
+
 
 //the storage registers. Contents retained when calc mode is exited.
 double Sreg[10], iSreg[10];
@@ -265,8 +283,26 @@ int opPrec(int op)
 
 
 
+static const char *monthName[] = {
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+};
 
 // Custom character symbols for menus
+
+static const unsigned char left_menu[] = { 0x02, 0x06, 0x0E, 0x1E, 0x0E, 0x06, 0x02, 0x00 };
+static const unsigned char right_menu[] = { 0x08, 0x0C, 0x0E, 0x0F, 0x0E, 0x0C, 0x08, 0x00 };
+
 static const unsigned char character_squaring[] =	{ 0x0E, 0x01, 0x06, 0x08, 0x0F, 0x00, 0x00, 0x00 };		// as in x^2
 static const unsigned char character_squareRoot1[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x05, 0x02 };
 static const unsigned char character_squareRoot2[] = { 0x1f, 0x00, 0x11, 0x0A, 0x04, 0x0A, 0x11, 0x00 };
@@ -280,6 +316,103 @@ static const unsigned char character_arrow[] = { 0x00, 0x04, 0x02, 0x1F, 0x02, 0
 static const unsigned char character_submenu[] = { 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }; 
 static const unsigned char character_1x1[] = { 0x11, 0x12, 0x12, 0x14, 0x14, 0x00, 0x00, 0x00 }; 
 static const unsigned char character_1x2[] = { 0x11, 0x0A, 0x04, 0x0A, 0x11, 0x00, 0x00, 0x00 }; 
+
+static const unsigned char AMPM[][8] = {
+	{ 0x02, 0x05, 0x09, 0x0f, 0x09, 0x00, 0x00, 0x00 },		// "A"
+	{ 0x0E, 0x09, 0x09, 0x0E, 0x08, 0x00, 0x00, 0x00 },		// "P"
+	{ 0x11, 0x1B, 0x15, 0x11, 0x11, 0x00, 0x00, 0x00 }		// "M"
+};
+
+static const unsigned char characterEllipsis[] =
+    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x1B, 0x1B, 0x00 };
+static const unsigned char characterEllipsis2[] =
+    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x18, 0x00 };
+static const unsigned char characterEnter[] =
+    { 0x18, 0x04, 0x02, 0x02, 0x12, 0x14, 0x18, 0x1E };
+
+static const unsigned char left[] = {
+
+	0x00, 0x0E, 0x09, 0x09, 0x09, 0x00, 0x00, 0x00,		// nd
+	0x04, 0x0E, 0x04, 0x04, 0x03, 0x00, 0x00, 0x00,		// th
+	0x06, 0x08, 0x07, 0x01, 0x0E, 0x00, 0x00, 0x00,		// st
+	0x00, 0x07, 0x04, 0x04, 0x04, 0x00, 0x00, 0x00,		// rd
+};
+
+static const unsigned char right[] = {
+
+	0x02, 0x0E, 0x12, 0x12, 0x0E, 0x00, 0x00, 0x00,		//nd
+	0x10, 0x1C, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00,		//th
+	0x08, 0x1C, 0x08, 0x08, 0x06, 0x00, 0x00, 0x00,		//st
+	0x02, 0x0E, 0x12, 0x12, 0x0E, 0x00, 0x00, 0x00,		//rd
+};
+
+static const unsigned char character_Monday[] =
+    { 0x11, 0x1B, 0x15, 0x11, 0x11, 0x00, 0x00, 0x00 };
+static const unsigned char character_Tuesday[] =
+    { 0x1F, 0x04, 0x04, 0x04, 0x04, 0x00, 0x00, 0x00 };
+static const unsigned char character_Wednesday[] =
+    { 0x11, 0x11, 0x15, 0x1A, 0x11, 0x00, 0x00, 0x00 };
+static const unsigned char character_Thursday[] =
+    { 0x1F, 0x04, 0x04, 0x04, 0x04, 0x00, 0x00, 0x00 };
+static const unsigned char character_Friday[] =
+    { 0x1F, 0x10, 0x1E, 0x10, 0x10, 0x00, 0x00, 0x00 };
+static const unsigned char character_Saturday[] =
+    { 0x0E, 0x10, 0x0E, 0x01, 0x1E, 0x00, 0x00, 0x00 };
+static const unsigned char character_Sunday[] =
+    { 0x0E, 0x10, 0x0E, 0x01, 0x1E, 0x00, 0x1F, 0x00 };
+
+
+static const unsigned char character_bold0[] =
+    { 0x0E, 0x13, 0x13, 0x13, 0x13, 0x0E, 0x00, 0x1F };
+static const unsigned char character_bold1[] =
+    { 0x06, 0x0E, 0x06, 0x06, 0x06, 0x06, 0x00, 0x1F };
+static const unsigned char character_bold2[] =
+    { 0x0E, 0x13, 0x03, 0x0E, 0x18, 0x1F, 0x00, 0x1F };
+static const unsigned char character_bold3[] =
+    { 0x0E, 0x03, 0xE, 0x03, 0x03, 0x1E, 0x00, 0x1F };
+static const unsigned char character_bold4[] =
+    { 0x07, 0x0B, 0x13, 0x13, 0x1F, 0x03, 0x00, 0x1F };
+static const unsigned char character_bold5[] =
+    { 0x1F, 0x18, 0x1E, 0x03, 0x13, 0x0E, 0x00, 0x1F };
+static const unsigned char character_bold6[] =
+    { 0x0E, 0x18, 0x1F, 0x19, 0x19, 0x0E, 0x00, 0x1F };
+static const unsigned char character_bold7[] =
+    { 0x1F, 0x03, 0x06, 0x0C, 0x0C, 0x0C, 0x00, 0x1F };
+static const unsigned char character_bold8[] =
+    { 0x0E, 0x13, 0x0E, 0x13, 0x13, 0x0E, 0x00, 0x1F };
+static const unsigned char character_bold9[] =
+    { 0x0E, 0x13, 0x13, 0x1F, 0x03, 0x03, 0x00, 0x1F };
+static const unsigned char character_boldSpace[] =
+    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F };
+
+
+static const unsigned char *boldDigit[] = {
+    character_bold0,
+    character_bold1,
+    character_bold2,
+    character_bold3,
+    character_bold4,
+    character_bold5,
+    character_bold6,
+    character_bold7,
+    character_bold8,
+    character_bold9,
+    character_boldSpace
+};
+
+
+static const unsigned char *qday[] = {
+    character_Monday,
+    character_Tuesday,
+    character_Wednesday,
+    character_Thursday,
+    character_Friday,
+    character_Saturday,
+    character_Sunday
+};
+
+
+
 
 // signal this choice trigger the optional "extra" menu.
 #define MENU_EXTRA_FLAG   0x80
@@ -296,8 +429,8 @@ CalcMenuInfo MainMenus[] =
 {
  
     { // menu 0
-        {"   \006\007  x\010  \001\002",			// 010 == 000   
-         "  2\003\004  y\005  e\005", 
+        {"  \006\007  x\010   \001\002",			// 010 == 000   
+         " 2\003\004  y\005   e\005", 
          " abs  log  10\005", 
          " 2\003\004  y\006\007  ln"
         },
@@ -369,7 +502,7 @@ CalcMenuInfo MainMenus[] =
     },
 
     { // menu 2
-        {" HMS         R\002P",   
+        {" HMS       R\002P",   
          " 2\010\001  x!    \002D", 
          " \002H        P\002R", 
          " 2\010\001 Sunset DMY"
@@ -503,10 +636,10 @@ typedef struct
  */
 static TimeZone TimeZones[] =
 {
-    { "NONE", 0, 0, 0, 0 },
-    { "West Europe", MAKE_TZ(3,lastSun), MAKE_TZ(10,lastSun), 0x01, 1 },
-    { "Cent Europe", MAKE_TZ(3,lastSun), MAKE_TZ(10,lastSun), 0x02, 1 },
-    { "East Europe", MAKE_TZ(3,lastSun), MAKE_TZ(10,lastSun), 0x00, 1 },
+    { "No Zone", 0, 0, 0, 0 },
+    { "Western Europe", MAKE_TZ(3,lastSun), MAKE_TZ(10,lastSun), 0x01, 1 },
+    { "Central Europe", MAKE_TZ(3,lastSun), MAKE_TZ(10,lastSun), 0x02, 1 },
+    { "Eastern Europe", MAKE_TZ(3,lastSun), MAKE_TZ(10,lastSun), 0x00, 1 },
     { "Australia", MAKE_TZ(3,firstSun), MAKE_TZ(10,firstSun), 0x02, -1 },
     { "USA", MAKE_TZ(3,secondSun), MAKE_TZ(11,firstSun), 0x02, 1 },
     { "Canada", MAKE_TZ(3,secondSun), MAKE_TZ(11,firstSun), 0x02, 1 },
@@ -961,17 +1094,110 @@ unsigned int KeyScan2(BOOL debounce)
 }
 
 
+//***********************************
+// Turns the backlight ON
+void BacklightON(void)
+{
+    _RP3R=18;               //map RP3 pin 24 to OC1 PWM output using Peripheral Pin Select (for backlight power)
+    SetLED_POWER;
+}
+
+//***********************************
+// Turns the backlight OFF
+void BacklightOFF(void)
+{
+    _RP3R=0;                //map RP3 pin 24 to be an I/O pin
+    ClearLED_POWER;
+}
+
+void backlightControl() {
+
+    BacklightON();
+    int c;
+    for ( c = 0; TimeDateDisplay(), KeyScan2( FALSE ) == KeyRCL;
+    	c = c <= BACKLIGHT_TOGGLE ? c+1 : c );
+    if ( c < BACKLIGHT_TOGGLE )
+        BacklightOFF();
+    
+}
+
 // Return a debounced key. The previous key must be released and THEN we get a key, which
 // is returned immediately. This allows immediate response to keypresses without having to
 // release the key first. As long as everything uses this debounce method, all will be OK.
 
 unsigned int GetDebouncedKey() {
     unsigned int Key;
-	DelayMs(120);						// actually debounce-ignore stuff
+	DelayMs(200);						// actually debounce-ignore stuff
 	while ( KeyScan2( FALSE ));		    // debounce PREVIOUS
     while ( !( Key=KeyScan2( FALSE )));  // wait for any non-debounced key
+
+    if ( Key == KeyRCL )
+        backlightControl();                 // handle backlight for EVERYTHING!!
+
+    // TODO: turn off this if mode == calculator
+
 	return Key;
 }
+
+
+void increment( int *selection, int max ) {
+    (*selection)++;
+    if ( (*selection) >= max )
+        (*selection) = 0;
+}
+
+void decrement( int *selection, int max ) {
+    (*selection)--;
+    if ( (*selection) < 0 )
+        (*selection) = max - 1;
+}
+
+
+
+int genericMenu( char *title,
+    char *(*printFunc)( int *num, int max ),
+    void (*incrementFunc)( int *num, int max ),
+    void (*decrementFunc)( int *num, int max ),
+    int max, int *selection ) {
+
+    int sel = selection ? (*selection) : 0;
+
+    custom_character( 0, left_menu );
+    custom_character( 1, right_menu );
+
+    if ( title )
+        UpdateLCDline1( title );
+
+    int key;
+    do {
+
+        if ( printFunc ) {
+            char out2[17];
+            sprintf( out2, "%-14s\010\1", (*printFunc)( &sel, max ) );
+            UpdateLCDline2( out2 );
+        }
+
+
+        key = GetDebouncedKey();
+
+        IFEXIT( key );
+
+        if ( incrementFunc && NEXT( key ))
+            (*incrementFunc)( &sel, max );
+
+        if ( decrementFunc && PREVIOUS( key ))
+            (*decrementFunc)( &sel, max );
+
+    } while ( key != KeyEnter );
+
+
+    if ( selection )
+        (*selection) = sel;
+
+    return MODE_EXIT;
+
+}
+
 
 
 //***********************************
@@ -1010,7 +1236,7 @@ static void dayHasChanged()
     Day = BCDtoDEC(Date.f.mday);
 
     // failsafe checks
-    if (Month > 12) Month = 0;
+    if (Month > 11) Month = 0;
 
     MoonPhase = moonPhase(Year, Month, Day);
     MJD = mjd(Year, Month, Day);
@@ -1019,48 +1245,7 @@ static void dayHasChanged()
     DayOfWeek = DAYOFWEEK(MJD) + 1;
 }
 
-/// generic menu driver for one line +/- selector
-int DriveMenu(const char* title, const char** Menu, int n)
-{
-    /* display `title' in line 2 and allow `n' items on `Menu'to be cycled
-     * with +/- until enter is pressed or another key to exit
-     * 
-     * return selection index or -1 on escape/cancel.
-     */
-    int mi = 0;
-    unsigned int key;
 
-    UpdateLCDline2(title);
-    for (;;)
-    {
-        UpdateLCDline1(Menu[mi]);
-
-		key = GetDebouncedKey();
-
-        ResetSleepTimer();
-        //start to process the keypress
-
-        // clear key was pressed, exit  mode
-        if (key==KeyClear || key == KeyMode) return -1;
-
-        //user pressed some key other than MODE, so ensure that when exit we go back to the time/date display
-        NextMode=FALSE; 
-
-        if (key == KeyPlus || key == KeySign )
-        {
-            if (++mi == n) mi = 0;
-        }
-        else if (key == KeyMinus)
-        {
-            if (--mi < 0) mi += n;
-        }
-        else if (key == KeyEnter)
-        {
-            break;
-        }
-    }
-    return mi;
-}
 
 //converts a keypad number key code into a real number 
 int ReturnNumber(int key)
@@ -1075,7 +1260,10 @@ int ReturnNumber(int key)
     if (key==Key8) return(8);
     if (key==Key9) return(9);
     if (key==Key0) return(0);
-    return -1; // not a number
+
+    IFEXIT( key );
+
+    return MODE_EXIT; // not a number
 }
 
 // Two line menu driver with inv
@@ -1093,7 +1281,7 @@ int DriveMenu2(CalcMenuInfo* mifo)
     // copy the menu's custom characters to GRAM
     for ( i = 0; i < 8; i++ )
         if ( mifo->custom[i] )
-            custom_character( i, (unsigned char *) mifo->custom[i] );
+            custom_character( i, mifo->custom[i] );
 
 
     /* Display `line1' and `line2' consisting of 6 menu items
@@ -1139,9 +1327,6 @@ int DriveMenu2(CalcMenuInfo* mifo)
 
 		key = GetDebouncedKey();
 
-        // reset timer
-        ResetSleepTimer();
-        
         // escape?
         if (key==KeyClear || key == KeyMode || key == KeyMenu)
         {
@@ -1203,13 +1388,19 @@ int DriveMenu2(CalcMenuInfo* mifo)
 
 
 // get a 2 digit BCD, < 0 if fail
+// returns MODE_KEYCLEAR or MODE_KEYMODE or -1
+// OR the 2-digit BCD number
+
 int GetNumBCD()
 {
-    int h;
+    int h = ReturnNumber( GetDebouncedKey() );
+    if ( h >= 0 ) {
 
-    h=ReturnNumber( GetDebouncedKey() );
-    if (h >= 0)
-        return (h<<4)|ReturnNumber( GetDebouncedKey() ); // NB: neg if escape.
+        int h2 = ReturnNumber( GetDebouncedKey() );
+        if ( h2 >= 0 )
+            h = ( h<<4 ) | h2;
+        else h = h2;
+    }
 
     return h;
 }
@@ -1284,9 +1475,7 @@ void IdleI2C1(void)
     while(I2C1CONbits.SEN || I2C1CONbits.PEN || I2C1CONbits.RCEN || I2C1CONbits.ACKEN || I2C1STATbits.TRSTAT);  
 }
 
-
 // put these in the code segment
-static const char months[13][4]={"   ","Jan","Feb","Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 static const char days[8][4]={"   ","Sun","Mon","Tue", "Wed", "Thu", "Fri", "Sat"};
 
 // N(ew),C(rescent),Q(uarter),W(axing),F(ull),w(aning),q(uarter),c(rescent)
@@ -1506,7 +1695,7 @@ void TimeDateDisplay(void)
     if (tt.l == Time.l && TwelveHour == last12 )
     {
         // no need to update
-        return;
+       //tmp return;
     }
 	last12 = TwelveHour;
 
@@ -1568,22 +1757,16 @@ void TimeDateDisplay(void)
     {
 		int cbase = pm? 1 : 0;
 
-		static const unsigned char AMPM[][8] = {
-	
-			{ 0x02, 0x05, 0x09, 0x0f, 0x09, 0x00, 0x00, 0x00 },		// "A"
-			{ 0x0E, 0x09, 0x09, 0x0E, 0x08, 0x00, 0x00, 0x00 },		// "P"
-			{ 0x11, 0x1B, 0x15, 0x11, 0x11, 0x00, 0x00, 0x00 }		// "M"
-		};
 
-        s[BASE+8] = custom_character( 0, (unsigned char *)&( AMPM[cbase][0] ));
-        s[BASE+9] = custom_character( 2, (unsigned char *)&( AMPM[2][0] ));
+        s[BASE+8] = custom_character( 0, &( AMPM[cbase][0] ));
+        s[BASE+9] = custom_character( 1, &( AMPM[2][0] ));
 
         point += 2;
     }
 
     if ( DST) {
         static const unsigned char dst[] = { 0x00, 0x04, 0x1F, 0x0E, 0x0A, 0x00, 0x00, 0x00 };
-        s[ point ] = custom_character( 3, (unsigned char *)dst );		// star after time if DST
+        s[ point ] = custom_character( 2, dst );		// star after time if DST
     }
 
     static const unsigned char moons[][8] = {
@@ -1624,8 +1807,8 @@ void TimeDateDisplay(void)
     };
 
 
-    s[14] = custom_character( 4, (unsigned char *) moons[MoonPhase*2] );
-    s[15] = custom_character( 5, (unsigned char *) moons[MoonPhase*2+1] );
+    s[14] = custom_character( 3, moons[MoonPhase*2] );
+    s[15] = custom_character( 4, moons[MoonPhase*2+1] );
 
     UpdateLCDline1(s);                  //display the time
 
@@ -1644,22 +1827,6 @@ void TimeDateDisplay(void)
     temp=Date.f.mday;
     if (temp >> 4)
         s[5]=itochar(temp>>4);
-
-    static const unsigned char left[] = {
-
-		0x00, 0x0E, 0x09, 0x09, 0x09, 0x00, 0x00, 0x00,		// nd
-		0x04, 0x0E, 0x04, 0x04, 0x03, 0x00, 0x00, 0x00,		// th
-		0x06, 0x08, 0x07, 0x01, 0x0E, 0x00, 0x00, 0x00,		// st
-		0x00, 0x07, 0x04, 0x04, 0x04, 0x00, 0x00, 0x00,		// rd
-	};
-
-    static const unsigned char right[] = {
-
-		0x02, 0x0E, 0x12, 0x12, 0x0E, 0x00, 0x00, 0x00,		//nd
-		0x10, 0x1C, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00,		//th
-		0x08, 0x1C, 0x08, 0x08, 0x06, 0x00, 0x00, 0x00,		//st
-		0x02, 0x0E, 0x12, 0x12, 0x0E, 0x00, 0x00, 0x00,		//rd
-	};
 
 
     s[6]=itochar(temp & 0xf);
@@ -1683,15 +1850,12 @@ void TimeDateDisplay(void)
         break;
     }
 
-	custom_character( 6, (unsigned char *)&( left[ cindex*8 ] ));
-	custom_character( 7, (unsigned char *)&( right[ cindex*8 ] ));
+	s[7] = custom_character( 6, &( left[ cindex*8 ] ));
+	s[8] = custom_character( 7, &( right[ cindex*8 ] ));
 
-	s[7]=6;
-	s[8]=7;
-
-    s[10]=months[Month][0];
-    s[11]=months[Month][1];
-    s[12]=months[Month][2];
+    s[10]=monthName[Month][0];
+    s[11]=monthName[Month][1];
+    s[12]=monthName[Month][2];
 
     s[14]=itochar(Date.f.year>>4);
     s[15]=itochar(Date.f.year&0x0F);
@@ -1699,21 +1863,6 @@ void TimeDateDisplay(void)
     UpdateLCDline2(s);                  //display the date
 }
 
-//***********************************
-// Turns the backlight ON
-void BacklightON(void)
-{
-    _RP3R=18;               //map RP3 pin 24 to OC1 PWM output using Peripheral Pin Select (for backlight power)
-    SetLED_POWER;
-}
-
-//***********************************
-// Turns the backlight OFF
-void BacklightOFF(void)
-{
-    _RP3R=0;                //map RP3 pin 24 to be an I/O pin
-    ClearLED_POWER;
-}
 
 //***********************************
 // Interrupt service routine for Timer1
@@ -1752,6 +1901,9 @@ void __attribute__((__interrupt__)) _T1Interrupt( void )
     i2c_high_scl();     //clear the I2C bus
     i2c_high_sda();
 
+	// restore any custom characters to LCD GRAM
+	restoreCustomCharacters();
+
     //restore the previous display contents, except time mode
     if (WatchMode!=WATCH_MODE_TIME)
     {
@@ -1762,6 +1914,8 @@ void __attribute__((__interrupt__)) _T1Interrupt( void )
 
     ResetSleepTimer();
     StartSleepTimer();            //switch the SLEEP timer back on
+
+
 
 	// removed by BOO
 	// this is the ugly delay after wakeup where we see garbage...
@@ -1897,12 +2051,154 @@ void OpenTimer1(unsigned int config,unsigned int period)
     T1CON = config;     /* Configure timer control reg */
 }
 
+
+
+int setupTime() { 
+
+    static const char *TimeMenu[] = {
+        "Set Time",
+        "Set Date",
+        "Calibrate",
+        "Set 12/24h",
+        "Set DST Zone",
+        "Set Location",
+    };
+
+    char *printTimeMenu( int *item, int max ) {
+        strcpy( out, TimeMenu[ *item ] );
+        return out;
+    }
+
+    custom_character( 0, character_arrow );
+
+    int nextMode = MODE_NONE;
+    while ( nextMode != MODE_KEYMODE && nextMode != MODE_EXIT ) {
+  
+        int mode = 0;      
+        if ( genericMenu( "Clock Settings:", &printTimeMenu, &increment, &decrement, DIM( TimeMenu ), &mode ) == MODE_KEYMODE )
+            return MODE_KEYMODE;
+
+        switch ( mode ) {
+            case 0:
+                nextMode = changeTime();
+                break;
+            case 1:
+                nextMode = changeDate();
+                break;
+            case 2:
+                nextMode = changeCalibration();
+                break;
+            case 3:
+                nextMode = change1224();
+                break;
+            case 4:
+                nextMode = changeDST();
+                break;
+            case 5:
+                nextMode = changeLocation();
+                break;
+            default:
+                nextMode = mode;
+                break;
+        }
+    }
+
+    return nextMode;
+}
+
+
+
+
+
+
+
+
+void doCalendar( int year, int month, int day ) {
+
+    UpdateLCDline1( "TODO" );
+    GetDebouncedKey();
+
+
+}
+
+
+
+int doTimeMode() {
+
+    int action = 0;
+    unsigned int mask = 0;
+    unsigned int Key;
+
+    do {
+
+        WatchMode=WATCH_MODE_TIME;
+
+        TimeDateDisplay();
+
+		Key = KeyScan2( FALSE );
+		if ( !mask && ( Key != KeyMode ))
+			mask = 0xFFFF;
+
+		Key &= mask;
+
+        if ( Key == KeyRCL )
+            backlightControl();                     // as it's only called from GetDebouncedKey
+
+		else if ( Key == KeyMenu ) {
+
+            static const char* TimeMenu[] = {
+                "Setup",
+                "Calendar",
+//                "Stopwatch",
+            };
+
+            char *printMenu( int *item, int max ) {
+                strcpy( out, TimeMenu[ *item ] );
+                return out;
+            }
+
+            int menu = 0;
+            if ( genericMenu( "Clock:", &printMenu, &increment, &decrement, DIM( TimeMenu ), &menu ) == MODE_KEYMODE )
+                return MODE_KEYMODE;
+
+            switch ( menu ) {
+                case 0:
+                    setupTime();
+                    break;
+
+                case 1: {
+                        int year = BCDtoDEC( Date.f.year ) + 2000;
+                        int month = BCDtoDEC( Date.f.mon );
+                        int day = BCDtoDEC(Date.f.mday);
+                        doCalendar( year, month, day );
+                    }
+                    break;
+
+                case 2:
+                    StopWatch();
+                    break;
+            }
+    	}
+
+		else if ( Key && Key != KeyMode ) {
+
+			// Any other key toggles between 12/24 hour mode
+			TwelveHour = !TwelveHour;
+			do {
+				TimeDateDisplay();
+			} while ( KeyScan2( FALSE ));
+		}
+
+            
+    } while (Key!=KeyMode); //loop until a key has been pressed
+
+    return action;
+}
+
+
 //***********************************
 int main(void)
 {
-	int mask;
-    char Key;
-    int c;
     ProgramInit();  //initialse everything
 
     lcd_init();
@@ -1924,49 +2220,7 @@ int main(void)
 
     while(TRUE)     //The main endless loop
     {
-		mask = 0;
-
-        do {
-
-            TimeDateDisplay();
-            WatchMode=WATCH_MODE_TIME;
-
-			Key = KeyScan2( FALSE );
-
-			if ( !mask && ( Key != KeyMode ))
-				mask = 0xFFFF;
-
-			Key &= mask;
-
-            if (Key==KeyRCL ) {
-                
-                // code by Boo 12/4/2009 -- momentary ON, hold for permanent ON
-                // also neatly handles OFF by repeat of the same
-
-
-                BacklightON();
-                for ( c = 0; TimeDateDisplay(), KeyScan2( FALSE ) == KeyRCL;
-					c = c <= BACKLIGHT_TOGGLE ? c+1 : c );
-                if ( c < BACKLIGHT_TOGGLE )
-                    BacklightOFF();
- 
-            }
-
-			else if ( Key == KeyMenu ) {
-				StopWatch();
-			}
-
-			else if ( Key && ( Key != KeyMode )) {
-
-				// Any other key toggles between 12/24 hour mode
-				TwelveHour = !TwelveHour;
-				do {
-					TimeDateDisplay();
-				} while ( KeyScan2( FALSE ));
-			}
-
-                
-        } while (Key!=KeyMode); //loop until a key has been pressed
+        doTimeMode();
 
         WatchMode=WATCH_MODE_CALC;
         NextMode=TRUE;    
