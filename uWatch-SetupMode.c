@@ -353,13 +353,6 @@ int changeDST() {
         return (char * ) TimeZones[ *zone ].region;
     }
 
-    void incDST( int *zone, int max ) {
-        (*zone)++;
-        if ( (*zone) >= max )
-            (*zone) = 0;
-    }
-
-    int Mode = 0;
     if ( genericMenu( "DST Zone:", printDST, &increment, &decrement, DIM( TimeZones ), &dstRegion ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
