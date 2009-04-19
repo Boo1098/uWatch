@@ -199,5 +199,10 @@ uWatch Revisions:
    
 1.5.9
 - Andrew starts the new menu changed.
+
+  MAJOR REVISION TO ALL MENU SYSTEMS.  MORE NOTES TO FOLLOW.
+  Please see forum for discussion.
+
+
 - improvements to the vchess game.
 
