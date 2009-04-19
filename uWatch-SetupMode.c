@@ -282,7 +282,7 @@ int changeDate() {
     if ( genericMenu( out, &printMonth, &increment, &decrement, 12, &month ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     
-    sprintf( out, "%d, %s", year, monthName[ month ] );
+    sprintf( out, "%d, %s:", year, monthName[ month ] );
     if ( genericMenu( out, &processCalendar, &increment, &decrement, 32, &day ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
@@ -303,7 +303,7 @@ int changeCalibration() {
     }
 
     int cal = RCFGCALbits.CAL;
-    if ( genericMenu( "Calibration", &printCal, increment, decrement, 256, &cal ) == MODE_KEYMODE )
+    if ( genericMenu( "Calibration:", &printCal, increment, decrement, 256, &cal ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     RCFGCALbits.CAL = (char) cal;
     I2CmemoryWRITE( 63535,RCFGCALbits.CAL );      //store value in last byte
@@ -331,7 +331,7 @@ int change1224() {
     }
 
     int mode1224 = TwelveHour ? 1 : 0;
-    if ( genericMenu( "Set Time Format", print1224, sel1224, sel1224, 0, &mode1224 ) == MODE_KEYMODE )
+    if ( genericMenu( "Time Format:", print1224, sel1224, sel1224, 0, &mode1224 ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     TwelveHour = mode1224 ? TRUE : FALSE;
     return MODE_EXIT;
