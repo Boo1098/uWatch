@@ -285,7 +285,7 @@ int GamesMode(void)
             KeyPress2 = wait();
             if (KeyPress2==KeyMode) return MODE_KEYMODE;
             
-            char s2[MaxLCDdigits+1];
+            //char s2[MaxLCDdigits+1];
             int player_total=0;
             int dealer_total=0;
             int done=0;
