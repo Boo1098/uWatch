@@ -297,8 +297,8 @@ int changeDate() {
         
 int changeCalibration() {
 
-    char *printCal( int *selection, int max ) {
-        sprintf( out, "CAL=%d", RCFGCALbits.CAL );
+    char *printCal( int *cal, int max ) {
+        sprintf( out, "CAL=%d", *cal );
         return out;
     }
 
