@@ -169,13 +169,13 @@ int changeTime() {
     int m = BCDtoDEC( Time.f.min );
     int s = BCDtoDEC( Time.f.sec );
 
-    if ( genericMenu( "Select Hour:", &printHour, &increment, &decrement, 24, &h ) == MODE_KEYMODE )
+    if ( genericMenu( "Hour:", &printHour, &increment, &decrement, 24, &h ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
-    if ( genericMenu( "Select Minute:", &printNumber, &increment, &decrement, 60, &m ) == MODE_KEYMODE )
+    if ( genericMenu( "Minute:", &printNumber, &increment, &decrement, 60, &m ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
-    if ( genericMenu( "Select Second:", &printNumber, &increment, &decrement, 60, &s ) == MODE_KEYMODE )
+    if ( genericMenu( "Second:", &printNumber, &increment, &decrement, 60, &s ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     SetTimeBCD( DECtoBCD(h), DECtoBCD(m), DECtoBCD(s) );
@@ -348,40 +348,22 @@ int change1224() {
 }
 
 int changeDST() {
-    unsigned int KeyPress2;
-    int Mode = 0;       //???? for inDST();
 
-    custom_character( 0, character_arrow );
-    custom_character( 1, left_menu );
-    custom_character( 2, right_menu );
-
-    UpdateLCDline1("Select DST Zone");
-    while(TRUE)
-    {
-        sprintf( out, "%-14s\1\2", TimeZones[(int)dstRegion].region );
-        UpdateLCDline2(out);
-
-        KeyPress2 = GetDebouncedKey();
-        if (KeyPress2==KeyEnter) 
-        {
-            //TODO:  ????
-            DST = inDST(&Mode); // dummy
-            return MODE_EXIT;
-        }
-    
-        if ( NEXT( KeyPress2 )) {
-            if (++dstRegion >= DIM(TimeZones))
-                dstRegion = 0;
-        }
-
-        else if ( PREVIOUS( KeyPress2 )) {
-            if (--dstRegion < 0)
-                dstRegion += DIM(TimeZones);
-        }
-
-        IFEXIT( KeyPress2 );
-
+    char *printDST( int *zone, int max ) {
+        return (char * ) TimeZones[ *zone ].region;
     }
+
+    void incDST( int *zone, int max ) {
+        (*zone)++;
+        if ( (*zone) >= max )
+            (*zone) = 0;
+    }
+
+    int Mode = 0;
+    if ( genericMenu( "DST Zone:", printDST, &increment, &decrement, DIM( TimeZones ), &dstRegion ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+
+    DST = inDST( &dstRegion );
     return MODE_EXIT;
 }
 
