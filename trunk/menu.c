@@ -155,10 +155,16 @@ int genericMenu( char *title,
 
 
 
-
 int viewString( char *title, char *string,
-                 int *selection, int oneshot )
+                 int *selection, int viewControl )
 {
+
+// Values of viewControl...
+//  VIEW_ONESHOT causes display of the string and immediate exit
+//  VIEW_AUTOSCROLL keypress auto-repeats, giving auto-scroll.  Without this, user has
+//  to continuously press the key to scroll.
+
+
     int max = strlen( string );;
 
     if ( title )
@@ -169,6 +175,9 @@ int viewString( char *title, char *string,
 
     custom_character( 0, left_menu );
     custom_character( 1, right_menu );
+
+    while ( KeyScan2( FALSE ) );            // wait for key release so no ENTER auto-press!
+
 
     int key = 0;
     do {
@@ -216,11 +225,11 @@ int viewString( char *title, char *string,
         if ( oneshot == 2 ) {
 
             if ( key )
-                DelayMs(400);
+                DelayMs(350);
             key = KeyScan2( FALSE );
 
 
-        } //else
+        } else
             key = GetDebouncedKey();
 
         IFEXIT( key );
