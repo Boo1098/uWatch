@@ -30,45 +30,4 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
-static const char* AppsMenu[] = 
-{
-    "Tools",
-    "Games",
-    "Options",
-};
-
-extern int ToolsMode(void);
-extern int GamesMode(void);
-extern int SetupMode(void);
-
-//***********************************
-// The main apps mode routine
-// Note that all variables are global
-int AppsMode(void) {
-
-    char *printApp( int *app, int max ) {
-        return (char *) AppsMenu[ *app ];
-    }
-
-    int mode = 0;
-    if ( genericMenu( "Applications:", &printApp, &increment, &decrement, DIM( AppsMenu ), &mode ) == MODE_KEYMODE )
-        return MODE_KEYMODE;
-
-    switch( mode ) {
-       
-        case 0:
-            ToolsMode();
-            break;
-    
-        case 1:
-            GamesMode();
-            break;
-    
-        case 2:
-            SetupMode();
-            break;
-    }
-
-    return MODE_EXIT;
-}
 
