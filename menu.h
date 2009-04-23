@@ -32,7 +32,10 @@ int genericMenu( char *title,
                  void ( *decrementFunc )( int *num, int max ),
                  int max, int *selection );
 
-int viewString( char *title, char *string, int *selection, int oneshot );
+#define VIEW_ONESHOT 1
+#define VIEW_AUTOSCROLL 2
+
+int viewString( char *title, char *string, int *selection, int viewControl );
 
 extern const packedMenu mathMenu;
 
