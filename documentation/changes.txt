@@ -1,4 +1,4 @@
-uWatch Revisions:
+﻿uWatch Revisions:
 
 1.0 - First Release
 
@@ -183,6 +183,7 @@ uWatch Revisions:
 - Factor optimized
 - Key delay increased to 200ms (was too sensitive)
 
+
 1.5.8
 - put in the moonphase glyphs done by Andrew Davie. 
 - pattern is now:
@@ -196,13 +197,35 @@ uWatch Revisions:
    (-^) = final crescent.
    the pattern waxes from the left and wanes on the right. i reflected the quarter glyph to get the other side.
 
-   
-1.5.9
-- Andrew starts the new menu changed.
+- LCD GRAM (custom characters) restored after sleep mode (no more corrupt characters, ever)
+- the DST * now shows when there IS daylight saving, instead of when there ISN'T
+- put in a degree symbol in the C and F conversion menus
+- put in an arrow character in the same menus
+- put neato-characters in math menus (lots)
+- changed "1st" back to "2nd" in these menus -- sorry there are two reasons
+	- it's completely non-standard to have "1st" -- all calculators have 1 key labeled 2nd
+    - there are not enough custom characters to have "st" and "nd" in the menus
+    - aligned menu options with f-keys where appropriate
+- defined new menu structure component -- an array of custom character pointers
+    - this lets you add up to 8 custom characters to any menu screen, and those
+	  custom characters are automatically loaded with the menu
+      Note the \000 format in the menu strings -- this is OCTAL character # 
 
-  MAJOR REVISION TO ALL MENU SYSTEMS.  MORE NOTES TO FOLLOW.
-  Please see forum for discussion.
-
-
-- improvements to the vchess game.
+1.5.A
+- more menu madness.
+- added many more individual files and removed the #include for C files inside the main one.  This was bad.
+- added header files and resolved all link errors
+- now all errors/warnings (none left) are double-clickable in the IDE and you go to the line
+- changed project to include new files
+- changed gcc compilation option to -Os (space).  This is the only way it fits at the moment.  If you can't compile with this option, comment out some code – suggest one of the games (see the #if 1 in the game code)
+- added viewString to show long strings – example in TOOLS/About
+- partially fixed the factor tool.  It, too, uses long string output
+- replaced the calculator menus with the new menu system
+- implemented 'quick-keys' which allow menu selection using the index # of the menu item.
+- index number of menu items shown between scroll arrows.  If there's a number there, you can press that number to get the option quickly, even though it may not be the one displayed.
+- Added bitwise operators to the calculator menu – AND, OR, XOR, NOT.  These are not functional/tested at the moment... some may work.
+- fixed up character glitching on startup
+- put in backlight operation on calculator more.  STO/RCL key is multiplexed, so we don't lose that key :)
+- added “cards” characters / hearts/clubs/spades/diamonds
+- added generic menu-drawing and selection code – see genericMenu2 and to a lesser extent genericMenu
 
