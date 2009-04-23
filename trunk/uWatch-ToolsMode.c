@@ -30,11 +30,13 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
-static const char* ToolsMenu[] = 
-{
-    "Quadratic",
-    "Factor",
-};
+#include "def.h"
+#include "menu.h"
+#include "characterset.h"
+#include "uWatch-LCD.h"
+#include "tool-factor.h"
+
+
 
 int StopWatch(void) {
 	unsigned int KeyPress2;
@@ -189,262 +191,84 @@ int StopWatch(void) {
 }
 
 
-void factor()
-{
-	unsigned int KeyPress2;
-    char s[MaxLCDdigits + 1];
-    char s2[MaxLCDdigits*2 + 1];
 
-    unsigned long int i;
-    unsigned long int n;
-    int tmp;
-    int factors=0;
 
-    custom_character( 0, characterEnter );    
+int quadratic( int p ) {
 
-    UpdateLCDline1("Factor this:");
+    int KeyPress2;
+
+    //quadratic (Solve ax^2 + bx + c = 0 given B*B-4*A*C >= 0)
+
+    float a,b,c;
+    float d;
+    float root1,root2;
+    float tmp;
+    char s2[MaxLCDdigits + 1];
+    
+    /*receive coefficients a, b and c from user*/
+    UpdateLCDline1("Enter a:");
     Xreg = 0;
     tmp = OneLineNumberEntry();
-    n = Xreg;
+    a = Xreg;
+    UpdateLCDline1("Enter b:");
     Xreg = 0;
-
-    if (n> (unsigned long int)(long int)(-1)) //checks if number > max long int
+    tmp = OneLineNumberEntry();
+    b = Xreg;
+    UpdateLCDline1("Enter c:");
+    Xreg = 0;
+    tmp = OneLineNumberEntry();
+    c = Xreg;
+    Xreg = 0;
+    
+    d  = sqrt(b*b - 4.0*a*c);   //compute the square root of discriminant d
+    root1 = (-b + d)/(2.0*a);   //first root
+    root2 = (-b - d)/(2.0*a);   //second root
+    
+    if (b*b-4*a*c>=0) //check for valid equation
     {
-        UpdateLCDline1("Too large      \010");
-        KeyPress2=wait();
-        if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) return;
+        memset( out, '\0', MaxLCDdigits+1 ); //clear string
+        sprintf(s2, "%f", root1);
+        strcat( out, "x=");
+        strcat(out, s2);
+        UpdateLCDline1(out);
+    
+        memset(out, '\0', MaxLCDdigits+1 );
+        strcat(out, "or x=");
+        sprintf(s2, "%f", root2);
+        strcat(out, s2);
+        UpdateLCDline2(out);
+        KeyPress2 = GetDebouncedKey();
     }
     
-    if (n<0) //checks for negative
+    else
     {
-        UpdateLCDline1("Negative number\010");
-        KeyPress2=wait();
-        if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) return;
-    }
-    
-    if (n==1 || n==2)   //skips calculations if n=1 or 2
-    {
-        UpdateLCDline1("Prime number   \010");
-        KeyPress2=wait();
-        if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) return;
-    }
-    
-    memset(s, '\0', sizeof(s));
-	  while ( strlen(s) < MaxLCDdigits )
-	               strcat( s, " " );
-    *s2 = 0;
-
-
-
-    static const unsigned char roller[][8] = 
-        {
-	
-		{ 0x04, 0x04, 0x04, 0x04, 0x04, 0x00, 0x00, 0x00 },
-		{ 0x01, 0x02, 0x04, 0x08, 0x10, 0x00, 0x00, 0x00 },
-		{ 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x00 },
-		{ 0x10, 0x08, 0x04, 0x02, 0x01, 0x00, 0x00, 0x00 },
-	};
-	
-	for ( i = 0; i < 4; i++ )
-		custom_character( i+1, &( roller[i][0] ));
-	
-
-    int strobe = 0;
-	unsigned int akey = 0;
-
-
-	// sqrt moved outside loop so it's not calculated every time!
-
-	unsigned long int sqr = sqrt( n );
-    char fct[MaxLCDdigits];
-
-    for( i=2; i <= sqr; i += 2 ) {
-
-		if ( i == 4 ) i--;
-
-       // allow an early abort, but only check periodically for speed purposes
-       //if ( !(i % 100)) {
-
-		    akey = KeyScan2( FALSE );
-
-		    if ( akey == KeyClear )
-			    break;
-
-		    else if ( akey ) {
-				s[15]='P';
-				UpdateLCDline1(s);
-			    while ( KeyScan2(FALSE ) );		// pause under key control
-				s[ 15 ] = (strobe&3)+1;
-				UpdateLCDline1(s);
-
-		  }
-	  //}
-
-
-		unsigned long int fact = n / i;
-        if ( fact * i == n ) {
-
-          sprintf(fct, "%lu", i );
-
-          if ( strlen( s2 ) + strlen( fct ) >= MaxLCDdigits ) {
-              strcpy( s, s2 );
-			  while ( strlen(s) < MaxLCDdigits )
-                  strcat( s, " " );
-              s[ 15 ] = (strobe&3)+1;
-              UpdateLCDline1( s );
-              *s2 = 0;
-          }
-
-	      strcat( s2, fct );
-
-		  if ( fact != i ) {
-
-	          sprintf(fct, " %lu", fact );
-	
-	          if ( strlen( s2 ) + strlen( fct ) >= MaxLCDdigits ) {
-	              strcpy( s, s2 );
-				  while ( strlen(s) < MaxLCDdigits )
-    	              strcat( s, " " );
-	              s[ 15 ] = (strobe&3)+1;
-	              UpdateLCDline1( s );
-	              *s2 = 0;
-	          }
-		      strcat( s2, fct );
-	          factors++;
-		  }
-       
-          if ( strlen( s2 ) < MaxLCDdigits-1 )
-				strcat( s2, " " );
-
-		  UpdateLCDline2( s2 );
-
-          factors++;
-       }
-
-
-		if ( !( (i-1)%20 )) {
-            s[ 15 ] = (strobe++&3)+1;
-	        UpdateLCDline1( s );
-		}
-
-    }
-    
-	if ( akey != KeyClear ) {
-
-	    if (factors == 0 )
-	    {
-	        UpdateLCDline1("Prime number");
-	        UpdateLCDline2("Ent to continue");
-	        KeyPress2=wait();
-	        if (KeyPress2!=KeyMode || KeyPress2!=KeyEnter) return;
-	
-	    } else {
-	
-			s[ 15 ] = ' ';
-			UpdateLCDline1( s );
-		
-			sprintf( fct, "= %d factors", factors );
-		
-			if ( strlen( s2 ) + strlen( fct ) >= MaxLCDdigits ) {
-			    strcpy( s, s2 );
-			    UpdateLCDline1( s );
-			    *s2 = 0;
-			}
-		
-			strcat( s2, fct );
-		    UpdateLCDline2( s2 );
-		}
-	} else {
-
-		UpdateLCDline1( s2 );
-        UpdateLCDline2( "HALTED" );
-	}
-
-	// one should never wait for a key release at the end of stuff -- this causes delays in UI responsiveness
-	// this release is automatically catered for when the next keypress is detected.
-	KeyPress2=wait();
-
-}
-
-
-
-//***********************************
-// The main tools mode routine
-// Note that all variables are global
-int ToolsMode(void)
-{
-    unsigned int KeyPress2;        //keypress variables
-    char s[MaxLCDdigits + 1];
-
-    char *printTool( int *tool, int max ) {
-        return (char *) ToolsMenu[ *tool ];
-    }
-
-    int Mode = 0;
-    if ( genericMenu( "Tool:", &printTool, &increment, &decrement, DIM( ToolsMenu ), &Mode ) == MODE_KEYMODE )
-        return MODE_KEYMODE;
-
-    switch(Mode)
-    {
-        case 0: //quadratic (Solve ax^2 + bx + c = 0 given B*B-4*A*C >= 0)
-        {
-            float a,b,c;
-            float d;
-            float root1,root2;
-            float tmp;
-            char s2[MaxLCDdigits + 1];
-            
-            /*receive coefficients a, b and c from user*/
-            UpdateLCDline1("Enter a:");
-            Xreg = 0;
-            tmp = OneLineNumberEntry();
-            a = Xreg;
-            UpdateLCDline1("Enter b:");
-            Xreg = 0;
-            tmp = OneLineNumberEntry();
-            b = Xreg;
-            UpdateLCDline1("Enter c:");
-            Xreg = 0;
-            tmp = OneLineNumberEntry();
-            c = Xreg;
-            Xreg = 0;
-            
-            d  = sqrt(b*b - 4.0*a*c);   //compute the square root of discriminant d
-            root1 = (-b + d)/(2.0*a);   //first root
-            root2 = (-b - d)/(2.0*a);   //second root
-            
-            if (b*b-4*a*c>=0) //check for valid equation
-            {
-               memset(s, '\0', sizeof(s)); //clear string
-               sprintf(s2, "%f", root1);
-               strcat(s, "x=");
-               strcat(s, s2);
-               UpdateLCDline1(s);
-            
-               memset(s, '\0', sizeof(s));
-               strcat(s, "or x=");
-               sprintf(s2, "%f", root2);
-               strcat(s, s2);
-               UpdateLCDline2(s);
-               KeyPress2 = GetDebouncedKey();
-               return MODE_EXIT;
-            }
-            
-            else
-            {
-               UpdateLCDline1("Error:");
-               UpdateLCDline2("Invalid Equation");
-               KeyPress2 = GetDebouncedKey();
-               return MODE_EXIT;
-            }
-        } break;
-
-        case 1:   //factor
-			factor();
-			break;
-
+        UpdateLCDline1("Error:");
+        UpdateLCDline2("Invalid Equation");
+        KeyPress2 = GetDebouncedKey();
     }
 
     return MODE_EXIT;
 }
+    
+
+
+//***********************************
+// The main tools mode routine
+
+int ToolsMode( int p )
+{
+    const packedMenu toolsMenu = {
+        "Applications:",
+        printMenu,
+        increment, decrement, 2,
+        {   0,0,0,0,
+        },
+        {   { "Quadratic",  quadratic, 0 },
+            { "Factorise", factor, 0 },
+        },
+    };
+
+    return genericMenu2( &toolsMenu, 0 );
+}
+
 

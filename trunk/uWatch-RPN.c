@@ -28,6 +28,9 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
+#include "def.h"
+#include "calculator.h"
+#include "menu.h"
 
 
 
@@ -60,6 +63,16 @@ void RPNcalculator(void)
         //user pressed some key other than MODE, so ensure that when exit we go back to the time/date display
         NextMode=FALSE;		
 
+
+        if ( Key == KeyMenu ) {
+            WatchMode = WATCH_MODE_CALC_MENU;
+            genericMenu2( &mathMenu, 0 );
+            WatchMode = WATCH_MODE_CALC;
+        }
+
+
+/*           
+
         // common menu mode or not
         while (Key == KeyMenu)
         {
@@ -70,7 +83,8 @@ void RPNcalculator(void)
             // pressing menu completes.
             CompleteXreg();
 
-            mifo = MainMenus + CurrentMenu;
+
+             mifo = MainMenus + CurrentMenu;
             mi = DriveMenu2(mifo);
                             
             
@@ -104,7 +118,8 @@ void RPNcalculator(void)
 
                 }
             }
-        }
+      }
+  */
 
         // handle numbers
         Key = EnterNumber(Key);

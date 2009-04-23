@@ -30,66 +30,66 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
-void SetTimeBCD(unsigned int h, unsigned int m, unsigned int s)
+#include "uWatch-SetupMode.h"
+#include "uWatch-LCD.h"
+
+#include "def.h"
+#include "calculator.h"
+#include "characterset.h"
+#include "menu.h"
+
+
+
+
+void SetTimeBCD( unsigned int h, unsigned int m, unsigned int s )
 {
-    if (h < 0x24 && m < 0x60 && s < 0x60)
-    {
-        RCFGCALbits.RTCPTR=1;       //select correct RTC register
-        RTCVAL=h;
+    if ( h < 0x24 && m < 0x60 && s < 0x60 ) {
+        RCFGCALbits.RTCPTR = 1;     //select correct RTC register
+        RTCVAL = h;
 
         //the result is now a 16bit BCD number
-        m = (m << 8) + s;
-        RCFGCALbits.RTCPTR=0;       //select correct RTC register
-        RTCVAL=m;
+        m = ( m << 8 ) + s;
+        RCFGCALbits.RTCPTR = 0;     //select correct RTC register
+        RTCVAL = m;
     }
 }
 
-int SetDateBCD(unsigned int y, unsigned int m, unsigned int d)
+int SetDateBCD( unsigned int y, unsigned int m, unsigned int d )
 {
-    int v = (m && m < 0x13 && d && d < 0x32 && y < 0x100);
-    if (v)
-    {
+    int v = ( m && m < 0x13 && d && d < 0x32 && y < 0x100 );
+    if ( v ) {
         //month and day are combined in the one word
-        m = (m << 8) + d;
+        m = ( m << 8 ) + d;
 
         //the result is now a 16bit BCD number
-        RCFGCALbits.RTCPTR=2;       //select correct RTC register
-        RTCVAL=m;
-        
+        RCFGCALbits.RTCPTR = 2;     //select correct RTC register
+        RTCVAL = m;
+
         //the result is now an 8bit BCD number
-        RCFGCALbits.RTCPTR=3;       //select correct RTC register
-        RTCVAL=y;
+        RCFGCALbits.RTCPTR = 3;     //select correct RTC register
+        RTCVAL = y;
 
     }
     return v;
 }
 
-void SetDateBCDandUpdate(int y, int m, int d)
+void SetDateBCDandUpdate( int y, int m, int d )
 {
-    if (SetDateBCD(y, m, d))
-    {
+    if ( SetDateBCD( y, m, d ) ) {
 
         // read accepted date and time back
-        RtccReadDate(&Date);
-        RtccReadTime(&Time);       
+        RtccReadDate( &Date );
+        RtccReadTime( &Time );
 
         // recalculate DoW and MJD
         dayHasChanged();
-    
+
         // infer whether we are in DST
-        DST = inDST(&y); // dummy
+        DST = inDST( &y ); // dummy
     }
 }
 
 
-static const char* SetupMenu[] = 
-{
-    "Calc Mode",
-    "Clear EEPROM",
-    "Self Test",
-    "LCD timeout",
-    "About",
-};
 
 // enter a number on line return in Xreg
 // return final key pressed
@@ -98,31 +98,29 @@ int OneLineNumberEntry()
     // Assume Xreg contains old value
     // display old value
     UpdateXregDisplay();
-    UpdateLCDline2(DisplayXreg);
+    UpdateLCDline2( DisplayXreg );
 
     // process input
     ResetFlags();
     EnableXregOverwrite = TRUE;
 
-    for (;;)
-    {
+    for ( ;; ) {
         int c;
         int key;
 
-		key = GetDebouncedKey();
+        key = GetDebouncedKey();
         // ??? while ((key = KeyScan(TRUE)) == 0) ;
-        ResetSleepTimer();		
-                
-        c = EnterNumber(key);
+        ResetSleepTimer();
+
+        c = EnterNumber( key );
 
         IFEXIT( c );
 
-        if (c == KeyEnter)
-        {
+        if ( c == KeyEnter ) {
             CompleteXreg();
-            
+
             UpdateXregDisplay();
-            UpdateLCDline2(DisplayXreg);
+            UpdateLCDline2( DisplayXreg );
             return MODE_EXIT;
         }
     }
@@ -134,61 +132,94 @@ int OneLineNumberEntry()
 
 
 
-char *printNumber( int *number, int max ) {
+char *printNumber( int *number, int max )
+{
     sprintf( out, "%d", *number );
     return out;
 }
 
-char *printHour( int *hour, int max ) {
+char *printHour( int *hour, int max )
+{
 
     // 12AM, 1AM... 12PM.. etc
-    // OR 24 hour 
+    // OR 24 hour
 
     if ( TwelveHour ) {
 
-		int cbase = (*hour) > 11 ? 1 : 0;
-        int h = (*hour) % 12;
+        int cbase = ( *hour ) > 11 ? 1 : 0;
+        int h = ( *hour ) % 12;
         if ( !h ) h = 12;
 
         sprintf( out, "%2d%c%c", h,
-            custom_character( 2, &( AMPM[ cbase ][0] ) ),
-            custom_character( 3, &( AMPM[ 2 ][0] ) ));
+                 custom_character( 2, &( AMPM[ cbase ][0] ) ),
+                 custom_character( 3, &( AMPM[ 2 ][0] ) ) );
 
     } else
-        sprintf( out, "%2d", (*hour) );
+        sprintf( out, "%2d", ( *hour ) );
 
     return out;
 }
 
+char *printMinSec( int *n, int max ) {
+    sprintf( out, "%02d", *n );
+    return out;
+}
 
-int changeTime() {
+int changeTime( int p )
+{
 
-    RtccReadTime(&Time);            //read the RTCC registers
+    RtccReadTime( &Time );          //read the RTCC registers
 
     int h = BCDtoDEC( Time.f.hour );
     int m = BCDtoDEC( Time.f.min );
     int s = BCDtoDEC( Time.f.sec );
 
-    if ( genericMenu( "Hour:", &printHour, &increment, &decrement, 24, &h ) == MODE_KEYMODE )
+    if ( genericMenu( "Hour:", &printHour, 0, &increment, &decrement, 24, &h ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
-    if ( genericMenu( "Minute:", &printNumber, &increment, &decrement, 60, &m ) == MODE_KEYMODE )
+    if ( genericMenu( "Minute:", &printMinSec, 0, &increment, &decrement, 60, &m ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
-    if ( genericMenu( "Second:", &printNumber, &increment, &decrement, 60, &s ) == MODE_KEYMODE )
+    if ( genericMenu( "Second:", &printMinSec, 0, &increment, &decrement, 60, &s ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
-    SetTimeBCD( DECtoBCD(h), DECtoBCD(m), DECtoBCD(s) );
+    SetTimeBCD( DECtoBCD( h ), DECtoBCD( m ), DECtoBCD( s ) );
     return MODE_EXIT;
 }
 
 
-char *printMonth( int *month, int max ) {
+char *printMonth( int *month, int max )
+{
     strcpy( out, monthName[ *month ] );         // make a COPY so we don't have ROM limitation
     return out;
 }
 
-void drawDay( char *s, int cc, int day, int dayOfWeek, char highlight, BOOL bold ) {
+const unsigned char *qday[] = {
+    character_Monday,
+    character_Tuesday,
+    character_Wednesday,
+    character_Thursday,
+    character_Friday,
+    character_Saturday,
+    character_Sunday
+};
+
+const unsigned char *boldDigit[] = {
+    character_bold0,
+    character_bold1,
+    character_bold2,
+    character_bold3,
+    character_bold4,
+    character_bold5,
+    character_bold6,
+    character_bold7,
+    character_bold8,
+    character_bold9,
+    character_boldSpace
+};
+
+void drawDay( char *s, int cc, int day, int dayOfWeek, char highlight, BOOL bold )
+{
 
     char q[5];
 
@@ -219,7 +250,12 @@ void drawDay( char *s, int cc, int day, int dayOfWeek, char highlight, BOOL bold
     strcat( s, q );
 }
 
-char *processCalendar( int *pDay, int max ) {
+int gYear, gMonth;
+char *processCalendar( int *pDay, int max )
+{
+
+    int dayOfWeek = DAYOFWEEK( mjd( gYear, gMonth, *pDay ) ) + 1;
+
 
 // day 0-based
 
@@ -234,8 +270,6 @@ char *processCalendar( int *pDay, int max ) {
         today = day;
 
     int cc = 2;                     // custom char #
-    int dayOfWeek = day%7;
-
     int dd;
 
     *out = 0;
@@ -244,14 +278,14 @@ char *processCalendar( int *pDay, int max ) {
     for ( dd = day; dd < limit && dd < max ; dd++ ) {
 
 
-        BOOL bold = ( dd == today ) || ( dd == day && selecting );
+        BOOL bold = FALSE; //( dd == today ) || ( dd == day && selecting );
 
         char highlight = ' ';
         if ( dd == today )
             highlight = '(';
-        else if ( dd == today+1 )
+        else if ( dd == today + 1 )
             highlight = ')';
-        
+
         drawDay( out, cc, dd, dayOfWeek, highlight, bold );
 
         cc++;
@@ -269,21 +303,25 @@ char *processCalendar( int *pDay, int max ) {
 }
 
 
-int changeDate() {
+int changeDate()
+{
 
     int year = BCDtoDEC( Date.f.year ) + 2000;
     int month = BCDtoDEC( Date.f.mon );
     int day = BCDtoDEC( Date.f.mday ) - 1;          // 0-based
 
-    if ( genericMenu( "Year:", &printNumber, &increment, &decrement, 0, &year ) == MODE_KEYMODE )
+    if ( genericMenu( "Year:", &printNumber, 0, &increment, &decrement, 2100, &year ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     sprintf( out, "%d, Month:", year );
-    if ( genericMenu( out, &printMonth, &increment, &decrement, 12, &month ) == MODE_KEYMODE )
+    if ( genericMenu( out, &printMonth, 0, &increment, &decrement, 12, &month ) == MODE_KEYMODE )
         return MODE_KEYMODE;
-    
+
+    gYear = year;
+    gMonth = month;
+
     sprintf( out, "%d, %s:", year, monthName[ month ] );
-    if ( genericMenu( out, &processCalendar, &increment, &decrement, 32, &day ) == MODE_KEYMODE )
+    if ( genericMenu( out, &processCalendar, 0, &increment, &decrement, 32, &day ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     //TODO: year should be absolute, not limited from 2000...
@@ -294,8 +332,9 @@ int changeDate() {
 }
 
 
-        
-int changeCalibration() {
+
+int changeCalibration()
+{
 
     char *printCal( int *cal, int max ) {
         sprintf( out, "CAL=%d", *cal );
@@ -303,48 +342,49 @@ int changeCalibration() {
     }
 
     int cal = RCFGCALbits.CAL;
-    if ( genericMenu( "Calibration:", &printCal, increment, decrement, 256, &cal ) == MODE_KEYMODE )
+    if ( genericMenu( "Calibration:", &printCal, 0, increment, decrement, 256, &cal ) == MODE_KEYMODE )
         return MODE_KEYMODE;
-    RCFGCALbits.CAL = (char) cal;
-    I2CmemoryWRITE( 63535,RCFGCALbits.CAL );      //store value in last byte
+    RCFGCALbits.CAL = ( char ) cal;
+    I2CmemoryWRITE( 63535, RCFGCALbits.CAL );     //store value in last byte
     return MODE_EXIT;
 }
 
 
 
-int change1224() {
+int change1224()
+{
 
     char *print1224( int *sel, int max ) {
         if ( *sel ) {
             sprintf( out, "12h 8:34:00%c%c",
-                custom_character( 2, &( AMPM[1][0] )),
-                custom_character( 3, &( AMPM[2][0] )) );
-        }
-        else
+                     custom_character( 2, &( AMPM[1][0] ) ),
+                     custom_character( 3, &( AMPM[2][0] ) ) );
+        } else
             sprintf( out, "24h 20:34:00" );
-    
+
         return out;
     }
-    
+
     void sel1224( int *sel, int max ) {
-        (*sel) = !(*sel);
+        ( *sel ) = !( *sel );
     }
 
     int mode1224 = TwelveHour ? 1 : 0;
-    if ( genericMenu( "Time Format:", print1224, sel1224, sel1224, 0, &mode1224 ) == MODE_KEYMODE )
+    if ( genericMenu( "Time Format:", print1224, 0, sel1224, sel1224, 0, &mode1224 ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     TwelveHour = mode1224 ? TRUE : FALSE;
     return MODE_EXIT;
 }
 
-int changeDST() {
+int changeDST()
+{
 
     char *printDST( int *zone, int max ) {
-        return (char * ) TimeZones[ *zone ].region;
+        return ( char * ) TimeZones[ *zone ].region;
     }
 
     int region = dstRegion;
-    if ( genericMenu( "DST Zone:", printDST, increment, decrement, DIM( TimeZones ), &region ) == MODE_KEYMODE )
+    if ( genericMenu( "DST Zone:", printDST, 0, increment, decrement, DIM( TimeZones ), &region ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     dstRegion = region;
@@ -353,10 +393,11 @@ int changeDST() {
 }
 
 
-int changeLocation() {
+int changeLocation()
+{
 
     int c;
-    /* The location feature will be expanded to provide a 
+    /* The location feature will be expanded to provide a
      * selectable menu of major world cities. These will feed
      * the world time, the DST and the long/lat.
      *
@@ -373,227 +414,264 @@ int changeLocation() {
     double originalLongitude = Longitude;
 
     BOOL ok = FALSE;
-    do
-    {
-        UpdateLCDline1("Longitude (E<0)?");
-        
+    do {
+        UpdateLCDline1( "Longitude (E<0)?" );
+
         // Display old Long and enter new value
-        Xreg = hms(Longitude);
-        
+        Xreg = hms( Longitude );
+
         c = OneLineNumberEntry();
-        if (c != MODE_EXIT) return c; // escape
-        
+        if ( c != MODE_EXIT ) return c; // escape
+
         // validate longitude -180 <= long <= +180
-        if (Xreg < -180 || Xreg > 180)
-        {
-            UpdateLCDline1("Longitude range:" );
-            UpdateLCDline2("-180\xDF\001\002+180\xDF   \010");                
+        if ( Xreg < -180 || Xreg > 180 ) {
+            UpdateLCDline1( "Longitude range:" );
+            UpdateLCDline2( "-180\xDF\001\002+180\xDF   \010" );
             GetDebouncedKey();
-        }
-        else
-        {
+        } else {
             // assume HMS format
-            Longitude = hr(Xreg);
+            Longitude = hr( Xreg );
 //            UpdateLCDline1("Longitude SET   ");
             ok = TRUE;
         }
 //        DelayMs(2000); // visual delay
-    } while (!ok);
-    
+    } while ( !ok );
+
     ok = FALSE;
-    do
-    {
+    do {
         // display old lat and enter new value
-        UpdateLCDline1("Latitude?");
+        UpdateLCDline1( "Latitude?" );
 
-        Xreg = hms(Latitude);
+        Xreg = hms( Latitude );
 
-        c = OneLineNumberEntry();            
-        if (c != MODE_EXIT) {
+        c = OneLineNumberEntry();
+        if ( c != MODE_EXIT ) {
             Longitude = originalLongitude;      // undo any longitude change
             return c; // escape
         }
 
         // validate lat -90 <= lat <= +90
 
-        if (Xreg < -90 || Xreg > 90)
-        {
-            UpdateLCDline1("Latitude range:" );
-            UpdateLCDline2("-90\xDF\001\002+90\xDF     \010");  
+        if ( Xreg < -90 || Xreg > 90 ) {
+            UpdateLCDline1( "Latitude range:" );
+            UpdateLCDline2( "-90\xDF\001\002+90\xDF     \010" );
             GetDebouncedKey();
-        }
-        else
-        {
-            Latitude = hr(Xreg);
+        } else {
+            Latitude = hr( Xreg );
             ok = TRUE;
         }
-    } while (!ok);
+    } while ( !ok );
 
     return MODE_EXIT;
 }
 
 
 
+
+char *printCalc( int *type, int max )
+{
+    if ( *type ) return "RPN";
+    else return "Algebraic";
+}
+
+int appCalculatorMode()
+{
+    return genericMenu( "Calculator type:", &printCalc, 0, &increment, &decrement, 2, &RPNmode );
+}
+
+int appClearEEPROM()
+{
+
+    UpdateLCDline1( "Erase EEPROM ?" );
+    UpdateLCDline2( "ENTER or Cancel" );
+    int KeyPress2 = GetDebouncedKey();
+    if ( KeyPress2 == KeyEnter ) {
+        unsigned int c;
+        int c2;
+        UpdateLCDline1( "Erasing EEPROM" );
+        c2 = 0;
+        for ( c = 0;c < 65534;c++ ) { //don't overwrite the last byte, it's used for the calibration value
+            ResetSleepTimer();          //we don't want to timeout while doing this
+
+            if ( GetDebouncedKey() == KeyClear ) break;
+
+            I2CmemoryWRITE( c, 0 );
+            c2++;
+            if ( c2 >= 100 ) {
+                sprintf( out, "%5u of 65535", c );
+                UpdateLCDline2( out );
+                c2 = 0;
+            }
+        }
+    }
+    return MODE_EXIT;
+
+}
+
+int appSelfTest()
+{
+    int c, c2;
+    int KeyPress2;
+
+    I2CmemoryWRITE( 65530, 0xAA );
+    c = I2CmemoryREAD( 65530 );
+    I2CmemoryWRITE( 65530, 0 );
+    c2 = I2CmemoryREAD( 65530 );
+    if (( c != 0xAA ) || ( c2 != 0 ) ) {
+        UpdateLCDline1( "EEPROM failed!" );
+        UpdateLCDline2( "Press ENTER" );
+        KeyPress2 = GetDebouncedKey();
+        return MODE_EXIT;
+    }
+    UpdateLCDline1( "EEPROM passed" );
+    UpdateLCDline2( "Press ENTER" );
+    KeyPress2 = GetDebouncedKey();
+    UpdateLCDline1( "Keyboard Test" );
+    UpdateLCDline2( "MODE to exit" );
+
+    while ( TRUE ) {
+
+        char *s = 0;
+
+        int KeyPress2 = GetDebouncedKey();
+        switch ( KeyPress2 ) {
+
+        case Key1:
+            s = "1";
+            break;
+        case Key2:
+            s = "2";
+            break;
+        case Key3:
+            s = "3";
+            break;
+        case Key4:
+            s = "4";
+            break;
+        case Key5:
+            s = "5";
+            break;
+        case Key6:
+            s = "6";
+            break;
+        case Key7:
+            s = "7";
+            break;
+        case Key8:
+            s = "8";
+            break;
+        case Key9:
+            s = "9";
+            break;
+        case Key0:
+            s = "0";
+            break;
+        case KeyPoint:
+            s = ".";
+            break;
+        case KeyPlus:
+            s = "+";
+            break;
+        case KeyMinus:
+            s = "-";
+            break;
+        case KeyMult:
+            s = "X";
+            break;
+        case KeyDiv:
+            s = "/";
+            break;
+        case KeyMenu:
+            s = "Menu";
+            break;
+        case KeyEnter:
+            s = "Enter";
+            break;
+        case KeyClear:
+            s = "C";
+            break;
+        case KeySign:
+            s = "+/-";
+            break;
+        case KeyEXP:
+            s = "EXP";
+            break;
+        case KeyRCL:
+            s = "STO";
+            break;
+        case KeyLP:
+            s = "(";
+            break;
+        case KeyRP:
+            s = ")";
+            break;
+        case KeyXY:
+            s = "X-Y";
+            break;
+        case KeyMode:
+            return MODE_KEYMODE;
+        }
+
+        if ( s )
+            UpdateLCDline2( s );
+
+
+    }
+    return MODE_EXIT;
+}
+
+
+char *printTimeout( int *timeout, int max )
+{
+    sprintf( out, "%3d seconds", *timeout / 128 );
+    return out;
+}
+
+void incTimeout( int *timeout, int max ) {
+    if ( ((unsigned int)*timeout) < 53760 )
+        *timeout += 1280;
+}
+
+void decTimeout( int *timeout, int max ) {
+    if ( ((unsigned int)*timeout) > 1280 )
+        *timeout -= 1280;
+}
+
+int appLCDTimeout()
+{
+    return genericMenu( "LCD Timeout:", &printTimeout, 0, &incTimeout, &decTimeout, 2, (int*)&PR1 );
+}
+
+
+int appAbout()
+{
+
+    sprintf( out, "\xE4Watch %s", RevString );
+    viewString( out, "(c)David L. Jones, zowki, hugh, Andrew Davie", 0, 2 );
+    return MODE_EXIT;
+}
 
 
 //***********************************
 // The main setup mode routine
-// Note that all variables are global
-int SetupMode(void)
+
+int SetupMode( int p )
 {
-    unsigned int KeyPress2;        //keypress variables
-    int c,c2;
+    const packedMenu setupMenu = {
+        "Apps Option:",
+        printMenu,
+        increment, decrement, 5,
+        {   0,0,0,0,
+        },
+        {   { "Calc Mode",    &appCalculatorMode, 0 },
+            { "Clear EEPROM", &appClearEEPROM, 0 },
+            { "Self Test", &appSelfTest, 0 },
+            { "LCD timeout", &appLCDTimeout, 0 },
+            { "About", &appAbout, 0 },
+        },
+    };
 
-    char *printSet( int *sel, int max ) {
-        strcpy( out, SetupMenu[ *sel ] );
-        return out;
-    }
-
-    int Mode = 0;
-    if ( genericMenu( "Apps Option:", &printSet, &increment, &decrement, DIM( SetupMenu ), &Mode ) == MODE_KEYMODE )
-        return MODE_KEYMODE;
-
-    custom_character( 1, left_menu );
-    custom_character( 2, right_menu );
-
-
-    switch(Mode)                
-    {
-    case 0: // calc mode
-        {
-            //TODO: genericMenu
-            UpdateLCDline1( "Calculator type:" );
-            do {
-
-                if (RPNmode) 
-                    UpdateLCDline2(  "RPN           \1\2" );
-                else UpdateLCDline2( "Algebraic     \1\2" );
-
-                KeyPress2 = GetDebouncedKey();
-
-                if ( NEXT( KeyPress2 ) || PREVIOUS( KeyPress2 ))
-                    RPNmode = !RPNmode;
-
-            } while ( KeyPress2 != KeyEnter );
-
-        }
-        break;
-    case 1:                 //clear the EEPROM contents
-        {
-            UpdateLCDline1("Erase EEPROM ?");
-            UpdateLCDline2("ENTER or Cancel");
-            KeyPress2 = GetDebouncedKey();
-            if (KeyPress2==KeyEnter)
-            {
-                unsigned int c;
-                UpdateLCDline1("Erasing EEPROM");
-                c2=0;
-                for(c=0;c<65534;c++)        //don't overwrite the last byte, it's used for the calibration value
-                {
-                    ResetSleepTimer();          //we don't want to timeout while doing this
-                    
-					if ( GetDebouncedKey() == KeyClear ) break;
-
-                    I2CmemoryWRITE(c,0);
-                    c2++;
-                    if (c2>=100)    
-                    {
-                        sprintf( out,"%5u of 65535",c);    
-                        UpdateLCDline2(out);
-                        c2=0;
-                    }
-                }
-            }
-        }
-        break;
-    case 2: // self test
-        {
-            I2CmemoryWRITE(65530, 0xAA);
-            c=I2CmemoryREAD(65530);
-            I2CmemoryWRITE(65530, 0);
-            c2=I2CmemoryREAD(65530);
-            if ((c!=0xAA)||(c2!=0))
-            {
-                UpdateLCDline1("EEPROM failed!");
-                UpdateLCDline2("Press ENTER");
-                KeyPress2 = GetDebouncedKey();
-                return MODE_EXIT;
-            }
-            UpdateLCDline1("EEPROM passed");
-            UpdateLCDline2("Press ENTER");
-            KeyPress2 = GetDebouncedKey();
-            UpdateLCDline1("Keyboard Test");
-            UpdateLCDline2("MODE to exit");
-                    
-            while(TRUE)
-            {
-                KeyPress2 = GetDebouncedKey();
-                switch(KeyPress2)
-                {
-                case Key1: UpdateLCDline2("1"); break;
-                case Key2: UpdateLCDline2("2"); break;
-                case Key3: UpdateLCDline2("3");  break;
-                case Key4: UpdateLCDline2("4"); break;
-                case Key5: UpdateLCDline2("5");  break;
-                case Key6: UpdateLCDline2("6"); break;
-                case Key7: UpdateLCDline2("7");  break;
-                case Key8: UpdateLCDline2("8");  break;
-                case Key9: UpdateLCDline2("9");  break;
-                case Key0: UpdateLCDline2("0");  break;
-                case KeyPoint: UpdateLCDline2(".");  break;
-                case KeyPlus: UpdateLCDline2("+");  break;
-                case KeyMinus: UpdateLCDline2("-"); break;
-                case KeyMult: UpdateLCDline2("X"); break;
-                case KeyDiv: UpdateLCDline2("/"); break;
-                case KeyMenu: UpdateLCDline2("Menu"); break;
-                case KeyEnter: UpdateLCDline2("Enter"); break;
-                case KeyClear: UpdateLCDline2("Clear"); break;
-                case KeySign: UpdateLCDline2("+/-"); break;
-                case KeyEXP: UpdateLCDline2("EXP"); break;
-                case KeyRCL: UpdateLCDline2("STO/RCL"); break;
-                case KeyLP: UpdateLCDline2("(ROLL"); break;
-                case KeyRP: UpdateLCDline2(")"); break;
-                case KeyXY: UpdateLCDline2("X-Y"); break;
-                case KeyMode: return MODE_KEYMODE;
-                }
-            }
-        }
-        break;
-
-        case 3: // LCD timeout
-
-            UpdateLCDline1("LCD Timeout:");
-
-            do {
-
-                sprintf(out,"%3d seconds   \001\002",PR1/128);
-                UpdateLCDline2(out);
-
-                KeyPress2 = GetDebouncedKey();
-
-                if ( NEXT( KeyPress2 ) && PR1<53760 )
-                    PR1 = PR1 + 1280;                           //increment by 10 seconds
-
-                if ( PREVIOUS( KeyPress2 ) && PR1>1280 )
-                    PR1 = PR1 - 1280;                           //decrement by 10 seconds
-
-                IFEXIT( KeyPress2 );
-
-            } while( KeyPress2 != KeyEnter );   
-
-            break;
-
-
-        case 4:     //about
-
-            sprintf( out, "\xE4Watch %s", RevString );
-            UpdateLCDline1( out );
-            UpdateLCDline2("(c)David L Jones");
-    		GetDebouncedKey();
-            break;
-
-    }
-
-    return MODE_EXIT;
+    return genericMenu2( &setupMenu, 0 );
 }
+
 
