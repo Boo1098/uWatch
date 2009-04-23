@@ -218,11 +218,11 @@ int viewString( char *title, char *string,
 
         UpdateLCDline2( out );
 
-        if ( oneshot == 1 )
+        if ( viewControl == VIEW_ONESHOT )
             break;
 
 
-        if ( oneshot == 2 ) {
+        if ( viewControl == VIEW_AUTOSCROLL ) {
 
             if ( key )
                 DelayMs(350);
