@@ -230,4 +230,9 @@
 - added generic menu-drawing and selection code – see genericMenu2 and to a lesser extent genericMenu
 - changed the HEX digit input to a menu-system.  Note that quick-keys works for this, too.
 
+1.5.B
+- added auto-scrolling (hold direction down) to viewMenu. See VIEW_* equates in menu.h for control
+- added KeyEXP equivalent to ) and - for menu control.  It's to the left of MENU, it makes logical
+  sense for it to function this way;  several times I pressed it accidentally before
+  realising I really should include the key... it does no harm.
 
