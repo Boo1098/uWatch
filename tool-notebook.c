@@ -6,7 +6,7 @@
 const char *view = "Four score and seven years ago our fathers brought forth, upon this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.";
 int notebook() {
 
-    viewString( "Notebook:", (char *)view, 0, 2 );
+    viewString( "Memo:", (char *)view, 0, 2 );
     return MODE_EXIT;
 }
 

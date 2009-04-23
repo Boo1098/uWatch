@@ -298,4 +298,6 @@ extern BOOL ProgRec;
 extern int CurrentMenu; //to go?
 extern BOOL NextMode;
 
+extern char displayBuffer[];
+
 #endif

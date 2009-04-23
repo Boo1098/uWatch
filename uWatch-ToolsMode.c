@@ -195,60 +195,80 @@ int StopWatch(void) {
 
 int quadratic( int p ) {
 
-    int KeyPress2;
-
     //quadratic (Solve ax^2 + bx + c = 0 given B*B-4*A*C >= 0)
 
     float a,b,c;
     float d;
     float root1,root2;
-    float tmp;
-    char s2[MaxLCDdigits + 1];
     
-    /*receive coefficients a, b and c from user*/
-    UpdateLCDline1("Enter a:");
-    Xreg = 0;
-    tmp = OneLineNumberEntry();
-    a = Xreg;
-    UpdateLCDline1("Enter b:");
-    Xreg = 0;
-    tmp = OneLineNumberEntry();
-    b = Xreg;
-    UpdateLCDline1("Enter c:");
-    Xreg = 0;
-    tmp = OneLineNumberEntry();
-    c = Xreg;
-    Xreg = 0;
-    
-    d  = sqrt(b*b - 4.0*a*c);   //compute the square root of discriminant d
-    root1 = (-b + d)/(2.0*a);   //first root
-    root2 = (-b - d)/(2.0*a);   //second root
-    
-    if (b*b-4*a*c>=0) //check for valid equation
-    {
-        memset( out, '\0', MaxLCDdigits+1 ); //clear string
-        sprintf(s2, "%f", root1);
-        strcat( out, "x=");
-        strcat(out, s2);
-        UpdateLCDline1(out);
-    
-        memset(out, '\0', MaxLCDdigits+1 );
-        strcat(out, "or x=");
-        sprintf(s2, "%f", root2);
-        strcat(out, s2);
-        UpdateLCDline2(out);
-        KeyPress2 = GetDebouncedKey();
-    }
-    
-    else
-    {
-        UpdateLCDline1("Error:");
-        UpdateLCDline2("Invalid Equation");
-        KeyPress2 = GetDebouncedKey();
-    }
+    custom_character( 2, character_squaring );
+    UpdateLCDline1( "[?]x\2 + bx + c" );
 
-    return MODE_EXIT;
-}
+    Xreg = 0;
+
+    IFEXIT( OneLineNumberEntry() );
+
+    a = Xreg;
+
+    UpdateLCDline1( "ax\2 + [?]x + c" );
+    Xreg = 0;
+
+    IFEXIT( OneLineNumberEntry() );
+
+    b = Xreg;
+    UpdateLCDline1( "ax\2 + bx + [?]" );
+    Xreg = 0;
+
+    IFEXIT( OneLineNumberEntry() );
+
+    c = Xreg;
+//    Xreg = 0;
+
+    if ( a == (int)a )
+        sprintf( displayBuffer, "%d", (int)a );
+    else
+        sprintf( displayBuffer, "%f", a );
+
+    strcat( displayBuffer, "x\2+" );
+
+    if ( b == (int)b )
+        sprintf( out, "%d", (int)b );
+    else
+        sprintf( out, "%f", b );
+   
+    strcat( displayBuffer, out );
+    strcat( displayBuffer, "x+" );
+
+    if ( c == (int)c )
+        sprintf( out, "%d ", (int)c );
+    else
+        sprintf( out, "%f ", c );
+
+    strcat( displayBuffer, out );
+
+    
+    if ( a == 0 )
+        strcat( displayBuffer, "has no roots." );
+    else {
+    
+        d = b*b - 4*a*c;
+    
+        if ( d < 0 )
+            strcat( displayBuffer, "is invalid (b\2-4ac < 0)." );
+        else {
+    
+            d  = sqrt(d);   //compute the square root of discriminant d
+            root1 = (-b + d)/(2.0*a);   //first root
+            root2 = (-b - d)/(2.0*a);   //second root
+    
+            char buffer[64];
+            sprintf( buffer, " has roots %f and %f.", root1, root2 );
+            strcat( displayBuffer, buffer );
+        }
+    }
+    
+    return viewString( "Equation", displayBuffer, 0, VIEW_AUTOSCROLL );
+    }
     
 
 
