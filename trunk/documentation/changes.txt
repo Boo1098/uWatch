@@ -235,4 +235,6 @@
 - added KeyEXP equivalent to ) and - for menu control.  It's to the left of MENU, it makes logical
   sense for it to function this way;  several times I pressed it accidentally before
   realising I really should include the key... it does no harm.
+- added new string display to output of quadratic() tool
+- added early-abort (C key and MODE key) to factor() tool. If C pressed, partial result displayed.
 
