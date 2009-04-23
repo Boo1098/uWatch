@@ -228,4 +228,6 @@
 - put in backlight operation on calculator more.  STO/RCL key is multiplexed, so we don't lose that key :)
 - added “cards” characters / hearts/clubs/spades/diamonds
 - added generic menu-drawing and selection code – see genericMenu2 and to a lesser extent genericMenu
+- changed the HEX digit input to a menu-system.  Note that quick-keys works for this, too.
+
 
