@@ -28,6 +28,10 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
+#include "def.h"
+#include "calculator.h"
+#include "menu.h"
+
 
 void reduce(int lev)
 {
@@ -67,7 +71,14 @@ void ALGcalculator(void)
 
         NextMode=FALSE;             //user pressed some key other than MODE, so ensure that when exit we go back to the time/date display
 
-        // common menu mode or not
+
+        if ( Key == KeyMenu ) {
+            WatchMode = WATCH_MODE_CALC_MENU;
+            genericMenu2( &mathMenu, 0 );
+            WatchMode = WATCH_MODE_CALC;
+        }
+
+/*        // common menu mode or not
         while (Key == KeyMenu)
         {
             int mi;
@@ -124,6 +135,7 @@ void ALGcalculator(void)
 
             }
         }
+*/
 
         // handle numbers
         Key = EnterNumber(Key);
