@@ -177,7 +177,7 @@ const packedMenu mathMenu = {
         { "\2Time/Day/Date",      doMenu,         (int)&menuTimeDayDate         },
         { "\2Keystroke",          doMenu,         (int)&menuKeystroke           },
         { "\2Assorted",           doMenu,         (int)&menuOther               },
-        { "\2Bit Operations", doMenu, (int)&menuBitwise },
+        { "\2Bit Ops", doMenu,(int)&menuBitwise },
     },
 };
 

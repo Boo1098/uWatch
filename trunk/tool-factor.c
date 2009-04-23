@@ -61,16 +61,31 @@ int factor( int p )
         idleEnd = sqrt( nx );
         sprintf( displayBuffer, "%lu = (", nx );
         viewString( "Factorising:", displayBuffer, 0, 1 );
+
+        const char *nb = "Result:";
     
-        for ( in = 2; in <= idleEnd; in++ )
+        for ( in = 2; in <= idleEnd; in++ ) {
+
+            int key = KeyScan2( FALSE );
+
+            if ( key == KeyClear ) {
+                strcat( displayBuffer, " ..." );
+                nb = "Halted!";
+                break;
+            }
+
+            if ( key == KeyMode )
+                return MODE_KEYMODE;
+
             check( nx, in, &factors );
+        }
 
         strcat( displayBuffer, ")" );
     
-        if (factors == 0 )
-            sprintf( displayBuffer, "%lu is prime.", nx );
+//        if (factors == 0 )
+//            sprintf( displayBuffer, "%lu is prime.", nx );
 
-        viewString( "Factorised:", displayBuffer, 0, 2 );
+        viewString( (char *) nb, displayBuffer, 0, 2 );
 
     }
 
