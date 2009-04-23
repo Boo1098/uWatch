@@ -219,7 +219,7 @@ void ResetFlags(void);
 extern int  EnableXregOverwrite;
 
 #define NEXT( key ) ( (key) == KeyMenu || (key) == KeyPlus || (key) == KeySign )
-#define PREVIOUS( key ) ( (key) == KeyRP || (key) == KeyMinus )
+#define PREVIOUS( key ) ( (key) == KeyRP || (key) == KeyMinus || (key) == KeyEXP )
 #define IFEXIT( key ) if ( (key) == KeyMode || (key) == KeyClear ) return MODE_KEYMODE;
 
 int OneLineNumberEntry();
