@@ -31,11 +31,18 @@ This program is free software: you can redistribute it and/or modify
 
 #include <ctype.h>
 #include "uWatch-op.h"
+#include "def.h"
+#include "menu.h"
+#include "characterset.h"
+#include "calculator.h"
 
-extern void HexEntry(void);
+
+
+int HexEntry();
+
 extern void UpdateXregDisplay(void);
 extern void UpdateYregDisplay(void);
-extern void UpdateDisplayRegs(void);
+//extern void UpdateDisplayRegs(void);
 extern void CompleteXreg(void);
 extern void ResetFlags(void);
 extern void StoreRecall(void);
@@ -122,6 +129,36 @@ void Operate(int op)
     Operation(op);              // operate on X & Y
     UpdateDisplayRegs();        //update display again
 }
+
+extern void reduce(int lev);
+
+int OperatePrecedence( int op ) {
+
+    int p = opPrec( op );
+    if ( !p || RPNmode )
+        Operate( op );
+
+    else {
+
+        // Algorithmic calculator has to deal with operator precedence
+
+        reduce(p);
+    
+        // push OP
+        ResetFlags();
+        PushOp( op );
+    
+        // and values
+        Push();
+        Clx();
+    
+        EnableXregOverwrite = TRUE;
+        UpdateDisplayRegs();
+    }
+
+    return MODE_EXIT;
+}
+
 
 static void ProcessNumberKey(char digit)
 {
@@ -951,129 +988,30 @@ void KeyReplay(void)
     DelayMs(1000);
 }
 
-
+int hexSelect( int sel ) {
+    ProcessNumberKey( sel + 'A' );
+    UpdateLCDline2(DisplayXreg);
+    return MODE_EXIT;
+}
 
 //**************************************
 // enter a HEX digit A-F onto the current Xreg string
-void HexEntry(void)
+int HexEntry(void)
 {
-    int KeyPress2;
-    char digit[2];
-    UpdateLCDline1(" F1=A F2=B F3=C ");
-    UpdateLCDline2(" F4=D F5=E F6=F ");
+    const packedMenu hexMenu = {
+        0,
+        printMenu, increment, decrement, 6,
+        {   characterMenu,
+        },
+        {   { "[A]BCDEF", hexSelect, 0 },
+            { "A[B]CDEF", hexSelect, 1 },
+            { "AB[C]DEF", hexSelect, 2 },
+            { "ABC[D]EF", hexSelect, 3 },
+            { "ABCD[E]F", hexSelect, 4 },
+            { "ABCDE[F]", hexSelect, 5 },
+        },
+    };
 
-	KeyPress2 = GetDebouncedKey();
-
-    switch(KeyPress2)
-    {
-    case Key7: {digit[0]='A'; break;}
-    case Key8: {digit[0]='B'; break;}
-    case Key9: {digit[0]='C'; break;}
-    case Key4: {digit[0]='D'; break;}
-    case Key5: {digit[0]='E'; break;}
-    case Key6: {digit[0]='F'; break;}
-    default:
-        {
-            UpdateLCDline1(DisplayYreg);
-            UpdateLCDline2(DisplayXreg);
-            return;         
-        }
-    }
-        
-    if (strlen(DisplayXreg)<MaxLCDdigits)
-    {
-        ProcessNumberKey( digit[0] );
-        UpdateLCDline1(DisplayYreg);
-        UpdateLCDline2(DisplayXreg);
-    }
+    return genericMenu2( &hexMenu, 0 );
 }   
 
-static const char* ConversionsMenu[] = 
-{
-    "mils \2 mm",
-    "mm \2 mils",
-    "\1F \2 \1C",
-    "\1C \2 \1F",
-    "kg \2 lb",
-    "lb \2 kg"
-};
-
-//**********************************
-// display the conversions menu
-int Conversions(void)
-{
-	static const unsigned char deg[] = { 0x06, 0x09, 0x09, 0x06, 0x00, 0x00, 0x00, 0x00 };
-	custom_character( 1, (unsigned char *) deg );
-	static const unsigned char arrow[] = { 0x00, 0x04, 0x02, 0x1F, 0x02, 0x04, 0x00, 0x00 };
-	custom_character( 2, (unsigned char *) arrow );
-
-    char *printConv( int *sel, int max ) {
-        strcpy( out, ConversionsMenu[ *sel ] );
-        return out;
-    }
-
-    int Mode = 0;
-    if ( genericMenu( "Convert:", &printConv, &increment, &decrement, DIM( ConversionsMenu ), &Mode ) == MODE_KEYMODE )
-        return MODE_KEYMODE;
-
-    switch(Mode)                
-    {
-    case 0: 
-        {
-            Xreg=Xreg*0.0254;
-            break;
-        }
-    case 1:
-        {
-            Xreg=Xreg*(1.0/0.0254);
-            break;
-        }
-    case 2: 
-        {
-            Xreg=(Xreg-32.0)*5.0/9.0;
-            break;
-        }
-    case 3:
-        {
-            Xreg=Xreg*9.0/5.0+32.0;
-            UpdateDisplayRegX();    //update display again
-            break;
-        }
-    case 4:
-        {
-            Xreg=Xreg*2.2046226218487757;
-            break;
-        }
-    case 5:
-        {
-            Xreg=Xreg*0.45359237;
-            break;
-        }
-    }
-
-    return MODE_EXIT;
-} 
-
-void BaseMode(void)
-{
-    int KeyPress2;
-    UpdateLCDline1(" Bin  Dec  Hex  ");
-    UpdateLCDline2("                ");
-
-	KeyPress2 = GetDebouncedKey();
-    switch(KeyPress2)
-    {
-    case Key7: {CalcDisplayBase = 2; break;}
-    case Key8: {CalcDisplayBase =10; break;}
-    case Key9: {CalcDisplayBase =16; break;}
-    default:
-        {
-            UpdateLCDline1(DisplayYreg);
-            UpdateLCDline2(DisplayXreg);
-            return;         
-        }
-    }
-        
-    CompleteXreg();
-    return;
-}
