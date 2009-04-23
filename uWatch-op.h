@@ -50,8 +50,8 @@ extern void Push();
 extern void Drop();
 extern void KeyRecord(void);
 extern void KeyReplay(void);
-extern int Conversions(void);
-extern void BaseMode(void);
+//extern int Conversions(void);
+//extern void BaseMode(void);
 extern void SwapXY();
 
 /* Operation Codes */
@@ -104,6 +104,21 @@ extern void SwapXY();
 #define CALC_OP_HYP_ASIN        45
 #define CALC_OP_HYP_ACOS        46
 #define CALC_OP_HYP_ATAN        47
+#define CALC_OP_BASE2           48
+#define CALC_OP_BASE10          49
+#define CALC_OP_BASE16          50
+
+#define CALC_OP_CONV_MILS_TO_MM 51
+#define CALC_OP_CONV_MM_TO_MILS 52
+#define CALC_OP_CONV_FC         53
+#define CALC_OP_CONV_CF         54
+#define CALC_OP_CONV_KG_LB      55
+#define CALC_OP_CONV_LB_KG      56
+
+#define CALC_OP_LOGIC_AND       57
+#define CALC_OP_LOGIC_OR        58
+#define CALC_OP_LOGIC_XOR       59
+#define CALC_OP_LOGIC_NOT       60
 
 
 #endif // __uwatch_op_h__

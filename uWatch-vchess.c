@@ -105,6 +105,16 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "def.h"
+#include "menu.h"
+#include "uWatch-vchess.h"
+
+
+#define CASE_MIN        0
+#define CASE_MOVES      1
+#define CASE_NONSLIDERS 2
+#define CASE_ALL        0xff
+
 
 typedef unsigned char uchar;
 typedef signed char byte;
@@ -112,6 +122,13 @@ typedef unsigned int uint;
 typedef unsigned long uint4;
 
 #define VERSION "VoidCHESS 1.4"
+
+// maximum moves in tree search
+#define MAX_STACK       100
+#define MAX_PV          10
+#define MAX_DEPTH       10
+#define WIN_SCORE       10000
+
 
 // canonial piece codes
 typedef enum
@@ -132,6 +149,24 @@ typedef struct
     uchar promote;
     uchar toPos;
 } Move;
+
+// represent the principal variation
+typedef struct 
+{
+    int         n;
+    Move        m[MAX_PV];
+} PVLine;
+
+
+void initBoard();
+static int computerMoves();
+int moveGen(int cases, int side);
+int moveToBoard(const char* p);
+void playMove(Move m);
+int search(int alpha, int beta, int depth, int top, int nullDepth, int tryPV, PVLine* ppv);
+const char* moveToStr(Move m, int fancy);
+
+
 
 // board offset of king position
 #define POSKING  0x08
@@ -164,11 +199,6 @@ typedef struct
 // pieces separated by 32 so we have a bit for black
 #define BLACKPOS 0x40
 
-// maximum moves in tree search
-#define MAX_STACK       100
-#define MAX_PV          10
-#define MAX_DEPTH       10
-#define WIN_SCORE       10000
 
 // for pos codes
 #define SIDEOF(_x) ((_x)>=(BLACKPOS+POSKING))
@@ -182,12 +212,6 @@ typedef struct
 #define SLIDE_DIAG 1
 #define SLIDE_ORTH 2
 
-// represent the principal variation
-typedef struct 
-{
-    int         n;
-    Move        m[MAX_PV];
-} PVLine;
 
 byte Board[128]; // 0x88 representation
 uint Side;
@@ -232,6 +256,145 @@ const byte offset[6][9] =
     { 16, -1, 1, -16 }, // r
     { 15, 16, 17, -1, 1, -17, -16, -15 }, // q
 };
+
+static int chessLevel;
+
+
+int chessGame( int p )
+{
+    int KeyPress2;
+
+
+    UpdateLCDline1( "- VCHESS v1.3  -" );
+    UpdateLCDline2( "Ent to continue" );
+    if (( KeyPress2 = GetDebouncedKey() ) == KeyMode ) return MODE_KEYMODE;
+
+    int computer = BLACK;
+    int moveok;
+    Move* mv;
+    Move* first;
+    int to, from;
+
+    initBoard();
+
+    UpdateLCDline1( "Play which color" );
+    UpdateLCDline2( "White=1, Black=2" );
+    if (( KeyPress2 = GetDebouncedKey() ) == KeyMode ) return MODE_KEYMODE;
+    if ( KeyPress2 == Key2 ) computer = WHITE;
+
+    for ( ;; ) {
+        int lev;
+        UpdateLCDline1( "Level 1,2 or 3 ?" );
+        if ( OneLineNumberEntry() == KeyMode ) return MODE_KEYMODE; // escape
+        lev = Xreg;
+        if ( lev >= 1 && lev <= 3 ) {
+            chessLevel = lev;
+            break;
+        }
+    }
+
+    // NB: will be overwritten if comp moves
+    UpdateLCDline1( "Your move?" );
+    Xreg = 0; //clear Xreg
+
+    for ( ;; ) {
+        if ( computer == Side ) {
+            if ( computerMoves() ) {
+                GetDebouncedKey();
+                break; // game over
+            }
+            continue;
+        }
+
+        moveStackPtr = MoveStack;
+        first = moveStackPtr;
+
+        // generate legal moves
+        moveGen( CASE_ALL, Side );
+
+        do {
+            moveok = 0;
+
+            // get move
+            if ( OneLineNumberEntry() == KeyMode ) return MODE_KEYMODE; // escape
+
+            // parse move
+            from = moveToBoard( DisplayXreg );
+            to =  moveToBoard( DisplayXreg + 2 );
+
+            if ( from >= 0 && to >= 0 ) {
+                // check legal
+                for ( mv = first; mv != moveStackPtr; ++mv ) {
+                    if ( mv->from == from && mv->to == to ) {
+                        moveok = 1;
+                        break;
+                    }
+                }
+            }
+            if ( !moveok )
+                UpdateLCDline1( "Illegal move!" );
+        } while ( !moveok );
+
+        if ( moveok )
+            playMove( *mv );
+    }
+
+    return MODE_EXIT;
+}
+
+
+static int computerMoves()
+{
+    int i;
+    int v = 0;
+    int chk = InCheck;
+    int dmax = chessLevel;
+
+    Nodes = 0;
+
+    // boost one level when in check
+    if ( chk ) ++dmax;
+
+    UpdateLCDline1( "thinking..." );
+
+    /* bump the CPU whilst we think... */
+    DisableSleepTimer();
+    Clock4MHz();
+
+    memset( &MainPV, 0, sizeof( MainPV ) );
+    for ( i = 1; i <= dmax; ++i ) {
+        UsePV = 1;
+        InCheck = chk;
+        moveStackPtr = MoveStack;
+        v = search( -WIN_SCORE, WIN_SCORE, i, i, 0, 1, &MainPV );
+    }
+
+
+    /* and back again to slow.. */
+    Clock250KHz();
+    EnableSleepTimer();
+    ResetSleepTimer();
+
+    if ( v <= -WIN_SCORE ) {
+        UpdateLCDline2( "You Win!" );
+        return -1;
+    } else {
+        if ( MainPV.n ) {
+            char buf[16];
+            Move* m = MainPV.m;
+            playMove( *m );
+            strcat( strcpy( buf, "= " ), moveToStr( *m, 1 ) );
+            if ( InCheck ) strcat( buf, " Check!" );
+            UpdateLCDline1( buf );
+        }
+
+        if ( v >= WIN_SCORE ) {
+            UpdateLCDline2( "I Win!" );
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void initPieces(const uchar* board)
 {
@@ -295,10 +458,6 @@ void initBoard()
 }
 
 
-#define CASE_MIN        0
-#define CASE_MOVES      1
-#define CASE_NONSLIDERS 2
-#define CASE_ALL        0xff
 
 int attackTest(int cases, int side, int pos)
 {

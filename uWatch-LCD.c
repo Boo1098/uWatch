@@ -27,6 +27,11 @@ This program is free software: you can redistribute it and/or modify
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
+
+#include "def.h"
+
+
+
 // strobes the LCD for data transmission
 void LCD_STROBE(void)
 {
@@ -73,9 +78,7 @@ const unsigned char *custom_char_memory[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 int custom_character( int charctr,const unsigned char* custom ) 
 {
-	// Note the absence of const in the parameter 'custom'
-	// This is so we can have ram-based custom charactesr. This in turn
-	// requires a manual cast to (non const) when calling with const data
+    custom_char_memory[charctr] = custom;	// save for power-up restoration
 
     int i;
     ClearLCD_RS;
@@ -83,7 +86,6 @@ int custom_character( int charctr,const unsigned char* custom )
     SetLCD_RS;
     for ( i = 0; i < 8; i++ ) {
         lcd_write( custom[i] );
-		custom_char_memory[charctr] = custom;	// save for power-up restoration
 	}
     return charctr | 8;			// avoid '0' problem
 }
@@ -93,8 +95,8 @@ int custom_character( int charctr,const unsigned char* custom )
 void restoreCustomCharacters() {
 	int i;
     for ( i = 0; i < 8; i++ )
-		if ( custom_char_memory[i] )
-			custom_character( i, &custom_char_memory[i][0] );
+        if ( custom_char_memory[i] )
+    	    custom_character( i, custom_char_memory[i] );
 }
 
 
