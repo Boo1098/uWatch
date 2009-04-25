@@ -272,9 +272,11 @@ const unsigned char character_bishop[] = { 0x04, 0x0E, 0x1D, 0x1F, 0x0E, 0x04, 0
 const unsigned char character_knight[] = { 0x03, 0x1A, 0x1F, 0x07, 0x0E, 0x1E, 0x1F, 0x1F };
 
 //const unsigned char character_up[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x1F };
-const unsigned char character_down[] = { 0x1F, 0x0E, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00 };
+const unsigned char character_arrow_down[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x0E, 0x04 };
+const unsigned char character_arrow_up[] = { 0x04, 0x0E, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x00 };
+const unsigned char character_arrow_updown[] = { 0x04, 0x0E, 0x1F, 0x00, 0x00, 0x1F, 0x0E, 0x04 };
 
-const unsigned char character_up[] = { 0x15, 0, 0x0A, 0, 0x15, 0, 0x0A, 0 };
+const unsigned char character_blacksquare[] = { 0x15, 0, 0x0A, 0, 0x15, 0, 0x0A, 0 };
 
 
 
@@ -370,7 +372,7 @@ void updateLine( char *destW, char *destB, int line ) {
 
         int bInd = ( line << 4 ) + col;
         char visual = 0x20;
-        if (( line + col ) & 1 )
+        if (!(( line + col ) & 1 ))
             visual = 8;
 
       
@@ -388,19 +390,43 @@ void updateLine( char *destW, char *destB, int line ) {
     }
 }
 
+int contrast = 18;
+
 
 void drawBoard( int line ) {
 
     UpdateLCDline1( dispBoard[ line + 1 ] );
     UpdateLCDline2( dispBoard[ line ] );
 
-    DelayMs(15);
+    if ( contrast )
+        DelayMs( contrast );
 
     // "draw" black last
     UpdateLCDline1( dispBoard[ line + 11 ]);
     UpdateLCDline2( dispBoard[ line + 10 ]);
+}
+
+
+void clearArrow( int line ) {
+    dispBoard[line+1][15]=0x20;
+    dispBoard[line+11][15]=0x20;
+}
+
+void fixArrow( int line ) {
+
+    const unsigned char *newArrow = character_arrow_updown;
+    if ( line == 8 )
+        newArrow = character_arrow_down;
+    else if ( line == 0 )
+        newArrow = character_arrow_up;
+
+    custom_character( 4, newArrow );
+    dispBoard[ line + 1 ][15] = 4;
+    dispBoard[ line + 11 ][15] = 4;
 
 }
+
+
 
 int showBoard() {
 
@@ -408,8 +434,12 @@ int showBoard() {
     for ( row = 0; row < 8; row ++ )
         updateLine( dispBoard[ row + 11 ] + 4, dispBoard[ row + 1 ] + 4, row );
 
+
     int line = 0;
     int mask = 0;
+
+    fixArrow( line );
+
     while ( TRUE ) {
 
         drawBoard( line );
@@ -424,13 +454,23 @@ int showBoard() {
         if ( key == KeyMode )
             return MODE_KEYMODE;
 
+        int temp = ReturnNumber(key);
+        if ( temp >= 0 && temp <= 9 ) {
+            contrast = temp * 8;
+            mask = 0;
+        }    
+
         if ( PREVIOUS( key ) && line < 8 ) {
+            clearArrow( line );
             line++;
+            fixArrow( line );
             mask = 0;
         }
 
         else if ( NEXT( key ) && line > 0 ) {
+            clearArrow( line );
             line--;
+            fixArrow( line );
             mask = 0;
         }
     }
@@ -464,8 +504,8 @@ int chessGame( int p )
     // Odd ordering of character #s is so we can use the chess engine's piece #s without
     // requiring translation.
 
-    custom_character( 0, character_up );
-    custom_character( 4, character_down );
+    custom_character( 0, character_blacksquare );
+    custom_character( 4, character_arrow_updown );
 
     custom_character( 1, character_pawn );
     custom_character( 2, character_knight );
@@ -507,7 +547,7 @@ int chessGame( int p )
             moveok = 0;
 
             if ( showBoard() == MODE_KEYMODE )
-                return;
+                return MODE_KEYMODE;
 
             // get move
             UpdateLCDline1( "Your move?" );
