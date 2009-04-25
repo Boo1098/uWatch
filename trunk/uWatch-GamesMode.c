@@ -50,7 +50,7 @@ int lunarLander( int p )
 {
     int KeyPress2;
 
-#if 1
+#if 0
 
     UpdateLCDline1( "--LUNAR LANDAR--" );
     UpdateLCDline2( " By Shaun Chong " );

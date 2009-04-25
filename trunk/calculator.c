@@ -14,10 +14,14 @@ int doMenu( int op )
 
 const packedMenu menuConstant = {
     "Constant:",
-    printMenu, increment, decrement, 1,
-    {   character_pi,0,0,0,
+    printMenu, increment, decrement, 3,
+    {   character_pi,character_minus1,0,0,
     },
-    {   { "\2 pi",                     OperatePrecedence,        CALC_OP_PI              },
+    {   { "pi \2",                     OperatePrecedence,        CALC_OP_PI              },
+        { "light speed", OperatePrecedence, CALC_OP_LIGHT },
+        { "Avogadro's", OperatePrecedence, CALC_OP_AVOGADRO },
+
+
         // e,phi, ... ?
     },
 };
