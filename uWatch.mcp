@@ -55,6 +55,7 @@ file_028=.
 file_029=.
 file_030=.
 file_031=.
+file_032=.
 [GENERATED_FILES]
 file_000=no
 file_001=no
@@ -88,6 +89,7 @@ file_028=no
 file_029=no
 file_030=no
 file_031=no
+file_032=no
 [OTHER_FILES]
 file_000=no
 file_001=no
@@ -121,6 +123,7 @@ file_028=no
 file_029=no
 file_030=no
 file_031=yes
+file_032=yes
 [FILE_INFO]
 file_000=uWatch-Main.c
 file_001=uWatch-astro.c
@@ -154,6 +157,7 @@ file_028=uWatch-LCD.h
 file_029=tool-factor.h
 file_030=notebook.h
 file_031=uWatch.map
+file_032=documentation\changes.txt
 [SUITE_INFO]
 suite_guid={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 suite_state=
