@@ -68,6 +68,8 @@
 * 
 * SUMMARY:
 
+
+
 * when `index' & 0x88 == 0, we have a valid board square and Board[index] =
 *       piece position slot (pps), zero => empty.
 * Board[pps] = square index (ie back to the board square), -1 => empty.
@@ -108,6 +110,8 @@
 #include "def.h"
 #include "menu.h"
 #include "uWatch-vchess.h"
+#include "uWatch-LCD.h"
+#include "characterset.h"
 
 
 #define CASE_MIN        0
@@ -258,18 +262,189 @@ const byte offset[6][9] =
 };
 
 static int chessLevel;
+int computer;
+
+const unsigned char character_king[] = { 0x04, 0x0e, 0x04, 0x11, 0x15, 0x0E, 0x0E, 0x1F };
+const unsigned char character_queen[] = { 0x00, 00, 0x15, 0x04, 0x15, 0x0E, 0x0E, 0x1F };
+const unsigned char character_pawn[] = { 0x00, 0x00, 0x00, 0x0E, 0x0E, 0x4, 0x04, 0x0E };
+const unsigned char character_rook[] = { 0x00, 0x15, 0x1F, 0xE, 0xE, 0x0E, 0x0E, 0x1F };
+const unsigned char character_bishop[] = { 0x04, 0x0E, 0x1D, 0x1F, 0x0E, 0x04, 0x0E, 0x1F };
+const unsigned char character_knight[] = { 0x03, 0x1A, 0x1F, 0x07, 0x0E, 0x1E, 0x1F, 0x1F };
+
+//const unsigned char character_up[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x1F };
+const unsigned char character_down[] = { 0x1F, 0x0E, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+const unsigned char character_up[] = { 0x15, 0, 0x0A, 0, 0x15, 0, 0x0A, 0 };
+
+
+
+int chosen( int *sel, int computerColour ) {
+    computer = 1-computerColour;
+    return MODE_EXIT;
+}
+
+char line1WHITE[17];
+char line2WHITE[17];
+char line1BLACK[17];
+char line2BLACK[17];
+
+
+const packedMenu colourMenu = {
+    "- VCHESS v1.3 -",
+    printMenu,
+    increment, decrement, 2,
+    {   0,0,0,0,
+    },
+    {   { "White", &chosen, WHITE },
+        { "Black", &chosen, BLACK },
+    },
+};
+
+int levelChoose( int *sel, int p ) {
+    chessLevel = *sel + 1;
+    return MODE_EXIT;
+}
+
+const packedMenu levelMenu = {
+    "Difficulty?",
+    printMenu,
+    increment, decrement, 3,
+    {   0,0,0,0,
+    },
+    {   { "Easy", &levelChoose, 0 },
+        { "Medium", &levelChoose, 0 },
+        { "Hard", &levelChoose, 0 },
+    },
+};
+
+
+
+/*void updateDisplayLines( int line ) {
+
+    Clock4MHz();
+
+    sprintf( line1WHITE, " %d \x7C\010\1\2\3 \5  \x7C  \6",  line+1 );
+    sprintf( line2WHITE, " %d \x7C\010 \2  \2\1 \x7C  \7",  line );
+ 
+    sprintf( line1BLACK, " %d \x7C\010 \2\3 \5\4\3\x7C  \6",  line+1 );
+    sprintf( line2BLACK, " %d \x7C\010\1\2\3\4\2\1\010\x7C  \7",  line );
+
+    if ( !line ) {
+        sprintf( line2WHITE, "    ABCDEFGH" );
+        strcpy( line2BLACK, line2WHITE );
+    }
+
+    if ( line == 8 ) {
+        sprintf( line1WHITE, "    12345678" );
+        strcpy( line1BLACK, line1WHITE );
+    }
+
+    Clock250KHz();
+}
+*/
+
+char dispBoard[20][17];
+
+void initDisplay() {
+
+    strcpy( dispBoard[0], "    12345678    " );
+    strcpy( dispBoard[10], dispBoard[0] );
+
+    strcpy( dispBoard[9], "    ABCDEFGH    " );
+    strcpy( dispBoard[19], dispBoard[9] );
+    
+    int line;
+    for ( line = 0; line < 8; line++ ) {
+        sprintf( dispBoard[ line + 1 ], " %d |        |   ", line+1 );
+        strcpy( dispBoard[ line + 11 ], dispBoard[ line + 1 ] );
+    }    
+}
+
+void updateLine( char *destW, char *destB, int line ) {
+
+    int col;
+    for ( col = 0; col < 8; col++ ) {
+
+        *destW = 0x20;
+        *destB = 0x20;
+
+        int bInd = ( line << 4 ) + col;
+        char visual = 0x20;
+        if (( line + col ) & 1 )
+            visual = 8;
+
+      
+        int pos = Board[ bInd ];
+        if ( pos > 0 ) {
+            visual = Board[ pos + 0x20 ];       // type = custom char# too
+            if ( pos & 0x40 )                   // black piece?
+                *destB = visual;
+        }
+
+        *destW = visual;
+        destW++;
+        destB++;
+
+    }
+}
+
+
+void drawBoard( int line ) {
+
+    UpdateLCDline1( dispBoard[ line + 1 ] );
+    UpdateLCDline2( dispBoard[ line ] );
+
+    DelayMs(15);
+
+    // "draw" black last
+    UpdateLCDline1( dispBoard[ line + 11 ]);
+    UpdateLCDline2( dispBoard[ line + 10 ]);
+
+}
+
+int showBoard() {
+
+    int row;
+    for ( row = 0; row < 8; row ++ )
+        updateLine( dispBoard[ row + 11 ] + 4, dispBoard[ row + 1 ] + 4, row );
+
+    int line = 0;
+    int mask = 0;
+    while ( TRUE ) {
+
+        drawBoard( line );
+
+        int key = KeyScan2( FALSE );
+        if ( key == 0 )
+            mask = 0xFFFF;
+        key &= mask;
+
+        if ( key == KeyClear || key == KeyEnter )
+            break;
+        if ( key == KeyMode )
+            return MODE_KEYMODE;
+
+        if ( PREVIOUS( key ) && line < 8 ) {
+            line++;
+            mask = 0;
+        }
+
+        else if ( NEXT( key ) && line > 0 ) {
+            line--;
+            mask = 0;
+        }
+    }
+
+    return MODE_EXIT;
+}
+
 
 
 int chessGame( int p )
 {
-    int KeyPress2;
 
+    computer = BLACK;
 
-    UpdateLCDline1( "- VCHESS v1.3  -" );
-    UpdateLCDline2( "Ent to continue" );
-    if (( KeyPress2 = GetDebouncedKey() ) == KeyMode ) return MODE_KEYMODE;
-
-    int computer = BLACK;
     int moveok;
     Move* mv;
     Move* first;
@@ -277,27 +452,43 @@ int chessGame( int p )
 
     initBoard();
 
-    UpdateLCDline1( "Play which color" );
-    UpdateLCDline2( "White=1, Black=2" );
-    if (( KeyPress2 = GetDebouncedKey() ) == KeyMode ) return MODE_KEYMODE;
-    if ( KeyPress2 == Key2 ) computer = WHITE;
+    // choose colour    
+    if ( genericMenu2( &colourMenu, 0 ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
 
-    for ( ;; ) {
-        int lev;
-        UpdateLCDline1( "Level 1,2 or 3 ?" );
-        if ( OneLineNumberEntry() == KeyMode ) return MODE_KEYMODE; // escape
-        lev = Xreg;
-        if ( lev >= 1 && lev <= 3 ) {
-            chessLevel = lev;
-            break;
-        }
-    }
+    // get level
+    if ( genericMenu2( &levelMenu, 0 ) == MODE_KEYMODE )
+        return MODE_KEYMODE;
+
+
+    // Odd ordering of character #s is so we can use the chess engine's piece #s without
+    // requiring translation.
+
+    custom_character( 0, character_up );
+    custom_character( 4, character_down );
+
+    custom_character( 1, character_pawn );
+    custom_character( 2, character_knight );
+    custom_character( 3, character_king );
+    custom_character( 5, character_bishop );
+    custom_character( 6, character_rook );
+    custom_character( 7, character_queen );
+
+    initDisplay();
+
+
+
+
+
+
 
     // NB: will be overwritten if comp moves
     UpdateLCDline1( "Your move?" );
     Xreg = 0; //clear Xreg
 
     for ( ;; ) {
+
+
         if ( computer == Side ) {
             if ( computerMoves() ) {
                 GetDebouncedKey();
@@ -315,7 +506,10 @@ int chessGame( int p )
         do {
             moveok = 0;
 
+            showBoard();
+
             // get move
+            UpdateLCDline1( "Your move?" );
             if ( OneLineNumberEntry() == KeyMode ) return MODE_KEYMODE; // escape
 
             // parse move
@@ -337,6 +531,9 @@ int chessGame( int p )
 
         if ( moveok )
             playMove( *mv );
+
+
+
     }
 
     return MODE_EXIT;
