@@ -618,6 +618,18 @@ void Operation( int op )
             *irp = 0;
             break;
 
+        case CALC_OP_LIGHT:
+            Push();
+            *rp = 299792458;
+            *irp = 0;
+            break;
+
+        case CALC_OP_AVOGADRO:
+            Push();
+            *rp = 6.022141510e23;
+            *irp = 0;
+            break;
+
         case CALC_OP_HMS:
             *rp = hms( *rp );
             *irp = 0;

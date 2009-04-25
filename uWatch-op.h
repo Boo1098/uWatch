@@ -120,5 +120,7 @@ extern void SwapXY();
 #define CALC_OP_LOGIC_XOR       59
 #define CALC_OP_LOGIC_NOT       60
 
+#define CALC_OP_LIGHT           61
+#define CALC_OP_AVOGADRO        62
 
 #endif // __uwatch_op_h__
