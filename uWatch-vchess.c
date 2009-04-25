@@ -266,7 +266,7 @@ int computer;
 
 const unsigned char character_king[] = { 0x04, 0x0e, 0x04, 0x11, 0x15, 0x0E, 0x0E, 0x1F };
 const unsigned char character_queen[] = { 0x00, 00, 0x15, 0x04, 0x15, 0x0E, 0x0E, 0x1F };
-const unsigned char character_pawn[] = { 0x00, 0x00, 0x00, 0x0E, 0x0E, 0x4, 0x04, 0x0E };
+const unsigned char character_pawn[] = { 0x00, 0x04, 0x0E, 0x0E, 0x04, 0x4, 0x0E, 0x1F };
 const unsigned char character_rook[] = { 0x00, 0x15, 0x1F, 0xE, 0xE, 0x0E, 0x0E, 0x1F };
 const unsigned char character_bishop[] = { 0x04, 0x0E, 0x1D, 0x1F, 0x0E, 0x04, 0x0E, 0x1F };
 const unsigned char character_knight[] = { 0x03, 0x1A, 0x1F, 0x07, 0x0E, 0x1E, 0x1F, 0x1F };
@@ -278,7 +278,7 @@ const unsigned char character_up[] = { 0x15, 0, 0x0A, 0, 0x15, 0, 0x0A, 0 };
 
 
 
-int chosen( int *sel, int computerColour ) {
+int chosen( int computerColour ) {
     computer = 1-computerColour;
     return MODE_EXIT;
 }
@@ -300,8 +300,8 @@ const packedMenu colourMenu = {
     },
 };
 
-int levelChoose( int *sel, int p ) {
-    chessLevel = *sel + 1;
+int levelChoose( int p ) {
+    chessLevel = p;
     return MODE_EXIT;
 }
 
@@ -311,9 +311,9 @@ const packedMenu levelMenu = {
     increment, decrement, 3,
     {   0,0,0,0,
     },
-    {   { "Easy", &levelChoose, 0 },
-        { "Medium", &levelChoose, 0 },
-        { "Hard", &levelChoose, 0 },
+    {   { "Easy", &levelChoose, 1 },
+        { "Medium", &levelChoose, 2 },
+        { "Hard", &levelChoose, 3 },
     },
 };
 
@@ -355,7 +355,7 @@ void initDisplay() {
     
     int line;
     for ( line = 0; line < 8; line++ ) {
-        sprintf( dispBoard[ line + 1 ], " %d |        |   ", line+1 );
+        sprintf( dispBoard[ line + 1 ], "  %d|        |   ", line+1 );
         strcpy( dispBoard[ line + 11 ], dispBoard[ line + 1 ] );
     }    
 }
@@ -506,7 +506,8 @@ int chessGame( int p )
         do {
             moveok = 0;
 
-            showBoard();
+            if ( showBoard() == MODE_KEYMODE )
+                return;
 
             // get move
             UpdateLCDline1( "Your move?" );
