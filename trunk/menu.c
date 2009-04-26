@@ -28,8 +28,7 @@ int genericMenu2( const packedMenu *menu, int *selection )
     int sel = selection ? ( *selection ) : 0;
 
     // Draw the menu indicators
-    custom_character( 0, left_menu );
-    custom_character( 1, right_menu );
+    custom_character( 0, character_arrow_updown );
 
     // Menu may itself define custom characters it requires.  Character #s are from 2-7
     int i;
@@ -43,29 +42,40 @@ int genericMenu2( const packedMenu *menu, int *selection )
 
 
     int key;
+    int mask = 0;
+
     do {
 
         if ( menu->print ) {
             char out2[17];
-            sprintf( out2, "%-13s\010%d\1", ( *( menu->print ) )( &sel, (menuItem *)(menu->menu) ), sel);
+            sprintf( out2, "%-14s\010%d", ( *( menu->print ) )( &sel, (menuItem *)(menu->menu) ), sel);
             UpdateLCDline2( out2 );
         }
 
+        if ( menu->menu[sel].op < 0 ) {
+            key = KeyScan2();
+            if ( !key )
+                mask = 0xFFFF;
+            key &= mask;
+        } else
+
         key = GetDebouncedKey();
 
-        IFEXIT( key );
-
-        int autoSel = ReturnNumber( key );
-        if ( autoSel >= 0 && autoSel < menu->max ) {
-            sel = autoSel;
-            break;
+        if ( key ) {
+            IFEXIT( key );
+    
+            int autoSel = ReturnNumber( key );
+            if ( autoSel >= 0 && autoSel < menu->max ) {
+                sel = autoSel;
+                break;
+            }
+    
+            if ( menu->inc && NEXT( key ) )
+                ( *( menu->inc ) )( &sel, menu->max );
+    
+            if ( menu->dec && PREVIOUS( key ) )
+                ( *( menu->dec ) )( &sel, menu->max );
         }
-
-        if ( menu->inc && NEXT( key ) )
-            ( *( menu->inc ) )( &sel, menu->max );
-
-        if ( menu->dec && PREVIOUS( key ) )
-            ( *( menu->dec ) )( &sel, menu->max );
 
     } while ( key != KeyEnter );
 
@@ -83,7 +93,7 @@ int genericMenu2( const packedMenu *menu, int *selection )
 
 int genericMenu( char *title,
                  char *( *printFunc )( int *num, int max ),
-                 int ( *idleFunc )( int *halt ),
+//                 int ( *idleFunc )( int *halt ),
                  void ( *incrementFunc )( int *num, int max ),
                  void ( *decrementFunc )( int *num, int max ),
                  int max, int *selection )
@@ -91,8 +101,8 @@ int genericMenu( char *title,
 
     int sel = selection ? ( *selection ) : 0;
 
-    custom_character( 0, left_menu );
-    custom_character( 1, right_menu );
+    custom_character( 0, character_arrow_updown );
+//    custom_character( 1, right_menu );
 
     if ( title )
         UpdateLCDline1( title );
@@ -102,30 +112,30 @@ int genericMenu( char *title,
 
         if ( printFunc ) {
             char out2[17];
-            sprintf( out2, "%-14s\010\1", ( *printFunc )( &sel, max ) );
+            sprintf( out2, "%-15s\010", ( *printFunc )( &sel, max ) );
             UpdateLCDline2( out2 );
         }
 
-        int lastMax = max;
-        if ( idleFunc && ( KeyScan2(FALSE) == 0 ) ) {
-            int h = 0;
-            max = (*idleFunc)( &h );
-            if ( h )
-                return MODE_EXIT;
-        }            
+//        int lastMax = max;
+//        if ( idleFunc && !KeyScan2() ) {
+//            int h = 0;
+//            max = (*idleFunc)( &h );
+//            if ( h )
+//                return MODE_EXIT;
+//        }            
 
-        if ( lastMax != max )
-            continue;        
+//        if ( lastMax != max )
+//            continue;        
 
-        if ( !idleFunc ) {
+//        if ( !idleFunc ) {
             key = GetDebouncedKey();
-        } else {
+//        } else {
 
-            if ( key )
-                DelayMs( 500 );
+//            if ( key )
+//                DelayMs( 500 );
 
-            key = KeyScan2( FALSE );
-        }
+//            key = KeyScan2();
+//        }
 
 
 
@@ -173,10 +183,10 @@ int viewString( char *title, char *string,
     int sel = 0;
     if ( selection ) sel = *selection;
 
-    custom_character( 0, left_menu );
-    custom_character( 1, right_menu );
+    custom_character( 0, character_left_menu );
+    custom_character( 1, character_right_menu );
 
-    while ( KeyScan2( FALSE ) );            // wait for key release so no ENTER auto-press!
+    while ( KeyScan2() );            // wait for key release so no ENTER auto-press!
 
 
     int key = 0;
@@ -226,7 +236,7 @@ int viewString( char *title, char *string,
 
             if ( key )
                 DelayMs(350);
-            key = KeyScan2( FALSE );
+            key = KeyScan2();
 
 
         } else
