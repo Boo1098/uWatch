@@ -1001,7 +1001,7 @@ int HexEntry(void)
     const packedMenu hexMenu = {
         0,
         printMenu, increment, decrement, 6,
-        {   characterMenu,
+        {   character_right_menu,
         },
         {   { "[A]BCDEF", hexSelect, 0 },
             { "A[B]CDEF", hexSelect, 1 },
