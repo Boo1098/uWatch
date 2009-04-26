@@ -237,4 +237,13 @@
   realising I really should include the key... it does no harm.
 - added new string display to output of quadratic() tool
 - added early-abort (C key and MODE key) to factor() tool. If C pressed, partial result displayed.
+- added speed of light (m/s) and Avogadro's number to constants
 
+1.6.0
+  THIS IS AN ALPHA VERSION FOR A NEW OFFICIAL RELEASE
+  >>> NO NEW FEATURES <<< WILL BE ADDED TO THIS BRANCH UNTIL VERSION IS RELEASED
+  Note that there are expected to be a number of bugs.  Version Number will remain at 1.6.0 until release
+  
+  
+  
+  
