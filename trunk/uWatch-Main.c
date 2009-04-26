@@ -36,6 +36,9 @@ This program is free software: you can redistribute it and/or modify
 #include "def.h"
 #include "calculator.h"
 #include "notebook.h"
+#include "calendar.h"
+#include "stopwatch.h"
+
 
 
 
@@ -598,7 +601,7 @@ int ReturnNumber( int key )
 // only one pass of the keys is made, looping must be done by the calling function
 //   this allows the calling function to do stuff while scaning keys
 // returns 0 if no key pressed
-unsigned int KeyScan2( BOOL debounce )
+unsigned int KeyScan2()
 {
     unsigned int k;
 
@@ -665,7 +668,8 @@ unsigned int KeyScan2( BOOL debounce )
 
     if ( k != 0 ) { //key was pressed so lets debounce it
         ResetSleepTimer();  //reset the sleep timer every time a key is pressed
-        if ( debounce ) {
+
+/*        if ( debounce ) {
 
             DelayMs( KeyDelay );  //debounce delay
             SetRow1;
@@ -685,6 +689,7 @@ unsigned int KeyScan2( BOOL debounce )
             ClearRow6;
             ClearRow7;
         }
+*/
 
         if ( ProgRec ) {
             KeystrokeRecord( k );   //record the keystroke
@@ -720,7 +725,7 @@ void backlightControl()
 
     BacklightON();
 
-    while ( KeyScan2( FALSE ) == KeyRCL )
+    while ( KeyScan2() == KeyRCL )
         if ( WatchMode == WATCH_MODE_TIME )
             TimeDateDisplay();
 
@@ -742,16 +747,16 @@ unsigned int GetDebouncedKey()
 {
     unsigned int Key = 0;
 
-    while ( Key == 0 ) {
-        while ( KeyScan2( FALSE ) );     // debounce PREVIOUS
+    while ( !Key ) {
+        while ( KeyScan2() );     // debounce PREVIOUS
     
         BOOL confirmed = FALSE;
         while ( !confirmed ) {
             confirmed = TRUE;
-            while ( !( Key = KeyScan2( FALSE ) ) );  // wait for any non-debounced key
+            while ( !( Key = KeyScan2() ) );  // wait for any non-debounced key
             int confirm;
             for ( confirm = 0; confirm < 20; confirm++ )
-                if ( KeyScan2( FALSE ) != Key )
+                if ( KeyScan2() != Key )
                     confirmed = FALSE;
         }
     
@@ -800,7 +805,7 @@ unsigned int DECtoBCD( unsigned int num )
 unsigned char itochar( int i )
 {
     if ( i >= 1 && i <= 9 ) return '0' + i;
-    if ( i == 0 ) return 'O';    // gets rid of slashed-zeros in time mode
+    if ( !i ) return 'O';    // gets rid of slashed-zeros in time mode
 
 
     return '*';
@@ -1449,7 +1454,7 @@ int setupTime( int p )
 {
 
     const packedMenu sampleMenu = {
-        "Clock Settings:",
+        "Clock Settings",
         printMenu, increment, decrement, 6,
         {},
         {   { "Set Time",       &changeTime,         0  },
@@ -1464,25 +1469,6 @@ int setupTime( int p )
     return genericMenu2( &sampleMenu, 0 );
 }
 
-int doCalendar( int year, int month, int day )
-{
-
-    UpdateLCDline1( "TODO" );
-    GetDebouncedKey();
-
-    return MODE_EXIT;
-}
-
-
-
-int doCalendarX( int p ) {
-
-    int year = BCDtoDEC( Date.f.year ) + 2000;
-    int month = BCDtoDEC( Date.f.mon );
-    int day = BCDtoDEC( Date.f.mday );
-    return doCalendar( year, month, day );
-}
-
 
 void doTimeMode()
 {
@@ -1495,7 +1481,7 @@ void doTimeMode()
 
         TimeDateDisplay();
 
-        Key = KeyScan2( FALSE );
+        Key = KeyScan2();
         if ( !mask && ( Key != KeyMode ) )
             mask = 0xFFFF;
 
@@ -1509,12 +1495,13 @@ void doTimeMode()
             WatchMode = WATCH_MODE_TIME_MENU;
 
             const packedMenu TimeMenu = {
-                "Clock:",
-                printMenu, increment, decrement, 2,
-                {   characterMenu,
+                "Clock",
+                printMenu, increment, decrement, 3,
+                {   character_right_menu,
                 },
-                {   { "\2Setup", setupTime, 0 },
-                    { "\2Calendar", doCalendarX, 0 },
+                {   { "Stopwatch", StopWatch, 0 },
+                    { "Calendar", doCalendar, 0 },
+                    { "\2Setup", setupTime, 0 },
                 },
             };
 
@@ -1572,12 +1559,12 @@ extern int ToolsMode();
 extern int SetupMode();
 
         const packedMenu appsMenu = {
-            "Applications:",
-            printMenu, increment, decrement, 4,
-            {   characterMenu,
+            "Application",
+            printMenu, increment, decrement, 3,
+            {   character_right_menu,
             },
             {   { "\2Tools", ToolsMode, 0 },
-                { "\2Memo",  notebook, 0 },
+//                { "\2Memo",  notebook, 0 },
                 { "\2Games", GamesMode, 0 },
                 { "\2Options", SetupMode, 0 },
             },

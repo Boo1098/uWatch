@@ -13,7 +13,7 @@
 #include "uWatch-op.h"
 
 
-#define RevString   "Rev 1.5.A"
+#define RevString   "Rev 1.6.0"
 
 //define all the I/O pins
 #define Row1        _RB10
@@ -206,7 +206,7 @@ extern rtccDate Date;
 
 unsigned int BCDtoDEC( unsigned int num );
 unsigned int DECtoBCD( unsigned int num );
-unsigned int KeyScan2( BOOL debounce );
+unsigned int KeyScan2();
 
 void dayHasChanged();
 extern BOOL DST;
@@ -299,5 +299,7 @@ extern int CurrentMenu; //to go?
 extern BOOL NextMode;
 
 extern char displayBuffer[];
+
+int doCalendar();
 
 #endif

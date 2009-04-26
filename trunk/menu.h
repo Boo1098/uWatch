@@ -27,7 +27,7 @@ int genericMenu2( const packedMenu *menu, int *selection );
 
 int genericMenu( char *title,
                  char *( *printFunc )( int *num, int max ),
-                 int ( *idleFunc )( int *halt ),
+//                 int ( *idleFunc )( int *halt ),
                  void ( *incrementFunc )( int *num, int max ),
                  void ( *decrementFunc )( int *num, int max ),
                  int max, int *selection );

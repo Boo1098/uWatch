@@ -120,7 +120,7 @@ const packedMenu menuHyperbolic = {
 const packedMenu menuTrigonometry = {
     "Trigonometry:",
     printMenu, increment, decrement, 7,
-    {   characterMenu,
+    {   character_right_menu,
         character_minus1,0,0,
     },
     {
@@ -170,7 +170,7 @@ const packedMenu menuComplex = {
 const packedMenu mathMenu = {
     "Function:",
     printMenu, increment, decrement, 10,
-    {   characterMenu,0,0,0,
+    {   character_right_menu,0,0,0,
     },
     {   { "\2Trigonometry",       doMenu,         (int)&menuTrigonometry        },
         { "\2Logarithmic",        doMenu,         (int)&menuLogarithmic         },

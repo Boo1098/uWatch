@@ -48,9 +48,8 @@ static unsigned int GetDebouncedKey()
 
 int lunarLander( int p )
 {
+#if 1
     int KeyPress2;
-
-#if 0
 
     UpdateLCDline1( "--LUNAR LANDAR--" );
     UpdateLCDline2( " By Shaun Chong " );
@@ -319,7 +318,7 @@ void stand( void )
 
     int GamesMode( int p ) {
         const packedMenu gamesMenu = {
-            "Games:",
+            "Game",
             printMenu,
             increment, decrement, 3,
             {   0,

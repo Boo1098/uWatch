@@ -272,9 +272,6 @@ const unsigned char character_bishop[] = { 0x04, 0x0E, 0x1D, 0x1F, 0x0E, 0x04, 0
 const unsigned char character_knight[] = { 0x03, 0x1A, 0x1F, 0x07, 0x0E, 0x1E, 0x1F, 0x1F };
 
 //const unsigned char character_up[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x1F };
-const unsigned char character_arrow_down[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x0E, 0x04 };
-const unsigned char character_arrow_up[] = { 0x04, 0x0E, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x00 };
-const unsigned char character_arrow_updown[] = { 0x04, 0x0E, 0x1F, 0x00, 0x00, 0x1F, 0x0E, 0x04 };
 
 const unsigned char character_blacksquare[] = { 0x15, 0, 0x0A, 0, 0x15, 0, 0x0A, 0 };
 
@@ -367,16 +364,11 @@ void updateLine( char *destW, char *destB, int line ) {
     int col;
     for ( col = 0; col < 8; col++ ) {
 
-        *destW = 0x20;
         *destB = 0x20;
 
-        int bInd = ( line << 4 ) + col;
-        char visual = 0x20;
-        if (!(( line + col ) & 1 ))
-            visual = 8;
-
+        char visual = (( line + col ) & 1 ) ? 0x20 : 8;
       
-        int pos = Board[ bInd ];
+        int pos = Board[ ( line << 4 ) + col ];
         if ( pos > 0 ) {
             visual = Board[ pos + 0x20 ];       // type = custom char# too
             if ( pos & 0x40 )                   // black piece?
@@ -390,21 +382,7 @@ void updateLine( char *destW, char *destB, int line ) {
     }
 }
 
-int contrast = 18;
 
-
-void drawBoard( int line ) {
-
-    UpdateLCDline1( dispBoard[ line + 1 ] );
-    UpdateLCDline2( dispBoard[ line ] );
-
-    if ( contrast )
-        DelayMs( contrast );
-
-    // "draw" black last
-    UpdateLCDline1( dispBoard[ line + 11 ]);
-    UpdateLCDline2( dispBoard[ line + 10 ]);
-}
 
 
 void clearArrow( int line ) {
@@ -430,6 +408,7 @@ void fixArrow( int line ) {
 
 int showBoard() {
 
+    // Rebuild the board display strings
     int row;
     for ( row = 0; row < 8; row ++ )
         updateLine( dispBoard[ row + 11 ] + 4, dispBoard[ row + 1 ] + 4, row );
@@ -437,15 +416,29 @@ int showBoard() {
 
     int line = 0;
     int mask = 0;
+    int contrast = 0;
 
     fixArrow( line );
 
     while ( TRUE ) {
 
-        drawBoard( line );
 
-        int key = KeyScan2( FALSE );
-        if ( key == 0 )
+        {
+            // draw board with contrast characters for white pieces!
+
+            UpdateLCDline2( dispBoard[ line ] );            // white
+            UpdateLCDline1( dispBoard[ line + 1 ] );        // white
+
+            if ( contrast )
+                DelayMs( contrast );
+
+            UpdateLCDline2( dispBoard[ line + 10 ]);        // black+white
+            UpdateLCDline1( dispBoard[ line + 11 ]);        // black+white
+        }
+
+
+        int key = KeyScan2();
+        if ( !key )
             mask = 0xFFFF;
         key &= mask;
 
@@ -456,7 +449,7 @@ int showBoard() {
 
         int temp = ReturnNumber(key);
         if ( temp >= 0 && temp <= 9 ) {
-            contrast = temp * 8;
+            contrast = temp << 3;
             mask = 0;
         }    
 
@@ -523,8 +516,8 @@ int chessGame( int p )
 
 
     // NB: will be overwritten if comp moves
-    UpdateLCDline1( "Your move?" );
-    Xreg = 0; //clear Xreg
+    //UpdateLCDline1( "Your move?" );
+    //Xreg = 0; //clear Xreg
 
     for ( ;; ) {
 

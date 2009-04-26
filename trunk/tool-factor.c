@@ -43,30 +43,30 @@ int factor( int p )
 
 //        viewString( "Address:", view, 0, 0 );
 
-    UpdateLCDline1("Factor this:");
+    UpdateLCDline1("Factor this");
     Xreg = 0;
     OneLineNumberEntry();
     nx = Xreg;
     Xreg = 0;
 
     if (nx > (unsigned long int)(long int)(-1)) //checks if number > max long int??
-        sprintf( displayBuffer, "%lu is too large to factorise.", nx );
+        sprintf( displayBuffer, "%lu is too large", nx );
 
 
     else if ( Xreg < 0 ) //checks for negative,0
-        sprintf( displayBuffer, "Please enter positive numbers only." );
+        sprintf( displayBuffer, "Enter positive numbers only." );
     
     else {
 
         idleEnd = sqrt( nx );
         sprintf( displayBuffer, "%lu = (", nx );
-        viewString( "Factorising:", displayBuffer, 0, 1 );
+        viewString( "Factorising", displayBuffer, 0, 1 );
 
-        const char *nb = "Result:";
+        const char *nb = "Result";
     
         for ( in = 2; in <= idleEnd; in++ ) {
 
-            int key = KeyScan2( FALSE );
+            int key = KeyScan2();
 
             if ( key == KeyClear ) {
                 strcat( displayBuffer, " ..." );
@@ -81,12 +81,7 @@ int factor( int p )
         }
 
         strcat( displayBuffer, ")" );
-    
-//        if (factors == 0 )
-//            sprintf( displayBuffer, "%lu is prime.", nx );
-
         viewString( (char *) nb, displayBuffer, 0, 2 );
-
     }
 
     return MODE_EXIT;
