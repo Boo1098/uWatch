@@ -174,13 +174,13 @@ int changeTime( int p )
     int m = BCDtoDEC( Time.f.min );
     int s = BCDtoDEC( Time.f.sec );
 
-    if ( genericMenu( "Hour:", &printHour, 0, &increment, &decrement, 24, &h ) == MODE_KEYMODE )
+    if ( genericMenu( "Hour", &printHour, &increment, &decrement, 24, &h ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
-    if ( genericMenu( "Minute:", &printMinSec, 0, &increment, &decrement, 60, &m ) == MODE_KEYMODE )
+    if ( genericMenu( "Minute", &printMinSec, &increment, &decrement, 60, &m ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
-    if ( genericMenu( "Second:", &printMinSec, 0, &increment, &decrement, 60, &s ) == MODE_KEYMODE )
+    if ( genericMenu( "Second", &printMinSec, &increment, &decrement, 60, &s ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     SetTimeBCD( DECtoBCD( h ), DECtoBCD( m ), DECtoBCD( s ) );
@@ -195,16 +195,16 @@ char *printMonth( int *month, int max )
 }
 
 const unsigned char *qday[] = {
+    character_Sunday,
     character_Monday,
     character_Tuesday,
     character_Wednesday,
     character_Thursday,
     character_Friday,
     character_Saturday,
-    character_Sunday
 };
 
-const unsigned char *boldDigit[] = {
+/*const unsigned char *boldDigit[] = {
     character_bold0,
     character_bold1,
     character_bold2,
@@ -217,83 +217,59 @@ const unsigned char *boldDigit[] = {
     character_bold9,
     character_boldSpace
 };
+*/
 
-void drawDay( char *s, int cc, int day, int dayOfWeek, char highlight, BOOL bold )
-{
+int leap( int year ) {
+    return ( ( year % 4 ) == 0 )
+        && (    (( year % 100 ) != 0 )
+             || (( year % 400 ) == 0 )
+           )
+        ? 1 : 0;
+}
 
-    char q[5];
-
-    Clock250KHz();
-    custom_character( cc, qday[ dayOfWeek ] );
-    Clock4MHz();
-
-    day++;               // 1-based
-
-    if ( bold ) {
-
-        int bd1 = day / 10;
-        if ( !bd1 )
-            bd1 = 10;
-
-        int bd2 = day % 10;
-
-        Clock250KHz();
-        custom_character( 5, boldDigit[ bd1 ] );
-        custom_character( 6, boldDigit[ bd2 ] );
-        Clock4MHz();
-
-        sprintf( q, "%c%c\005\006", highlight, cc );
-
-    } else
-        sprintf( q, "%c%c%-2d", highlight, cc, day );
-
-    strcat( s, q );
+int daysInMonth( int year, int month ) {
+    int dom[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }; 
+    int dim = dom[ month - 1];
+    if ( month == 2 && leap( year ))
+        dim++;
+    return dim;
 }
 
 int gYear, gMonth;
 char *processCalendar( int *pDay, int max )
 {
+    int dayOfWeek = DAYOFWEEK( mjd( gYear, gMonth, *pDay ) );
+    
+    char cc = 2;                     // custom char #
 
-    int dayOfWeek = DAYOFWEEK( mjd( gYear, gMonth, *pDay ) ) + 1;
-
-
-// day 0-based
-
-    int day = *pDay;
-    int today = 12;
-
+    // preload custom chars as we can't do it in 1MHz mode...
+    int i;
+    for ( i = 0; i < 3; i++ )
+        custom_character( i+cc, qday[ ( dayOfWeek + i ) % 7 ] );
 
     Clock4MHz();
 
-    BOOL selecting = TRUE;     //temp
-    if ( selecting )
-        today = day;
-
-    int cc = 2;                     // custom char #
-    int dd;
-
     *out = 0;
 
-    int limit = day + 3;
-    for ( dd = day; dd < limit && dd < max ; dd++ ) {
+    int limit = (*pDay) + 2;        // MAX DAYS?
+    if ( limit > max )
+        limit = max;
 
-
-        BOOL bold = FALSE; //( dd == today ) || ( dd == day && selecting );
+    int dd;
+    for ( dd = *pDay; dd <= limit; dd++ ) {
 
         char highlight = ' ';
-        if ( dd == today )
+        if ( dd == *pDay )
             highlight = '(';
-        else if ( dd == today + 1 )
+        else if ( dd == (*pDay ) + 1 )
             highlight = ')';
 
-        drawDay( out, cc, dd, dayOfWeek, highlight, bold );
-
-        cc++;
+        char *ps = out + strlen( out );
+        sprintf( ps, "%c%c%-2d", highlight, cc++, dd );
 
         dayOfWeek = ( dayOfWeek + 1 ) % 7;
 
-
-        if ( dd == limit && dd == today )
+        if ( dd == limit && dd == *pDay )
             strcat( out, ")" );
     }
 
@@ -303,34 +279,62 @@ char *processCalendar( int *pDay, int max )
 }
 
 
-int changeDate()
+void decrementDay( int *day, int max )
 {
+    ( *day)--;
+    if (( *day) < 1 )
+        ( *day ) = max;
+}
+
+void incrementDay( int *day, int max )
+{
+    ( *day)++;
+    if (( *day) > max )
+        ( *day ) = 1;
+}
+
+
+
+int doCal( BOOL modify ) {
 
     int year = BCDtoDEC( Date.f.year ) + 2000;
     int month = BCDtoDEC( Date.f.mon );
-    int day = BCDtoDEC( Date.f.mday ) - 1;          // 0-based
+    int day = BCDtoDEC( Date.f.mday );
 
-    if ( genericMenu( "Year:", &printNumber, 0, &increment, &decrement, 2100, &year ) == MODE_KEYMODE )
+    if ( genericMenu( "Year", &printNumber, &increment, &decrement, 2100, &year ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
-    sprintf( out, "%d, Month:", year );
-    if ( genericMenu( out, &printMonth, 0, &increment, &decrement, 12, &month ) == MODE_KEYMODE )
+    sprintf( out, "%d", year );
+    if ( genericMenu( out, &printMonth, &increment, &decrement, 12, &month ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     gYear = year;
-    gMonth = month;
+    gMonth = month + 1;         // 1-based
 
-    sprintf( out, "%d, %s:", year, monthName[ month ] );
-    if ( genericMenu( out, &processCalendar, 0, &increment, &decrement, 32, &day ) == MODE_KEYMODE )
+    sprintf( out, "%d, %s", year, monthName[ month ] );
+    int dim = daysInMonth( gYear, gMonth );
+
+    if ( genericMenu( out, processCalendar, incrementDay, decrementDay, dim, &day ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     //TODO: year should be absolute, not limited from 2000...
 
-    SetDateBCDandUpdate( DECtoBCD( year - 2000 ), DECtoBCD( month ), DECtoBCD( day + 1 ) );
+    if ( modify )
+        SetDateBCDandUpdate( DECtoBCD( year - 2000 ), DECtoBCD( month ), DECtoBCD( day ) );
 
     return MODE_EXIT;
 }
 
+
+int changeDate()
+{
+    return doCal( TRUE );
+}
+
+int doCalendar() {
+
+    return doCal( FALSE );
+}
 
 
 int changeCalibration()
@@ -342,7 +346,7 @@ int changeCalibration()
     }
 
     int cal = RCFGCALbits.CAL;
-    if ( genericMenu( "Calibration:", &printCal, 0, increment, decrement, 256, &cal ) == MODE_KEYMODE )
+    if ( genericMenu( "Calibration", &printCal, increment, decrement, 256, &cal ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     RCFGCALbits.CAL = ( char ) cal;
     I2CmemoryWRITE( 63535, RCFGCALbits.CAL );     //store value in last byte
@@ -370,7 +374,7 @@ int change1224()
     }
 
     int mode1224 = TwelveHour ? 1 : 0;
-    if ( genericMenu( "Time Format:", print1224, 0, sel1224, sel1224, 0, &mode1224 ) == MODE_KEYMODE )
+    if ( genericMenu( "Time Format", print1224, sel1224, sel1224, 0, &mode1224 ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     TwelveHour = mode1224 ? TRUE : FALSE;
     return MODE_EXIT;
@@ -384,7 +388,7 @@ int changeDST()
     }
 
     int region = dstRegion;
-    if ( genericMenu( "DST Zone:", printDST, 0, increment, decrement, DIM( TimeZones ), &region ) == MODE_KEYMODE )
+    if ( genericMenu( "DST Zone", printDST, increment, decrement, DIM( TimeZones ), &region ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     dstRegion = region;
@@ -406,9 +410,9 @@ int changeLocation()
 
     /* only implement the CUSTOM for now.. */
 
-    custom_character( 0, characterEnter );
-    custom_character( 1, characterEllipsis );
-    custom_character( 2, characterEllipsis2 );
+    //custom_character( 0, characterEnter );
+    //custom_character( 1, characterEllipsis );
+    //custom_character( 2, characterEllipsis2 );
 
 
     double originalLongitude = Longitude;
@@ -425,8 +429,8 @@ int changeLocation()
 
         // validate longitude -180 <= long <= +180
         if ( Xreg < -180 || Xreg > 180 ) {
-            UpdateLCDline1( "Longitude range:" );
-            UpdateLCDline2( "-180\xDF\001\002+180\xDF   \010" );
+            UpdateLCDline1( "Longitude range" );
+            UpdateLCDline2( "-180\xDF - +180\xDF   \010" );
             GetDebouncedKey();
         } else {
             // assume HMS format
@@ -453,8 +457,8 @@ int changeLocation()
         // validate lat -90 <= lat <= +90
 
         if ( Xreg < -90 || Xreg > 90 ) {
-            UpdateLCDline1( "Latitude range:" );
-            UpdateLCDline2( "-90\xDF\001\002+90\xDF     \010" );
+            UpdateLCDline1( "Latitude range" );
+            UpdateLCDline2( "-90\xDF - +90\xDF     \010" );
             GetDebouncedKey();
         } else {
             Latitude = hr( Xreg );
@@ -476,8 +480,9 @@ char *printCalc( int *type, int max )
 
 int appCalculatorMode()
 {
-    return genericMenu( "Calculator type:", &printCalc, 0, &increment, &decrement, 2, &RPNmode );
+    return genericMenu( "Calculator", &printCalc, &increment, &decrement, 2, &RPNmode );
 }
+
 
 int appClearEEPROM()
 {
@@ -639,7 +644,7 @@ void decTimeout( int *timeout, int max ) {
 
 int appLCDTimeout()
 {
-    return genericMenu( "LCD Timeout:", &printTimeout, 0, &incTimeout, &decTimeout, 2, (int*)&PR1 );
+    return genericMenu( "LCD Timeout", &printTimeout, &incTimeout, &decTimeout, 2, (int*)&PR1 );
 }
 
 
@@ -658,12 +663,12 @@ int appAbout()
 int SetupMode( int p )
 {
     const packedMenu setupMenu = {
-        "Apps Option:",
+        "Apps Option",
         printMenu,
         increment, decrement, 5,
         {   0,0,0,0,
         },
-        {   { "Calc Mode",    &appCalculatorMode, 0 },
+        {   { "Calculator", &appCalculatorMode, 0 },
             { "Clear EEPROM", &appClearEEPROM, 0 },
             { "Self Test", &appSelfTest, 0 },
             { "LCD timeout", &appLCDTimeout, 0 },
