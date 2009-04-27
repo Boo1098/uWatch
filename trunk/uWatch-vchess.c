@@ -370,7 +370,7 @@ void fixArrow( int line ) {
 
     custom_character( 4, newArrow );
     dispBoard[ line ][15] = 4;
-    dispBoard[ line ][15] = 4;
+    dispBoard[ line+10 ][15] = 4;
 
 }
 
@@ -470,12 +470,13 @@ int chessGame( int p )
     if ( genericMenu2( &levelMenu, 0 ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
+    initDisplay();
 
     // Odd ordering of character #s is so we can use the chess engine's piece #s without
     // requiring translation.
 
     custom_character( 0, character_blacksquare );
-    custom_character( 4, character_arrow_updown );
+    //custom_character( 4, character_arrow_updown );
 
     custom_character( 1, character_pawn );
     custom_character( 2, character_knight );
@@ -484,7 +485,6 @@ int chessGame( int p )
     custom_character( 6, character_rook );
     custom_character( 7, character_queen );
 
-    initDisplay();
 
 
     for ( ;; ) {
