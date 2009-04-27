@@ -13,7 +13,7 @@ int doMenu( int op )
 
 
 const packedMenu menuConstant = {
-    "Constant:",
+    "Constant",
     printMenu, increment, decrement, 3,
     {   character_pi,character_minus1,0,0,
     },
@@ -27,7 +27,7 @@ const packedMenu menuConstant = {
 };
 
 const packedMenu menuKeystroke = {
-    "Keystroke:",
+    "Keystroke",
     printMenu, increment, decrement, 2,
     {   0,0,0,0,
     },
@@ -37,25 +37,24 @@ const packedMenu menuKeystroke = {
 };
 
 const packedMenu menuConversion = {
-    "Convert:",
-    printMenu, increment, decrement, 10,
-    {   degree, character_arrow, 0,0,
+    "Convert",
+    printMenu, increment, decrement, 9,
+    {   0, character_arrow, 0,0,
     },
     {   { "\3Hour Min Sec",     OperatePrecedence,        CALC_OP_HMS             },
         { "Rect\3Polar",          OperatePrecedence,        CALC_OP_R2P              },
         { "Polar\3Rect",          OperatePrecedence,        CALC_OP_P2R              },
-        { "\3Day Mnth Year",     OperatePrecedence,        CALC_OP_DMY             },
         { "mils \3 mm",           OperatePrecedence,       CALC_OP_CONV_MILS_TO_MM },
         { "mm \3 mils", OperatePrecedence, CALC_OP_CONV_MM_TO_MILS },
-        { "\2F \3 \2C", OperatePrecedence, CALC_OP_CONV_FC },
-        { "\2C \3 \2F", OperatePrecedence, CALC_OP_CONV_CF },
+        { "\337F \3 \337C", OperatePrecedence, CALC_OP_CONV_FC },
+        { "\337C \3 \337F", OperatePrecedence, CALC_OP_CONV_CF },
         { "kg \3 lb", OperatePrecedence, CALC_OP_CONV_KG_LB },
         { "lb \3 kg", OperatePrecedence, CALC_OP_CONV_LB_KG },
     },
 };
 
 const packedMenu menuLogarithmic = {
-    "Logarithmic:",
+    "Logarithmic",
     printMenu, increment, decrement, 4,
     {   character_powerx,0,0,0,
     },
@@ -67,18 +66,19 @@ const packedMenu menuLogarithmic = {
 };
 
 const packedMenu menuTimeDayDate = {
-    "Time/Day/Date:",
-    printMenu, increment, decrement, 2,
+    "Time/Date",
+    printMenu, increment, decrement, 4,
     {   0,0,0,0,
     },
     {   { "Sunset",               OperatePrecedence,        CALC_OP_SUNSET          },
         { "Days",                 OperatePrecedence,        CALC_OP_DAYS            },            // what does this do?
+        { "Day Month Year",     OperatePrecedence,        CALC_OP_DMY             },
         { "Hours",              OperatePrecedence,        CALC_OP_HOURS           },
     },
 };
 
 const packedMenu menuBaseChange = {
-    "Mode/Base:",
+    "Mode/Base",
     printMenu, increment, decrement, 5,
     {   character_arrow,0,0,0,
     },
@@ -91,7 +91,7 @@ const packedMenu menuBaseChange = {
 };
 
 const packedMenu menuBitwise = {
-    "Bitwise:",
+    "Bit",
     printMenu, increment, decrement, 4,
     {   character_arrow,0,0,0,
     },
@@ -103,7 +103,7 @@ const packedMenu menuBitwise = {
 };
 
 const packedMenu menuHyperbolic = {
-    "Hyperbolic Trig:",
+    "Hyperbolic Trig",
     printMenu, increment, decrement, 6,
     {   character_minus1,0,0,0,
     },
@@ -112,13 +112,13 @@ const packedMenu menuHyperbolic = {
         { "hyp-cos",                OperatePrecedence,        CALC_OP_HYP_COS         },
         { "hyp-tan",                OperatePrecedence,        CALC_OP_HYP_TAN         },
         { "hyp-sin\2",            OperatePrecedence,        CALC_OP_HYP_ASIN        },
-        { "hyp-tan\2",            OperatePrecedence,        CALC_OP_HYP_ATAN        },
         { "hyp-cos\2",            OperatePrecedence,        CALC_OP_HYP_ACOS        },
+        { "hyp-tan\2",            OperatePrecedence,        CALC_OP_HYP_ATAN        },
     },
 };
 
 const packedMenu menuTrigonometry = {
-    "Trigonometry:",
+    "Trig",
     printMenu, increment, decrement, 7,
     {   character_right_menu,
         character_minus1,0,0,
@@ -135,17 +135,17 @@ const packedMenu menuTrigonometry = {
 };
 
 const packedMenu menuOther = {
-    "Assorted:",
+    "Assorted",
     printMenu, increment, decrement, 7,
     {   character_powerx,               //2
-        character_squareRoot1,          //3
+        0, //character_squareRoot1,          //3
         character_squaring,             //4
         0,
     },
     {   { "1/x",                    OperatePrecedence,        CALC_OP_RECIPROCAL      },
         { "x!",                     OperatePrecedence,        CALC_OP_FACTORIAL       },
         { "x\4",                    OperatePrecedence,        CALC_OP_SQUARE          },
-        { "\3x",                    OperatePrecedence,        CALC_OP_SQRT            },
+        { "sqrt",                    OperatePrecedence,        CALC_OP_SQRT            },
         { "abs",                    OperatePrecedence,        CALC_OP_ABS             },
         { "y\2",                    OperatePrecedence,        CALC_OP_NPOW            },
         { "y^(1/x)",                OperatePrecedence,        CALC_OP_NROOT           },
@@ -153,7 +153,7 @@ const packedMenu menuOther = {
 };
 
 const packedMenu menuComplex = {
-    "Complex:",
+    "Complex",
     printMenu, increment, decrement, 6,
     {   0,0,0,0,
     },
@@ -168,20 +168,21 @@ const packedMenu menuComplex = {
 
 
 const packedMenu mathMenu = {
-    "Function:",
+    "Function",
     printMenu, increment, decrement, 10,
     {   character_right_menu,0,0,0,
     },
-    {   { "\2Trigonometry",       doMenu,         (int)&menuTrigonometry        },
+    {
+        { "\2Assorted",           doMenu,         (int)&menuOther               },
+        { "\2Trig",       doMenu,         (int)&menuTrigonometry        },
         { "\2Logarithmic",        doMenu,         (int)&menuLogarithmic         },
         { "\2Complex",            doMenu,         (int)&menuComplex             },
         { "\2Mode/Base",          doMenu,         (int)&menuBaseChange          },
-        { "\2Constants",          doMenu,         (int)&menuConstant            },
+        { "\2Constant",          doMenu,         (int)&menuConstant            },
         { "\2Conversion",         doMenu,         (int)&menuConversion          },
-        { "\2Time/Day/Date",      doMenu,         (int)&menuTimeDayDate         },
+        { "\2Time/Date",      doMenu,         (int)&menuTimeDayDate         },
         { "\2Keystroke",          doMenu,         (int)&menuKeystroke           },
-        { "\2Assorted",           doMenu,         (int)&menuOther               },
-        { "\2Bit Ops", doMenu,(int)&menuBitwise },
+        { "\2Bit", doMenu,(int)&menuBitwise },
     },
 };
 
