@@ -265,7 +265,7 @@ static int chessLevel;
 int computer;
 
 const unsigned char character_king[] = { 0x04, 0x0e, 0x04, 0x11, 0x15, 0x0E, 0x0E, 0x1F };
-const unsigned char character_queen[] = { 0x00, 00, 0x15, 0x04, 0x15, 0x0E, 0x0E, 0x1F };
+const unsigned char character_queen[] = { 0x00, 0x15, 0x00, 0x15, 0x15, 0x0E, 0x0E, 0x1F };
 const unsigned char character_pawn[] = { 0x00, 0x04, 0x0E, 0x0E, 0x04, 0x4, 0x0E, 0x1F };
 const unsigned char character_rook[] = { 0x00, 0x15, 0x1F, 0xE, 0xE, 0x0E, 0x0E, 0x1F };
 const unsigned char character_bishop[] = { 0x04, 0x0E, 0x1D, 0x1F, 0x0E, 0x04, 0x0E, 0x1F };
@@ -285,11 +285,6 @@ int chosen( int computerColour ) {
 /* data for the board display */
 static char dispBoard[20][17];
 static char lastMove[7];
-
-//static char line1WHITE[17];
-//static char line2WHITE[17];
-//static char line1BLACK[17];
-//static char line2BLACK[17];
 
 
 const packedMenu colourMenu = {
@@ -321,31 +316,6 @@ const packedMenu levelMenu = {
 };
 
 
-
-/*void updateDisplayLines( int line ) {
-
-    Clock4MHz();
-
-    sprintf( line1WHITE, " %d \x7C\010\1\2\3 \5  \x7C  \6",  line+1 );
-    sprintf( line2WHITE, " %d \x7C\010 \2  \2\1 \x7C  \7",  line );
- 
-    sprintf( line1BLACK, " %d \x7C\010 \2\3 \5\4\3\x7C  \6",  line+1 );
-    sprintf( line2BLACK, " %d \x7C\010\1\2\3\4\2\1\010\x7C  \7",  line );
-
-    if ( !line ) {
-        sprintf( line2WHITE, "    ABCDEFGH" );
-        strcpy( line2BLACK, line2WHITE );
-    }
-
-    if ( line == 8 ) {
-        sprintf( line1WHITE, "    12345678" );
-        strcpy( line1BLACK, line1WHITE );
-    }
-
-    Clock250KHz();
-}
-*/
-
 void initDisplay() {
     int line;
 
@@ -372,8 +342,8 @@ void updateLine( char *destW, char *destB, int line ) {
         int pos = Board[ ( line << 4 ) + col ];
         
         if ( pos > 0 ) {
-            visual = Board[ pos + POSMAT ];     // type = custom char# too
-            if (SIDEOF(pos))                    // black piece?
+            visual = Board[ pos + POSMAT ];         // type = custom char# too
+            if (pos & BLACKPOS )                    // black piece?  QUICKEST WAY TO DO THIS!
                 *destB = visual;
         }
 
@@ -386,8 +356,8 @@ void updateLine( char *destW, char *destB, int line ) {
 
 
 void clearArrow( int line ) {
-    dispBoard[line+1][15]=0x20;
-    dispBoard[line+11][15]=0x20;
+    dispBoard[line][15]=0x20;
+    dispBoard[line+10][15]=0x20;
 }
 
 void fixArrow( int line ) {
@@ -399,8 +369,8 @@ void fixArrow( int line ) {
         newArrow = character_arrow_up;
 
     custom_character( 4, newArrow );
-    dispBoard[ line + 1 ][15] = 4;
-    dispBoard[ line + 11 ][15] = 4;
+    dispBoard[ line ][15] = 4;
+    dispBoard[ line ][15] = 4;
 
 }
 
@@ -418,6 +388,8 @@ int showBoard() {
     int contrast = 0;
 
     fixArrow( line );
+    EnableSleepTimer();
+    ResetSleepTimer();
 
     while ( TRUE ) {
 
@@ -440,7 +412,10 @@ int showBoard() {
             mask = 0xFFFF;
         key &= mask;
 
-        if ( key == KeyClear || key == KeyEnter )
+        if ( key )
+            ResetSleepTimer();
+
+        if ( key == KeyClear || ENTER(key))
             break;
         if ( key == KeyMode )
             return MODE_KEYMODE;
@@ -450,6 +425,9 @@ int showBoard() {
             contrast = temp << 3;
             mask = 0;
         }    
+
+        if ( key == KeyRCL )
+            backlightControl();
 
         if ( PREVIOUS( key ) && line < 8 ) {
             clearArrow( line );
@@ -466,6 +444,7 @@ int showBoard() {
         }
     }
 
+    DisableSleepTimer();
     return MODE_EXIT;
 }
 
