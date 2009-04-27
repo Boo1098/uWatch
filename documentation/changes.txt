@@ -246,6 +246,7 @@
   THIS IS AN ALPHA VERSION FOR A NEW OFFICIAL RELEASE
   >>> NO NEW FEATURES <<< WILL BE ADDED TO THIS BRANCH UNTIL VERSION IS RELEASED
   Note that there are expected to be a number of bugs.  Version Number will remain at 1.6.0 until release
+- chess, allow promotion to select piece.
   
   
   

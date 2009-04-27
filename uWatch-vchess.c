@@ -282,10 +282,14 @@ int chosen( int computerColour ) {
     return MODE_EXIT;
 }
 
-char line1WHITE[17];
-char line2WHITE[17];
-char line1BLACK[17];
-char line2BLACK[17];
+/* data for the board display */
+static char dispBoard[20][17];
+static char lastMove[7];
+
+//static char line1WHITE[17];
+//static char line2WHITE[17];
+//static char line1BLACK[17];
+//static char line2BLACK[17];
 
 
 const packedMenu colourMenu = {
@@ -342,9 +346,8 @@ const packedMenu levelMenu = {
 }
 */
 
-char dispBoard[20][17];
-
 void initDisplay() {
+    int line;
 
     strcpy( dispBoard[0], "    12345678    " );
     strcpy( dispBoard[10], dispBoard[0] );
@@ -352,10 +355,9 @@ void initDisplay() {
     strcpy( dispBoard[9], "    ABCDEFGH    " );
     strcpy( dispBoard[19], dispBoard[9] );
     
-    int line;
-    for ( line = 0; line < 8; line++ ) {
-        sprintf( dispBoard[ line + 1 ], "  %d|        |   ", line+1 );
-        strcpy( dispBoard[ line + 11 ], dispBoard[ line + 1 ] );
+    for ( line = 1; line <= 8; line++ ) {
+        sprintf( dispBoard[ line ], "  %d|        |   ", line );
+        strcpy( dispBoard[ line + 10 ], dispBoard[ line ] );
     }    
 }
 
@@ -364,14 +366,14 @@ void updateLine( char *destW, char *destB, int line ) {
     int col;
     for ( col = 0; col < 8; col++ ) {
 
-        *destB = 0x20;
+        *destB = ' ';
 
-        char visual = (( line + col ) & 1 ) ? 0x20 : 8;
-      
+        char visual = (( line + col ) & 1 ) ? ' ' : 8;
         int pos = Board[ ( line << 4 ) + col ];
+        
         if ( pos > 0 ) {
-            visual = Board[ pos + 0x20 ];       // type = custom char# too
-            if ( pos & 0x40 )                   // black piece?
+            visual = Board[ pos + POSMAT ];     // type = custom char# too
+            if (SIDEOF(pos))                    // black piece?
                 *destB = visual;
         }
 
@@ -381,8 +383,6 @@ void updateLine( char *destW, char *destB, int line ) {
 
     }
 }
-
-
 
 
 void clearArrow( int line ) {
@@ -413,7 +413,6 @@ int showBoard() {
     for ( row = 0; row < 8; row ++ )
         updateLine( dispBoard[ row + 11 ] + 4, dispBoard[ row + 1 ] + 4, row );
 
-
     int line = 0;
     int mask = 0;
     int contrast = 0;
@@ -421,7 +420,6 @@ int showBoard() {
     fixArrow( line );
 
     while ( TRUE ) {
-
 
         {
             // draw board with contrast characters for white pieces!
@@ -481,7 +479,7 @@ int chessGame( int p )
     int moveok;
     Move* mv;
     Move* first;
-    int to, from;
+    int to, from, promote;
 
     initBoard();
 
@@ -510,15 +508,6 @@ int chessGame( int p )
     initDisplay();
 
 
-
-
-
-
-
-    // NB: will be overwritten if comp moves
-    //UpdateLCDline1( "Your move?" );
-    //Xreg = 0; //clear Xreg
-
     for ( ;; ) {
 
 
@@ -543,17 +532,30 @@ int chessGame( int p )
                 return MODE_KEYMODE;
 
             // get move
-            UpdateLCDline1( "Your move?" );
+            char buf[16];
+            strcpy(buf, lastMove);
+            if (*buf) strcat(buf, ", ");
+            strcat(buf, "move?");
+            UpdateLCDline1(buf);
             if ( OneLineNumberEntry() == KeyMode ) return MODE_KEYMODE; // escape
-
             // parse move
             from = moveToBoard( DisplayXreg );
             to =  moveToBoard( DisplayXreg + 2 );
+            promote = 0;
+            switch (DisplayXreg[4])
+            {
+            case '1': promote = knight; break;
+            case '2': promote = bishop; break;
+            case '3': promote = rook; break;
+            case '4': promote = queen; break;
+            }
 
             if ( from >= 0 && to >= 0 ) {
                 // check legal
                 for ( mv = first; mv != moveStackPtr; ++mv ) {
-                    if ( mv->from == from && mv->to == to ) {
+                    if ( mv->from == from && mv->to == to 
+                         && (!promote || promote == mv->promote))
+                    {
                         moveok = 1;
                         break;
                     }
@@ -611,12 +613,11 @@ static int computerMoves()
         return -1;
     } else {
         if ( MainPV.n ) {
-            char buf[16];
             Move* m = MainPV.m;
-            playMove( *m );
-            strcat( strcpy( buf, "= " ), moveToStr( *m, 1 ) );
-            if ( InCheck ) strcat( buf, " Check!" );
-            UpdateLCDline1( buf );
+            playMove(*m);
+            strcpy(lastMove, moveToStr(*m,1));
+            if (InCheck) lastMove[5]='+';
+            UpdateLCDline1(lastMove);
         }
 
         if ( v >= WIN_SCORE ) {
@@ -686,9 +687,8 @@ void initBoard()
     InCheck = 0;
     EP = 0;
     Castle = 0x0f; // both sides can castle
+    lastMove[0] = 0;
 }
-
-
 
 int attackTest(int cases, int side, int pos)
 {

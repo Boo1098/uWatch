@@ -34,7 +34,7 @@ You can use the mode key to quit the game any time.
 * Chess
 
 Right now there is no board display only the moves displayed in coordinate
-fasion (eg d7-d5 or b4xf7 Check!).
+fasion (eg d7-d5 or b4xf7+).
 
 At the start of the game, you are asked to play either white (1) or black
 (2). Then you can select the level of play 1, 2 or 3. press enter after making
@@ -46,6 +46,8 @@ Enter your move using numbers instead of letters, so A=1, B=2 etc.  for
 example, the move E2-E4 is entered as the number 5254. the watch responds and
 then you make your next move.
 
+when promoting pawns, add a trailing number to the move 1=knight, 2=bishop, 3=rook, 4=queen. no number promotes automatically to queen.
+
 Pressing the mode key escapes from the chess game. Currently there is no way
 to return to the state of play after exit.
 
@@ -53,7 +55,6 @@ Misc Notes:
 
 * the 50 move rule is not enforced.             [ will be fixed]
 * the three repetition rule is not enforced.    [ tricky! ]
-* all player pawn promotions are to queen.      [ will be fixed ]
 * vchess may declare a win if it finds a mate-in-n situation.
 * the chess engine is voidchess v1.4
 
