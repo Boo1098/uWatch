@@ -239,6 +239,8 @@ int daysInMonth( int year, int month ) {
 }
 
 int gYear, gMonth;
+BOOL gModify;
+
 char *processCalendar( int *pDay, int max )
 {
     int dayOfWeek = DAYOFWEEK( mjd( gYear, gMonth, *pDay ) );
@@ -281,24 +283,58 @@ char *processCalendar( int *pDay, int max )
     return out;
 }
 
+void fixTitle( int year, int month ) {
+
+    sprintf( out, "%d, %s", year, monthName[ month - 1 ] );
+    UpdateLCDline1( out );
+
+}
+
 
 void decrementDay( int *day, int max )
 {
     ( *day)--;
-    if (( *day) < 1 )
-        ( *day ) = max;
+    if (( *day) < 1 ) {
+
+        if ( !gModify ) {
+            gMonth--;
+            if ( gMonth < 1 ) {
+                gYear--;
+                gMonth = 12;
+            }
+        }
+
+        (*day) = daysInMonth( gYear, gMonth );
+        fixTitle( gYear, gMonth );
+
+    }
 }
 
 void incrementDay( int *day, int max )
 {
     ( *day)++;
-    if (( *day) > max )
+
+    if (( *day) > max ) {
+
         ( *day ) = 1;
+
+        if ( !gModify ) {
+            gMonth++;
+            if ( gMonth > 12 ) {
+                gYear++;
+                gMonth = 1;
+            }
+        }
+
+        fixTitle( gYear, gMonth );
+    }
 }
 
 
 
 int doCal( BOOL modify ) {
+
+    gModify = modify;
 
     int year = BCDtoDEC( Date.f.year ) + 2000;
     int month = BCDtoDEC( Date.f.mon ) - 1;
@@ -324,9 +360,6 @@ int doCal( BOOL modify ) {
         return MODE_KEYMODE;
 
     //TODO: year should be absolute, not limited from 2000...
-
-//    UpdateLCDline1( sprintf( out, "%d-%d-%d", year,month+1,day ));
-//    GetDebouncedKey();
 
     if ( modify )
         SetDateBCDandUpdate( DECtoBCD( year - 2000 ), DECtoBCD( month + 1 ), DECtoBCD( day ) );
