@@ -289,7 +289,7 @@ char line2BLACK[17];
 
 
 const packedMenu colourMenu = {
-    "- VCHESS v1.3 -",
+    "- VCHESS v1.4 -",
     printMenu,
     increment, decrement, 2,
     {   0,0,0,0,
