@@ -211,6 +211,9 @@
 	  custom characters are automatically loaded with the menu
       Note the \000 format in the menu strings -- this is OCTAL character # 
 
+1.5.9
+- improvements to the vchess game.
+
 1.5.A
 - more menu madness.
 - added many more individual files and removed the #include for C files inside the main one.  This was bad.
