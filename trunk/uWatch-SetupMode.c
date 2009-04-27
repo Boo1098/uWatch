@@ -109,6 +109,9 @@ int OneLineNumberEntry()
         int key;
 
         key = GetDebouncedKey();
+
+        //IFEXIT( key );
+
         // ??? while ((key = KeyScan(TRUE)) == 0) ;
         ResetSleepTimer();
 
@@ -116,7 +119,7 @@ int OneLineNumberEntry()
 
         IFEXIT( c );
 
-        if ( c == KeyEnter ) {
+        if ( ENTER(key) ) {
             CompleteXreg();
 
             UpdateXregDisplay();
@@ -298,8 +301,9 @@ void incrementDay( int *day, int max )
 int doCal( BOOL modify ) {
 
     int year = BCDtoDEC( Date.f.year ) + 2000;
-    int month = BCDtoDEC( Date.f.mon );
+    int month = BCDtoDEC( Date.f.mon ) - 1;
     int day = BCDtoDEC( Date.f.mday );
+
 
     if ( genericMenu( "Year", &printNumber, &increment, &decrement, 2100, &year ) == MODE_KEYMODE )
         return MODE_KEYMODE;
@@ -313,14 +317,19 @@ int doCal( BOOL modify ) {
 
     sprintf( out, "%d, %s", year, monthName[ month ] );
     int dim = daysInMonth( gYear, gMonth );
+    if ( day > dim )
+        day = 1;
 
     if ( genericMenu( out, processCalendar, incrementDay, decrementDay, dim, &day ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     //TODO: year should be absolute, not limited from 2000...
 
+//    UpdateLCDline1( sprintf( out, "%d-%d-%d", year,month+1,day ));
+//    GetDebouncedKey();
+
     if ( modify )
-        SetDateBCDandUpdate( DECtoBCD( year - 2000 ), DECtoBCD( month ), DECtoBCD( day ) );
+        SetDateBCDandUpdate( DECtoBCD( year - 2000 ), DECtoBCD( month + 1 ), DECtoBCD( day ) );
 
     return MODE_EXIT;
 }
@@ -490,7 +499,7 @@ int appClearEEPROM()
     UpdateLCDline1( "Erase EEPROM ?" );
     UpdateLCDline2( "ENTER or Cancel" );
     int KeyPress2 = GetDebouncedKey();
-    if ( KeyPress2 == KeyEnter ) {
+    if ( ENTER(KeyPress2)) {
         unsigned int c;
         int c2;
         UpdateLCDline1( "Erasing EEPROM" );
