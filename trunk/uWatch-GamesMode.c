@@ -109,7 +109,7 @@ lunar:
                 }
                 goto lunar;
             }
-            if ( KeyPress2 == KeyEnter ) {  //enter fuel to burn
+            if ( ENTER(KeyPress2) ) {  //enter fuel to burn
                 UpdateLCDline1( "Burn fuel(0-30):" );
                 Xreg = burnAmount;
                 c = OneLineNumberEntry();
