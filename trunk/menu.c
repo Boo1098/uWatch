@@ -77,7 +77,7 @@ int genericMenu2( const packedMenu *menu, int *selection )
                 ( *( menu->dec ) )( &sel, menu->max );
         }
 
-    } while ( key != KeyEnter );
+    } while ( !ENTER(key) );
 
 
     if ( selection )
@@ -153,7 +153,7 @@ int genericMenu( char *title,
         if ( decrementFunc && PREVIOUS( key ) )
             ( *decrementFunc )( &sel, max );
 
-    } while ( key != KeyEnter );
+    } while ( !ENTER(key) );
 
 
     if ( selection )
@@ -259,7 +259,7 @@ int viewString( char *title, char *string,
                 sel = 0;
         }    
 
-    } while ( key != KeyEnter );
+    } while ( !ENTER(key) );
 
 
     if ( selection )
