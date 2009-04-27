@@ -734,7 +734,7 @@ void backlightControl()
     int tStartSec = tStart.f.hour * 60 * 60 + tStart.f.min * 60 + tStart.f.sec;
     int tEndSec = tEnd.f.hour * 60 * 60 + tEnd.f.min * 60 + tEnd.f.sec;
 
-    if ( tEndSec - tStartSec < 3 )
+    if ( tEndSec - tStartSec < 2 )
         BacklightOFF();
 
 }
@@ -818,7 +818,7 @@ unsigned char itochar( int i )
 void dayHasChanged()
 {
     Year = BCDtoDEC( Date.f.year ) + 2000;
-    Month = BCDtoDEC( Date.f.mon ) + 1;
+    Month = BCDtoDEC( Date.f.mon ); // + 1;
     Day = BCDtoDEC( Date.f.mday );
 
     // failsafe checks
