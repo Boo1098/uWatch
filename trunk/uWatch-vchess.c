@@ -365,7 +365,7 @@ void fixArrow( int line ) {
     const unsigned char *newArrow = character_arrow_updown;
     if ( line == 8 )
         newArrow = character_arrow_down;
-    else if ( line == 0 )
+    else if ( !line )
         newArrow = character_arrow_up;
 
     custom_character( 4, newArrow );
@@ -375,37 +375,51 @@ void fixArrow( int line ) {
 }
 
 
+int contrast = 4;       // RANGE 0 - 7 INCLUSIVE
+int line = 0;
 
 int showBoard() {
+
+    unsigned int flickerPattern[] = {
+        0xFFFF,     // 1111 1111 1111 1111 0
+        0xFEFE,     // 1111 1110 1111 1110 2
+        0xEEEE,     // 1110 1110 1110 1110 4
+        0xB6B5,     // 1011 0110 1011 0101 6
+        0xAAAA,     // 1010 1010 1010 1010 8
+        0xA52A,     // 1010 0101 0010 1010 10
+        0x8844,     // 1000 1000 0100 0100 12
+        0x8080,     // 1000 0000 1000 0000 14
+        0x0000,     // 0000 0000 0000 0000 16
+    };
 
     // Rebuild the board display strings
     int row;
     for ( row = 0; row < 8; row ++ )
         updateLine( dispBoard[ row + 11 ] + 4, dispBoard[ row + 1 ] + 4, row );
 
-    int line = 0;
     int mask = 0;
-    int contrast = 0;
 
     fixArrow( line );
     EnableSleepTimer();
     ResetSleepTimer();
+    
+    Clock250KHz();              // guarantees best display for flicker
 
+    unsigned int counter = 0;
     while ( TRUE ) {
 
-        {
-            // draw board with contrast characters for white pieces!
+        counter >>= 1;
+        if ( !counter )
+            counter = 0x8000;
 
-            UpdateLCDline2( dispBoard[ line ] );            // white
-            UpdateLCDline1( dispBoard[ line + 1 ] );        // white
-
-            if ( contrast )
-                DelayMs( contrast );
-
-            UpdateLCDline2( dispBoard[ line + 10 ]);        // black+white
-            UpdateLCDline1( dispBoard[ line + 11 ]);        // black+white
+        if ( flickerPattern[ contrast ] & counter ) {
+            UpdateLCDline2( dispBoard[ line + 10 ]);        // BLACK + WHITE
+            UpdateLCDline1( dispBoard[ line + 11 ]);        // BLACK + WHITE
+        } else {
+            UpdateLCDline2( dispBoard[ line ] );            // BLACK ONLY
+            UpdateLCDline1( dispBoard[ line + 1 ] );        // BLACK ONLY
         }
-
+        
 
         int key = KeyScan2();
         if ( !key )
@@ -421,8 +435,8 @@ int showBoard() {
             return MODE_KEYMODE;
 
         int temp = ReturnNumber(key);
-        if ( temp >= 0 && temp <= 9 ) {
-            contrast = temp << 3;
+        if ( temp >= 1 && temp <= 9 ) {
+            contrast = temp - 1;
             mask = 0;
         }    
 
