@@ -60,7 +60,7 @@ int factor( int p )
 
         idleEnd = sqrt( nx );
         sprintf( displayBuffer, "%lu = (", nx );
-        viewString( "Factorising", displayBuffer, 0, 1 );
+        viewString( "Factorising...", displayBuffer, 0, 1 );
 
         const char *nb = "Result";
     
