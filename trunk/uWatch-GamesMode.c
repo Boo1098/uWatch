@@ -52,7 +52,7 @@ int lunarLander( int p )
     int KeyPress2;
 
     UpdateLCDline1( "--LUNAR LANDAR--" );
-    UpdateLCDline2( " By Shaun Chong " );
+    UpdateLCDline2( "    By zowki    " );
 
     if ( GetDebouncedKey() == KeyMode )
         return MODE_KEYMODE;
@@ -215,7 +215,7 @@ int twenty1( int p )
 void bust_player( void )
 {
     done = 1;
-    sprintf( out, "You: %d Dealer: %d", player_total, dealer_total );
+    sprintf( out, "You:%d Dealer:%d", player_total, dealer_total );
     UpdateLCDline1( out );
     UpdateLCDline2( "Player bust!" );
     GetDebouncedKey();
@@ -224,7 +224,7 @@ void bust_player( void )
 void bust_dealer( void )
 {
     done = 1;
-    sprintf( out, "You: %d Dealer: %d", player_total, dealer_total );
+    sprintf( out, "You:%d Dealer:%d", player_total, dealer_total );
     UpdateLCDline1( out );
     UpdateLCDline2( "Dealer bust!" );
     GetDebouncedKey();
@@ -240,8 +240,8 @@ void hit_dealer( void )
 {
     dealer_total += rand() % 10 + 1;
     if ( dealer_total > 21 ) {
-        bust_dealer();
         dealerBust = 1;
+        bust_dealer();
     }
 }
 
@@ -261,7 +261,7 @@ void stand( void )
     while ( dealer_total < 17 ) hit_dealer(); //The dealer's play, always hits when lower than 17 (vegas rules)
     done = 1;
 
-    sprintf( out, "You: %d Dealer: %d", player_total, dealer_total );
+    sprintf( out, "You:%d Dealer:%d", player_total, dealer_total );
     UpdateLCDline1( out );
     if ( player_total > dealer_total )
         UpdateLCDline2( "Player wins!" );
@@ -285,7 +285,7 @@ void stand( void )
 
 
     UpdateLCDline1( "5\010 Q\1 J\2 2\3 7\1" );
-    UpdateLCDline2( " By Shaun Chong " );
+    UpdateLCDline2( "    By zowki    " );
     KeyPress2 = GetDebouncedKey();
     if ( KeyPress2 == KeyMode ) return MODE_KEYMODE;
 
@@ -293,7 +293,7 @@ void stand( void )
     prepare();
 
     while ( done == 0 ) {
-        sprintf( out, "You: %d Player: ?", player_total );
+        sprintf( out, "You:%d Dealer:?", player_total );
         UpdateLCDline1( out );
         UpdateLCDline2( "Hit=1 Stand=2" );
         KeyPress2 = GetDebouncedKey();
