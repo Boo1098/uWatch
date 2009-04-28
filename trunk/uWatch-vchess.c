@@ -263,6 +263,7 @@ const byte offset[6][9] =
 
 static int chessLevel;
 int computer;
+int runOnce = FALSE;
 
 const unsigned char character_king[] = { 0x04, 0x0e, 0x04, 0x11, 0x15, 0x0E, 0x0E, 0x1F };
 const unsigned char character_queen[] = { 0x00, 0x15, 0x00, 0x15, 0x15, 0x0E, 0x0E, 0x1F };
@@ -285,6 +286,25 @@ int chosen( int computerColour ) {
 /* data for the board display */
 static char dispBoard[20][17];
 static char lastMove[7];
+
+BOOL contGame;
+
+int cont( int p ) {
+    contGame = (BOOL)p;
+    return MODE_EXIT;
+}
+
+
+const packedMenu contMenu = {
+    "- VCHESS v1.4 -",
+    printMenu,
+    increment, decrement, 2,
+    {   0,0,0,0,
+    },
+    {   { "Continue", &cont, TRUE },
+        { "New Game", &cont, FALSE },
+    },
+};
 
 
 const packedMenu colourMenu = {
@@ -468,21 +488,32 @@ int chessGame( int p )
 {
 
     computer = BLACK;
+    contGame = FALSE;
 
     int moveok;
     Move* mv;
     Move* first;
     int to, from, promote;
 
-    initBoard();
+    if ( runOnce ) {
+        // choose colour    
+        if ( genericMenu2( &contMenu, 0 ) == MODE_KEYMODE )
+            return MODE_KEYMODE;
+    }
 
-    // choose colour    
-    if ( genericMenu2( &colourMenu, 0 ) == MODE_KEYMODE )
-        return MODE_KEYMODE;
 
-    // get level
-    if ( genericMenu2( &levelMenu, 0 ) == MODE_KEYMODE )
-        return MODE_KEYMODE;
+    if ( !contGame ) {
+
+        // choose colour    
+        if ( genericMenu2( &colourMenu, 0 ) == MODE_KEYMODE )
+            return MODE_KEYMODE;
+
+        // get level
+        if ( genericMenu2( &levelMenu, 0 ) == MODE_KEYMODE )
+            return MODE_KEYMODE;
+
+        initBoard();
+    }
 
     initDisplay();
 
@@ -499,7 +530,7 @@ int chessGame( int p )
     custom_character( 6, character_rook );
     custom_character( 7, character_queen );
 
-
+    runOnce = TRUE;
 
     for ( ;; ) {
 
@@ -609,6 +640,9 @@ static int computerMoves()
             Move* m = MainPV.m;
             playMove(*m);
             strcpy(lastMove, moveToStr(*m,1));
+
+        line = lastMove[4]-'0'-1;     // focus board display on the last move's line
+
             if (InCheck) lastMove[5]='+';
             UpdateLCDline1(lastMove);
         }
