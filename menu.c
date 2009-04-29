@@ -82,9 +82,9 @@ int genericMenu2( const packedMenu *menu, int *selection )
                 // and the OP values are associated with function keypresses.  Here we
                 // draw BOTH LCD lines and we also highlight the current selection
 
-                sprintf( out, "%5s%5s%5s", menu->menu[0].name, menu->menu[1].name, menu->menu[2].name );
+                sprintf( out, "%s%s%s", menu->menu[0].name, menu->menu[1].name, menu->menu[2].name );
                 UpdateLCDline1( out );
-                sprintf( out, "%5s%5s%5s", menu->menu[3].name, menu->menu[4].name, menu->menu[5].name );
+                sprintf( out, "%s%s%s", menu->menu[3].name, menu->menu[4].name, menu->menu[5].name );
                 UpdateLCDline2( out );
 
             } else {
@@ -124,7 +124,8 @@ int genericMenu2( const packedMenu *menu, int *selection )
                 if ( !menu->title ) {
                     if ( fkey[autoSel]>=0 ) {
                         sel = fkey[autoSel];
-                        break;
+                        if ( menu->menu[sel].op != CALC_OP_NULL )
+                            break;
                     } 
                 }
             }
