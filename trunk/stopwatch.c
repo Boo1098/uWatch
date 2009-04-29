@@ -102,7 +102,7 @@ int stopWatchLap( int op ) {
 int StopWatchMode() {
 
     const packedMenu stopWatchMenu = {
-        "",
+        "ToDO",
         stopWatchPrintMenu,
         increment, decrement, 2,
         {   0,

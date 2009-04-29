@@ -2,6 +2,7 @@
 #define __MENU_H
 
 #define MENU_CUSTOM_CHAR_COUNT 4
+#define MENU_ITEM_MAX 10
 
 typedef struct {
     const char *name;
@@ -16,7 +17,7 @@ typedef struct {
     void ( *dec )( int *sel, int max );
     const int max;
     const unsigned char *customCharacter[MENU_CUSTOM_CHAR_COUNT];
-    const menuItem menu[10];
+    const menuItem menu[MENU_ITEM_MAX];
 } packedMenu;
 
 char *printMenu( int *item, menuItem *menu );
@@ -36,7 +37,11 @@ int genericMenu( char *title,
 #define VIEW_AUTOSCROLL 2
 
 int viewString( char *title, char *string, int *selection, int viewControl );
+int calculatorMenu( const packedMenu *menu[], int size );
 
 extern const packedMenu mathMenu;
+extern const packedMenu *calcMenus[];
+#define CALC_MENU_SIZE 12
+
 
 #endif

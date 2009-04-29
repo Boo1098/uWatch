@@ -48,7 +48,7 @@ static unsigned int GetDebouncedKey()
 
 int lunarLander( int p )
 {
-#if 1
+#if 0
     int KeyPress2;
 
     UpdateLCDline1( "--LUNAR LANDAR--" );

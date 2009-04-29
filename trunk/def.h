@@ -141,6 +141,8 @@
 #define MODE_EXIT -1
 #define MODE_KEYMODE -2
 #define MODE_KEYCLEAR -3
+#define MODE_KEY_NEXT -4
+#define MODE_KEY_PREVIOUS -5
 
 #define Key1        17
 #define Key2        18

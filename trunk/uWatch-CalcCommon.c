@@ -989,7 +989,8 @@ void KeyReplay(void)
 }
 
 int hexSelect( int sel ) {
-    ProcessNumberKey( sel + 'A' );
+    char hex[10] = { 0,0,0,0, 'D', 'E', 'F', 'A', 'B', 'C' };
+    ProcessNumberKey( hex[sel] );
     UpdateLCDline2(DisplayXreg);
     return MODE_EXIT;
 }
@@ -1003,12 +1004,12 @@ int HexEntry(void)
         printMenu, increment, decrement, 6,
         {   character_right_menu,
         },
-        {   { "[A]BCDEF", hexSelect, 0 },
-            { "A[B]CDEF", hexSelect, 1 },
-            { "AB[C]DEF", hexSelect, 2 },
-            { "ABC[D]EF", hexSelect, 3 },
-            { "ABCD[E]F", hexSelect, 4 },
-            { "ABCDE[F]", hexSelect, 5 },
+        {   { "A", hexSelect, 7 },
+            { "B", hexSelect, 8 },
+            { "C", hexSelect, 9 },
+            { "D", hexSelect, 4 },
+            { "E", hexSelect, 5 },
+            { "F", hexSelect, 6 },
         },
     };
 

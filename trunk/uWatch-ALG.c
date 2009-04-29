@@ -74,7 +74,7 @@ void ALGcalculator(void)
 
         if ( Key == KeyMenu ) {
             WatchMode = WATCH_MODE_CALC_MENU;
-            genericMenu2( &mathMenu, 0 );
+            calculatorMenu( calcMenus, CALC_MENU_SIZE );
             WatchMode = WATCH_MODE_CALC;
         }
 

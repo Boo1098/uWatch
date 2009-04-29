@@ -287,10 +287,10 @@ int chosen( int computerColour ) {
 static char dispBoard[20][17];
 static char lastMove[7];
 
-BOOL contGame;
+int contGame;
 
 int cont( int p ) {
-    contGame = (BOOL)p;
+    contGame = p;
     return MODE_EXIT;
 }
 
@@ -329,9 +329,9 @@ const packedMenu levelMenu = {
     increment, decrement, 3,
     {   0,0,0,0,
     },
-    {   { "Easy", &levelChoose, 1 },
-        { "Medium", &levelChoose, 2 },
-        { "Hard", &levelChoose, 3 },
+    {   { "Easy", &levelChoose, 2 },
+        { "Medium", &levelChoose, 3 },
+        { "Hard", &levelChoose, 4 },
     },
 };
 
@@ -488,7 +488,7 @@ int chessGame( int p )
 {
 
     computer = BLACK;
-    contGame = FALSE;
+    contGame = 0;
 
     int moveok;
     Move* mv;
@@ -496,7 +496,7 @@ int chessGame( int p )
     int to, from, promote;
 
     if ( runOnce ) {
-        // choose colour    
+        // have previously run... so continue, or new game?    
         if ( genericMenu2( &contMenu, 0 ) == MODE_KEYMODE )
             return MODE_KEYMODE;
     }
