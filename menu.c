@@ -20,10 +20,38 @@ void decrement( int *selection, int max )
 }
 
 
+int calculatorMenu( const packedMenu *menu[], int size ) {
 
+    int menuNum = 0;
+    int mode = 0;
+
+    while ( mode != MODE_EXIT ) {
+
+        int dummy;
+        mode = genericMenu2( menu[ menuNum ], &dummy );
+
+        IFEXIT( mode );
+
+        switch ( mode ) {
+            case MODE_KEY_NEXT:
+                menuNum++;
+                if ( menuNum >= size )
+                    menuNum = 0;
+                break;
+            case MODE_KEY_PREVIOUS:
+                menuNum--;
+                if ( menuNum < 0 )
+                    menuNum = size-1;
+                break;
+        }
+
+    }
+    return mode;
+}
 
 int genericMenu2( const packedMenu *menu, int *selection )
 {
+    int mode = MODE_EXIT;
 
     int sel = selection ? ( *selection ) : 0;
 
@@ -47,9 +75,24 @@ int genericMenu2( const packedMenu *menu, int *selection )
     do {
 
         if ( menu->print ) {
-            char out2[17];
-            sprintf( out2, "%-14s\010%d", ( *( menu->print ) )( &sel, (menuItem *)(menu->menu) ), sel);
-            UpdateLCDline2( out2 );
+
+            if ( !menu->title ) {
+
+                // we're drawing a FUNCTION KEY MENU -- aka calculator menu
+                // and the OP values are associated with function keypresses.  Here we
+                // draw BOTH LCD lines and we also highlight the current selection
+
+                sprintf( out, "%5s%5s%5s", menu->menu[0].name, menu->menu[1].name, menu->menu[2].name );
+                UpdateLCDline1( out );
+                sprintf( out, "%5s%5s%5s", menu->menu[3].name, menu->menu[4].name, menu->menu[5].name );
+                UpdateLCDline2( out );
+
+            } else {
+
+                char out2[17];
+                sprintf( out2, "%-15s\010", ( *( menu->print ) )( &sel, (menuItem *)(menu->menu) ) );
+                UpdateLCDline2( out2 );
+            }
         }
 
         if ( menu->menu[sel].op < 0 ) {
@@ -63,11 +106,27 @@ int genericMenu2( const packedMenu *menu, int *selection )
 
         if ( key ) {
             IFEXIT( key );
+
+            if ( !menu->title ) {
+                if ( NEXT(key) )
+                    return MODE_KEY_NEXT;
+                if ( PREVIOUS( key ) )
+                    return MODE_KEY_PREVIOUS;
+            }    
     
             int autoSel = ReturnNumber( key );
-            if ( autoSel >= 0 && autoSel < menu->max ) {
-                sel = autoSel;
-                break;
+            if ( autoSel >= 0 && autoSel <= 9 ) {
+
+                // scan menu items to find equivalent function for key
+                // This is how function keys work in calculator mode -- finding the equivalent # in the op in the menu
+
+                int fkey[] = { -1,-1,-1,-1, 3, 4, 5, 0, 1, 2 };
+                if ( !menu->title ) {
+                    if ( fkey[autoSel]>=0 ) {
+                        sel = fkey[autoSel];
+                        break;
+                    } 
+                }
             }
     
             if ( menu->inc && NEXT( key ) )
@@ -86,7 +145,7 @@ int genericMenu2( const packedMenu *menu, int *selection )
     if ( menu->menu[sel].run )
         ( *selection ) = ( menu->menu[sel].run )( menu->menu[sel].op );
 
-    return MODE_EXIT;
+    return mode;
 }
 
 
