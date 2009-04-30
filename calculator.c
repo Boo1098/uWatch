@@ -23,7 +23,7 @@ const packedMenu mathLogarithmic = {
         { " ln  ",                   OperatePrecedence,        CALC_OP_LN              },
         { "log ",                  OperatePrecedence,        CALC_OP_LN10            },
         { "  10\2 ",                 OperatePrecedence,        CALC_OP_10X             },
-        { "x\3y ",                OperatePrecedence,        CALC_OP_NROOT           },
+        { "\2\3y ",                OperatePrecedence,        CALC_OP_NROOT           },
         { " y\2  ",                    OperatePrecedence,        CALC_OP_NPOW            },
     },
 };
