@@ -25,23 +25,17 @@ int calculatorMenu( const packedMenu *menu[], int size ) {
     int menuNum = 0;
     int mode = 0;
 
-    while ( mode != MODE_EXIT ) {
+    while ( mode != MODE_EXIT && mode != MODE_KEYMODE ) {
 
         int dummy;
         mode = genericMenu2( menu[ menuNum ], &dummy );
 
-        IFEXIT( mode );
-
         switch ( mode ) {
             case MODE_KEY_NEXT:
-                menuNum++;
-                if ( menuNum >= size )
-                    menuNum = 0;
+                menuNum = ( menuNum+1 ) % size;
                 break;
             case MODE_KEY_PREVIOUS:
-                menuNum--;
-                if ( menuNum < 0 )
-                    menuNum = size-1;
+                menuNum = ( menuNum-1) %size;
                 break;
         }
 
@@ -95,17 +89,19 @@ int genericMenu2( const packedMenu *menu, int *selection )
             }
         }
 
-        if ( menu->menu[sel].op < 0 ) {
+        if ( menu->menu[sel].op < 0 ) { // NO DEBOUNCE? .. ???
             key = KeyScan2();
             if ( !key )
                 mask = 0xFFFF;
             key &= mask;
         } else
-
-        key = GetDebouncedKey();
+            key = GetDebouncedKey();
 
         if ( key ) {
             IFEXIT( key );
+
+            // Calculator-style menus need to cycle from menu to menu -- this is
+            // done by using the MENU/RP keys, and passing appropriate values for each
 
             if ( !menu->title ) {
                 if ( NEXT(key) )
@@ -172,32 +168,11 @@ int genericMenu( char *title,
 
         if ( printFunc ) {
             char out2[17];
-            sprintf( out2, "%-15s\010", ( *printFunc )( &sel, max ) );
+            sprintf( out2, "%-15s\010", ( *printFunc )( &sel, max ));
             UpdateLCDline2( out2 );
         }
 
-//        int lastMax = max;
-//        if ( idleFunc && !KeyScan2() ) {
-//            int h = 0;
-//            max = (*idleFunc)( &h );
-//            if ( h )
-//                return MODE_EXIT;
-//        }            
-
-//        if ( lastMax != max )
-//            continue;        
-
-//        if ( !idleFunc ) {
-            key = GetDebouncedKey();
-//        } else {
-
-//            if ( key )
-//                DelayMs( 500 );
-
-//            key = KeyScan2();
-//        }
-
-
+        key = GetDebouncedKey();
 
         IFEXIT( key );
 

@@ -33,6 +33,15 @@ This program is free software: you can redistribute it and/or modify
 #include "menu.h"
 
 
+static void pressEnter() {
+    CompleteXreg();
+    PushStackUp();
+    ResetFlags();
+
+    //overwite the flag and force the Xreg to be overwritten on the next entry
+    EnableXregOverwrite=TRUE;	
+    UpdateDisplayRegs();
+}
 
 //***********************************
 // The main RPN calculator routine
@@ -66,7 +75,10 @@ void RPNcalculator(void)
 
         if ( Key == KeyMenu ) {
             WatchMode = WATCH_MODE_CALC_MENU;
+            CompleteXreg();
+            ResetFlags();
             calculatorMenu( calcMenus, CALC_MENU_SIZE );
+            UpdateDisplayRegs();
             WatchMode = WATCH_MODE_CALC;
         }
 
@@ -128,13 +140,7 @@ void RPNcalculator(void)
         switch (Key)
         {
         case KeyEnter: //user has pressed the ENTER key
-            CompleteXreg();
-            PushStackUp();
-            ResetFlags();
-
-            //overwite the flag and force the Xreg to be overwritten on the next entry
-            EnableXregOverwrite=TRUE;	
-            UpdateDisplayRegs();
+            pressEnter();
             break;
         case KeyPlus: //user has pressed the PLUS key
             Operate(CALC_OP_PLUS);

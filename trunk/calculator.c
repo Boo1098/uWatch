@@ -5,10 +5,10 @@
 #include "characterset.h"
 
 
-int doCalcMenu( int op )
-{
-    return genericMenu2( (packedMenu *)op, 0 );
-}
+//int doCalcMenu( int op )
+//{
+//    return genericMenu2( (packedMenu *)op, 0 );
+//}
 
 
 

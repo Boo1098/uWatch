@@ -48,7 +48,7 @@ static unsigned int GetDebouncedKey()
 
 int lunarLander( int p )
 {
-#if 0
+#if 1
     int KeyPress2;
 
     UpdateLCDline1( "--LUNAR LANDAR--" );
@@ -197,118 +197,177 @@ lunar:
 
 
 
+const unsigned char character_heart[] = { 0x0A, 0x1F, 0x1F, 0x1F, 0x0E, 0x04, 0x00, 0x00 };
+const unsigned char character_spade[] = { 0x04, 0x0E, 0x1F, 0x1F, 0x0A, 0x04, 0x04, 0 };
+const unsigned char character_diamond[] = { 0x00, 0x04, 0x0E, 0x1F, 0x0E, 0x04, 0x00, 0x00 };
+const unsigned char character_club[] = { 0x0E, 0x0E, 0x04, 0x1F, 0x1B, 0x04, 0x04, 0x00 };
+
+void drawCard( char *dest, int card ) {
+    char *c[] = { "A","2","3","4","5","6","7","8","9","10","J","Q","K"  };
+    int suit = ( card % 4 ) + 2;
+    int val = (int) (card / 4);
+    sprintf( dest, "%s%c", c[val], suit|8 ); 
+}
+
+void shuffle( int *deck ) {
+    int card, card2, shuf;
+    for ( shuf = 0; shuf < 1000; shuf++ ) {
+        card = rand() % 52;
+        card2 = rand() % 52;
+        int temp = deck[card];
+        deck[card] = deck[card2];
+        deck[card2] = temp;
+    }
+}
 
 
+int valueof( int card ) {
+    int val = card / 4;
+    switch (val ) {
+        case 0:
+            return 11;
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+            return 10;
+    }
+    return val+1;
+}
+
+
+int countTotal( int *hand, int cards ) {
+    // find HIGHEST total < 22
+    // aces count as 1 or 11
+
+    int total = 0;
+    int i;
+    for ( i = 0; i < cards; i++ ) {
+        total += valueof( hand[i] );        
+    }
+
+    // change any/all aces down to value of 1, reducing total
+    i = 0;
+    while ( i < cards && total > 21 ) {
+        if ( valueof( hand[i]) == 11 )  // an ace?
+            total -= 10;
+        i++;
+    }
+
+    return total;
+}
+
+int drawHand( char *prefix, char *dest, int *hand, int count ) {
+
+    strcpy( dest, prefix );
+    int i;
+    for ( i = 0; i < count; i++ ) {
+        drawCard( dest + strlen( dest ), hand[i] );
+        if ( i == count-2 )
+            strcat( dest, " " );
+    }    
+    int total = countTotal( hand, count );
+    sprintf( dest + strlen(dest), " =%2d", total );
+    return total;
+}    
+
+char *printHitStand(int *n, int max ) {
+    if (*n)
+        return "Stand";
+    else
+        return "Hit!";
+}
 
 int twenty1( int p )
 {
 #if 1
 
-    //char s2[MaxLCDdigits+1];
-    int player_total = 0;
-    int dealer_total = 0;
-    int done = 0;
-    int dealerBust = 0;
-    int KeyPress2;
+
+    custom_character( 2, character_heart );
+    custom_character( 3, character_spade );
+    custom_character( 4, character_diamond );
+    custom_character( 5, character_club );
 
 
-void bust_player( void )
-{
-    done = 1;
-    sprintf( out, "You:%d Dealer:%d", player_total, dealer_total );
-    UpdateLCDline1( out );
-    UpdateLCDline2( "Player bust!" );
-    GetDebouncedKey();
-}
 
-void bust_dealer( void )
-{
-    done = 1;
-    sprintf( out, "You:%d Dealer:%d", player_total, dealer_total );
-    UpdateLCDline1( out );
-    UpdateLCDline2( "Dealer bust!" );
-    GetDebouncedKey();
-}
-
-void hit_player( void )
-{
-    player_total += rand() % 10 + 1;
-    if ( player_total > 21 ) bust_player();
-}
-
-void hit_dealer( void )
-{
-    dealer_total += rand() % 10 + 1;
-    if ( dealer_total > 21 ) {
-        dealerBust = 1;
-        bust_dealer();
-    }
-}
-
-void prepare( void )
-{
-    player_total = 0;
-    dealer_total = 0; //reset card totals
-    hit_player();
-    hit_player();
-    hit_dealer();
-    hit_dealer();  //hit player and dealer twice for initial cards
-    done = 0;
-}
-
-void stand( void )
-{
-    while ( dealer_total < 17 ) hit_dealer(); //The dealer's play, always hits when lower than 17 (vegas rules)
-    done = 1;
-
-    sprintf( out, "You:%d Dealer:%d", player_total, dealer_total );
-    UpdateLCDline1( out );
-    if ( player_total > dealer_total )
-        UpdateLCDline2( "Player wins!" );
-    else if ( player_total == dealer_total )
-        UpdateLCDline2( "Push!" );
-    else if ( player_total < dealer_total || dealerBust == 0 )     // must be else, otherwise will call wrong winner
-        UpdateLCDline2( "Dealer wins!" );
-    GetDebouncedKey();
-}
+    int deck[52];
+    int card;
+    for ( card = 0; card < 52; card++ )
+        deck[card] = card;
 
 
-    const unsigned char character_heart[] = { 0x0A, 0x1F, 0x1F, 0x1F, 0x0E, 0x04, 0x00, 0x00 };
-    const unsigned char character_spade[] = { 0x04, 0x04, 0x0E, 0x1F, 0x1F, 0x0A, 0x04, 0x0E };
-    const unsigned char character_diamond[] = { 0x00, 0x04, 0x0E, 0x1F, 0x0E, 0x04, 0x00, 0x00 };
-    const unsigned char character_club[] = { 0x0E, 0x0E, 0x04, 0x1F, 0x1B, 0x04, 0x04, 0x00 };
+    int player[20];
+    int dealer[20];
 
-    custom_character( 0, character_heart );
-    custom_character( 1, character_spade );
-    custom_character( 2, character_diamond );
-    custom_character( 3, character_club );
+    while ( TRUE ) {
+
+        shuffle( deck );
+
+        card = 0;
+        int cardn = 0;
+        int total = 0;
+        while ( total < 22 ) {
+    
+            player[cardn++] = deck[card++];
+    
+            total = drawHand( "        YOU: ", displayBuffer, player, cardn );
+            UpdateLCDline1( displayBuffer + strlen(displayBuffer) - 16 );
+            UpdateLCDline2( "" );
+
+            if ( card < 2 ) {
+                DelayMs(1500);
+            } else if ( total < 22 ) {
+
+              int hitStand = 0;
+              if ( genericMenu( displayBuffer, &printHitStand, &increment, &decrement, 2, &hitStand ) == MODE_KEYMODE )
+                return MODE_KEYMODE;
 
 
-    UpdateLCDline1( "5\010 Q\1 J\2 2\3 7\1" );
-    UpdateLCDline2( "    By zowki    " );
-    KeyPress2 = GetDebouncedKey();
-    if ( KeyPress2 == KeyMode ) return MODE_KEYMODE;
-
-
-    prepare();
-
-    while ( done == 0 ) {
-        sprintf( out, "You:%d Dealer:?", player_total );
-        UpdateLCDline1( out );
-        UpdateLCDline2( "Hit=1 Stand=2" );
-        KeyPress2 = GetDebouncedKey();
-        if ( KeyPress2 == KeyMode ) return MODE_KEYMODE;
-        if ( KeyPress2 == Key1 ) hit_player();
-        if ( KeyPress2 == Key2 ) stand();
-        if ( done == 1 ) {
-            UpdateLCDline1( "Deal again?" );
-            UpdateLCDline2( "Yes=1 No=2" );
-            KeyPress2 = GetDebouncedKey();
-            if ( KeyPress2 == KeyMode ) return MODE_KEYMODE;
-            if ( KeyPress2 == Key1 ) prepare();
-            if ( KeyPress2 == Key2 ) break;
+                if ( hitStand == 1 )     // stand
+                    break;
+            }
         }
+
+        if ( total > 21 ) {
+            sprintf( displayBuffer + strlen( displayBuffer )," BUST!" );
+            UpdateLCDline1( displayBuffer + strlen(displayBuffer) - 16 );
+        }
+        else {
+
+            char *dout = displayBuffer + strlen(displayBuffer) + 20;
+    
+            int dealertotal = 0;
+            cardn = 0;
+            while ( dealertotal < 17 ) {
+        
+                dealer[cardn++] = deck[card++];
+        
+                dealertotal = drawHand( "      DEALER: ", dout, dealer, cardn  );
+                UpdateLCDline2( dout + strlen(dout) - 16 );
+        
+                DelayMs(2500);
+        
+            }
+
+            if ( dealertotal > 21 ) {
+                sprintf( dout + strlen( dout )," BUST!" );
+            } else if ( dealertotal == total ) {
+                sprintf( dout + strlen( dout ), " PUSH" );
+            } else if ( dealertotal < total ) {
+                sprintf( displayBuffer + strlen(displayBuffer), " WIN!" );
+            } else {
+                sprintf( dout + strlen( dout ), " WIN!" );
+            }
+
+            UpdateLCDline1( displayBuffer + strlen(displayBuffer) - 16 );
+            UpdateLCDline2( dout + strlen(dout) - 16 );
+        }
+    
+
+        int key = GetDebouncedKey();
+        IFEXIT( key );
     }
+
 #endif
     return MODE_EXIT;
     }
