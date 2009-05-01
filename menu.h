@@ -2,7 +2,7 @@
 #define __MENU_H
 
 #define MENU_CUSTOM_CHAR_COUNT 4
-#define MENU_ITEM_MAX 10
+#define MENU_ITEM_MAX 6
 
 typedef struct {
     const char *name;

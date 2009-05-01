@@ -42,6 +42,14 @@ void reduce(int lev)
     }
 }
 
+static void pressEnter() {
+//user has pressed the ENTER (=) key
+            CompleteXreg();
+            ResetFlags();
+            reduce(9); // ALL
+}
+
+
 //***********************************
 // The main Algebraic calculator routine
 // Note that all variables are global
@@ -74,7 +82,9 @@ void ALGcalculator(void)
 
         if ( Key == KeyMenu ) {
             WatchMode = WATCH_MODE_CALC_MENU;
+            pressEnter();           
             calculatorMenu( calcMenus, CALC_MENU_SIZE );
+            UpdateDisplayRegs();
             WatchMode = WATCH_MODE_CALC;
         }
 
@@ -144,10 +154,7 @@ void ALGcalculator(void)
         switch (Key)
         {            
         case KeyEnter:
-            //user has pressed the ENTER (=) key
-            CompleteXreg();
-            ResetFlags();
-            reduce(9); // ALL
+            pressEnter();
             break;
         case KeyPlus:           //user has pressed the PLUS key
             CompleteXreg();
