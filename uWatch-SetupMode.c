@@ -233,13 +233,14 @@ int leap( int year ) {
 int daysInMonth( int year, int month ) {
     int dom[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }; 
     int dim = dom[ month - 1];
-    if ( month == 2 && leap( year ))
+    if ( leap(year) && (month == 2))
         dim++;
     return dim;
 }
 
-int gYear, gMonth;
-BOOL gModify;
+static int gYear, gMonth;
+static int dim;
+static BOOL gModify;
 
 char *processCalendar( int *pDay, int max )
 {
@@ -257,8 +258,8 @@ char *processCalendar( int *pDay, int max )
     *out = 0;
 
     int limit = (*pDay) + 2;        // MAX DAYS?
-    if ( limit > max )
-        limit = max;
+    if ( limit > dim )
+        limit = dim;
 
     int dd;
     for ( dd = *pDay; dd <= limit; dd++ ) {
@@ -298,6 +299,7 @@ void decrementDay( int *day, int max )
 
         if ( !gModify ) {
             gMonth--;
+            dim = daysInMonth( gYear, gMonth );
             if ( gMonth < 1 ) {
                 gYear--;
                 gMonth = 12;
@@ -305,6 +307,7 @@ void decrementDay( int *day, int max )
         }
 
         (*day) = daysInMonth( gYear, gMonth );
+
         fixTitle( gYear, gMonth );
 
     }
@@ -314,12 +317,13 @@ void incrementDay( int *day, int max )
 {
     ( *day)++;
 
-    if (( *day) > max ) {
+    if (( *day) > dim ) {
 
         ( *day ) = 1;
 
         if ( !gModify ) {
             gMonth++;
+            dim = daysInMonth( gYear, gMonth );
             if ( gMonth > 12 ) {
                 gYear++;
                 gMonth = 1;
@@ -352,7 +356,7 @@ int doCal( BOOL modify ) {
     gMonth = month + 1;         // 1-based
 
     sprintf( out, "%d, %s", year, monthName[ month ] );
-    int dim = daysInMonth( gYear, gMonth );
+    dim = daysInMonth( gYear, gMonth );
     if ( day > dim )
         day = 1;
 
@@ -526,21 +530,21 @@ int appCalculatorMode()
 }
 
 
+
 int appClearEEPROM()
 {
 
     UpdateLCDline1( "Erase EEPROM ?" );
     UpdateLCDline2( "ENTER or Cancel" );
-    int KeyPress2 = GetDebouncedKey();
-    if ( ENTER(KeyPress2)) {
+    if ( ENTER( GetDebouncedKey())) {
         unsigned int c;
         int c2;
-        UpdateLCDline1( "Erasing EEPROM" );
+        UpdateLCDline1( "Erasing" );
         c2 = 0;
         for ( c = 0;c < 65534;c++ ) { //don't overwrite the last byte, it's used for the calibration value
             ResetSleepTimer();          //we don't want to timeout while doing this
 
-            if ( GetDebouncedKey() == KeyClear ) break;
+            if ( KeyScan2( FALSE ) == KeyClear ) break;
 
             I2CmemoryWRITE( c, 0 );
             c2++;
@@ -554,6 +558,8 @@ int appClearEEPROM()
     return MODE_EXIT;
 
 }
+
+
 
 int appSelfTest()
 {
