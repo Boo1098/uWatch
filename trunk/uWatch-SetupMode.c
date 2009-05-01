@@ -104,29 +104,19 @@ int OneLineNumberEntry()
     ResetFlags();
     EnableXregOverwrite = TRUE;
 
-    for ( ;; ) {
-        int c;
-        int key;
+    int key;
+    do {
 
         key = GetDebouncedKey();
-
-        //IFEXIT( key );
-
-        // ??? while ((key = KeyScan(TRUE)) == 0) ;
-        ResetSleepTimer();
-
-        c = EnterNumber( key );
-
+        int c = EnterNumber( key );
         IFEXIT( c );
 
-        if ( ENTER(key) ) {
-            CompleteXreg();
+    } while ( !ENTER( key ) );
 
-            UpdateXregDisplay();
-            UpdateLCDline2( DisplayXreg );
-            return MODE_EXIT;
-        }
-    }
+    CompleteXreg();
+    UpdateXregDisplay();
+    UpdateLCDline2( DisplayXreg );
+    return MODE_EXIT;
 }
 
 
@@ -135,9 +125,11 @@ int OneLineNumberEntry()
 
 
 
-char *printNumber( int *number, int max )
-{
+char *printNumber( int *number, int max ) {
+    // decimal to string is VERY slow -- hence the turbo
+    Clock4MHz();
     sprintf( out, "%d", *number );
+    Clock250KHz();
     return out;
 }
 
@@ -191,10 +183,8 @@ int changeTime( int p )
 }
 
 
-char *printMonth( int *month, int max )
-{
-    strcpy( out, monthName[ *month ] );         // make a COPY so we don't have ROM limitation
-    return out;
+char *printMonth( int *month, int max ) {
+    return strcpy( out, monthName[ *month ] );         // make a COPY so we don't have ROM limitation
 }
 
 const unsigned char *qday[] = {
@@ -207,20 +197,6 @@ const unsigned char *qday[] = {
     character_Saturday,
 };
 
-/*const unsigned char *boldDigit[] = {
-    character_bold0,
-    character_bold1,
-    character_bold2,
-    character_bold3,
-    character_bold4,
-    character_bold5,
-    character_bold6,
-    character_bold7,
-    character_bold8,
-    character_bold9,
-    character_boldSpace
-};
-*/
 
 int leap( int year ) {
     return ( ( year % 4 ) == 0 )
@@ -248,35 +224,25 @@ char *processCalendar( int *pDay, int max )
     
     char cc = 2;                     // custom char #
 
+
     // preload custom chars as we can't do it in 1MHz mode...
     int i;
     for ( i = 0; i < 3; i++ )
         custom_character( i+cc, qday[ ( dayOfWeek + i ) % 7 ] );
 
     Clock4MHz();
-
-    *out = 0;
+    strcpy(out, "(" );
 
     int limit = (*pDay) + 2;        // MAX DAYS?
     if ( limit > dim )
         limit = dim;
 
+    char hc = ')';
+
     int dd;
     for ( dd = *pDay; dd <= limit; dd++ ) {
-
-        char highlight = ' ';
-        if ( dd == *pDay )
-            highlight = '(';
-        else if ( dd == (*pDay ) + 1 )
-            highlight = ')';
-
-        char *ps = out + strlen( out );
-        sprintf( ps, "%c%c%-2d", highlight, cc++, dd );
-
-        dayOfWeek = ( dayOfWeek + 1 ) % 7;
-
-        if ( dd == limit && dd == *pDay )
-            strcat( out, ")" );
+        sprintf( out + strlen( out ), "%c%-2d%c", cc++, dd, hc );
+        hc = ' ';        
     }
 
     Clock250KHz();
@@ -306,7 +272,7 @@ void decrementDay( int *day, int max )
             dim = daysInMonth( gYear, gMonth );
         }
 
-        (*day) = daysInMonth( gYear, gMonth );
+        (*day) = dim;
 
         fixTitle( gYear, gMonth );
 
@@ -345,7 +311,7 @@ int doCal( BOOL modify ) {
     int day = BCDtoDEC( Date.f.mday );
 
 
-    if ( genericMenu( "Year", &printNumber, &increment, &decrement, 2100, &year ) == MODE_KEYMODE )
+    if ( genericMenu( "Year", &printNumber, &increment, &decrement, 9999, &year ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     sprintf( out, "%d", year );
@@ -711,11 +677,10 @@ int appAbout()
 int SetupMode( int p )
 {
     const packedMenu setupMenu = {
-        "Apps Option",
+        "Configure",
         printMenu,
         increment, decrement, 5,
-        {   0,0,0,0,
-        },
+        {},
         {   { "Calculator", &appCalculatorMode, 0 },
             { "Clear EEPROM", &appClearEEPROM, 0 },
             { "Self Test", &appSelfTest, 0 },

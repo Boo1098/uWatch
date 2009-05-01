@@ -17,7 +17,7 @@
 const packedMenu mathLogarithmic = {
     0, //CALC-STYLE
     printMenu, increment, decrement, 6,
-    {   character_powerx,character_squareRoot1,0,0,
+    {   character_powerx,character_squareRoot1,
     },
     {   { "  e\2 ",                  OperatePrecedence,        CALC_OP_EXP             },
         { " ln  ",                   OperatePrecedence,        CALC_OP_LN              },
@@ -47,7 +47,7 @@ const packedMenu mathModeBase = {
 const packedMenu mathHyperbolic = {
     0,  //CALC-STYLE
     printMenu, increment, decrement, 6,
-    {   character_minus1,0,0,0,
+    {   character_minus1,
     },
     {   { " sinh",                OperatePrecedence,        CALC_OP_HYP_SIN         },
         { " cosh",                OperatePrecedence,        CALC_OP_HYP_COS         },
@@ -62,7 +62,7 @@ const packedMenu mathHyperbolic = {
 const packedMenu mathTrigonometry = {
     0,  //CALC-STYLE
     printMenu, increment, decrement, 6,
-    {   0,character_minus1,0,0,
+    {   0,character_minus1,
     },
     {   { " sin ",                    OperatePrecedence,        CALC_OP_SIN             },
         { " cos ",                    OperatePrecedence,        CALC_OP_COS             },
@@ -76,8 +76,7 @@ const packedMenu mathTrigonometry = {
 const packedMenu mathBoolean = {
     0,  //CALC-STYLE
     printMenu, increment, decrement, 6,
-    {   0,0,0,0,
-    },
+    {},
     {
         { " AND ", OperatePrecedence, CALC_OP_LOGIC_AND },
         { " OR  ", OperatePrecedence, CALC_OP_LOGIC_OR },
@@ -91,7 +90,7 @@ const packedMenu mathBoolean = {
 const packedMenu mathConstant = {
     0, //CALC-STYLE
     printMenu, increment, decrement, 6,
-    {   character_pi,character_minus1,0,0,
+    {   character_pi,character_minus1,
     },
     {   { "    \2",                     OperatePrecedence,        CALC_OP_PI              },
         { "   c ", OperatePrecedence, CALC_OP_LIGHT },
@@ -106,14 +105,14 @@ const packedMenu mathConstant = {
 const packedMenu mathConversion1 = {
     0, //CALC-STYLE
     printMenu, increment, decrement, 6,
-    {   0, character_arrow, 0,0,
+    {   0, character_arrow,
     },
     {   { "mils\3mm",           OperatePrecedence,       CALC_OP_CONV_MILS_TO_MM },
         { "  ",           OperatePrecedence,       CALC_OP_NULL},
         { "mm\3mils", OperatePrecedence, CALC_OP_CONV_MM_TO_MILS },
-        { "\337F\3\337C", OperatePrecedence, CALC_OP_CONV_FC },
+        { " \337F\3\337C", OperatePrecedence, CALC_OP_CONV_FC },
         { "   ",           OperatePrecedence,       CALC_OP_NULL},
-        { "   \337C\3\337F", OperatePrecedence, CALC_OP_CONV_CF },
+        { " \337C\3\337F", OperatePrecedence, CALC_OP_CONV_CF },
     },
 };
 
@@ -121,7 +120,7 @@ const packedMenu mathConversion1 = {
 const packedMenu mathConversion2 = {
     0, //CALC-STYLE
     printMenu, increment, decrement, 6,
-    {   0, character_arrow, 0,0,
+    {   0, character_arrow,
     },
     {   { " kg\3lb", OperatePrecedence, CALC_OP_CONV_KG_LB },
         { "   ",           OperatePrecedence,       CALC_OP_NULL},
@@ -135,8 +134,7 @@ const packedMenu mathConversion2 = {
 const packedMenu mathTimeDate = {
     0, //CALC-STYLE
     printMenu, increment, decrement, 6,
-    {   0,0,0,0,
-    },
+    {},
     {   { "Sunset",               OperatePrecedence,        CALC_OP_SUNSET          },
         { " Days",                 OperatePrecedence,        CALC_OP_DAYS            },
         { " DMY ",     OperatePrecedence,        CALC_OP_DMY             },
@@ -165,8 +163,7 @@ const packedMenu menuKeystroke2 = {
 const packedMenu menuKeystroke = {
     0, //CALC-STYLE,
     printMenu, increment, decrement, 6,
-    {   left,right,0,0,
-    },
+    {},
     {   { "Record",                 OperatePrecedence,        CALC_OP_RECORD          },
         { "   ",           OperatePrecedence,       CALC_OP_NULL},
         { "  Play",                   OperatePrecedence,        CALC_OP_PLAY            },
@@ -184,13 +181,11 @@ const packedMenu mathOther = {
     0, //CALC-STYLE
     printMenu, increment, decrement, 6,
     {   character_powerx,               //2
-        0, //character_squareRoot1,          //3
-        character_squaring,             //4
-        0,
+        character_squaring,             //3
     },
     {   { " 1/x ",                    OperatePrecedence,        CALC_OP_RECIPROCAL      },
         { "  x! ",                     OperatePrecedence,        CALC_OP_FACTORIAL       },
-        { "  x\4 ",                    OperatePrecedence,        CALC_OP_SQUARE          },
+        { "  x\3 ",                    OperatePrecedence,        CALC_OP_SQUARE          },
         { " sqrt",                    OperatePrecedence,        CALC_OP_SQRT            },
         { " abs ",                    OperatePrecedence,        CALC_OP_ABS             },
         { "",           OperatePrecedence,       CALC_OP_NULL},
@@ -203,7 +198,7 @@ const packedMenu mathOther = {
 const packedMenu mathComplex = {
     0,  //CALC-STYLE
     printMenu, increment, decrement, 6,
-    {   character_right_menu,0,0,0,
+    {   character_right_menu,
     },
     {   { " Con ", OperatePrecedence,        CALC_OP_CONV            },     //???
         { "  // ", OperatePrecedence,        CALC_OP_PARALLEL        },     //???

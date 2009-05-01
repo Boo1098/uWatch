@@ -27,21 +27,20 @@ int calculatorMenu( const packedMenu *menu[], int size ) {
 
     while ( mode != MODE_EXIT && mode != MODE_KEYMODE ) {
 
-        int dummy;
-        mode = genericMenu2( menu[ menuNum ], &dummy );
+        mode = genericMenu2( menu[ menuNum ], &menuNum );   // last param "anywhere"
 
         switch ( mode ) {
             case MODE_KEY_NEXT:
-                menuNum = ( menuNum+1 ) % size;
+                increment( &menuNum, size );
                 break;
             case MODE_KEY_PREVIOUS:
-                menuNum = ( menuNum-1) %size;
+                decrement( &menuNum, size );
                 break;
         }
-
     }
     return mode;
 }
+
 
 int genericMenu2( const packedMenu *menu, int *selection )
 {
@@ -159,6 +158,7 @@ int genericMenu( char *title,
 
     custom_character( 0, character_arrow_updown );
 //    custom_character( 1, right_menu );
+
 
     if ( title )
         UpdateLCDline1( title );
