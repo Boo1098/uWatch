@@ -754,6 +754,9 @@ unsigned int GetDebouncedKey()
         while ( !confirmed ) {
             confirmed = TRUE;
             while ( !( Key = KeyScan2() ) );  // wait for any non-debounced key
+
+            ResetSleepTimer();                  // ANY keypress starts timer!
+
             int confirm;
             for ( confirm = 0; confirm < 20; confirm++ )
                 if ( KeyScan2() != Key )
@@ -1566,7 +1569,7 @@ extern int SetupMode();
             {   { "\2Tools", ToolsMode, 0 },
 //                { "\2Memo",  notebook, 0 },
                 { "\2Games", GamesMode, 0 },
-                { "\2Options", SetupMode, 0 },
+                { "\2Configure", SetupMode, 0 },
             },
         };
 

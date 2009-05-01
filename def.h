@@ -13,7 +13,7 @@
 #include "uWatch-op.h"
 
 
-#define RevString   "Rev 1.6.0"
+#define RevString   "1.6.0"
 
 //define all the I/O pins
 #define Row1        _RB10
