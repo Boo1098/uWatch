@@ -299,11 +299,11 @@ void decrementDay( int *day, int max )
 
         if ( !gModify ) {
             gMonth--;
-            dim = daysInMonth( gYear, gMonth );
             if ( gMonth < 1 ) {
                 gYear--;
                 gMonth = 12;
             }
+            dim = daysInMonth( gYear, gMonth );
         }
 
         (*day) = daysInMonth( gYear, gMonth );
@@ -323,11 +323,11 @@ void incrementDay( int *day, int max )
 
         if ( !gModify ) {
             gMonth++;
-            dim = daysInMonth( gYear, gMonth );
             if ( gMonth > 12 ) {
                 gYear++;
                 gMonth = 1;
             }
+            dim = daysInMonth( gYear, gMonth );
         }
 
         fixTitle( gYear, gMonth );
