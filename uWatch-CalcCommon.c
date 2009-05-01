@@ -1004,12 +1004,12 @@ int HexEntry(void)
         printMenu, increment, decrement, 6,
         {   character_right_menu,
         },
-        {   { "A", hexSelect, 7 },
-            { "B", hexSelect, 8 },
-            { "C", hexSelect, 9 },
-            { "D", hexSelect, 4 },
-            { "E", hexSelect, 5 },
-            { "F", hexSelect, 6 },
+        {   { "  A  ", hexSelect, 7 },
+            { "  B  ", hexSelect, 8 },
+            { "  C  ", hexSelect, 9 },
+            { "  D  ", hexSelect, 4 },
+            { "  E  ", hexSelect, 5 },
+            { "  F  ", hexSelect, 6 },
         },
     };
 
