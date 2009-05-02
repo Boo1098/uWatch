@@ -1,0 +1,109 @@
+
+Notation
+
+[KEY] indicates the keyboard key with the labeling "KEY"
+<KEY> indicates a conceptual key -- just for the purposes of this
+documentation to make it more readable.  Where you see <OK> that means
+press [ENTER], as clarified in this table...
+
+<QUIT>  = [C]		exit without doing anything
+<UP> 	= [)]  		up-scrolling is done by the right bracket key
+<DOWN> 	= [MENU] 	down-scrolling is done by the menu key
+<OK>    = [ENTER]	selection and exit from menus is done by the enter key
+
+As you can see, these navigation keys occupy the right column of the keyboard.
+
+Although the keys do different things at different times, generally
+you hit [MENU] to enable a menu and then [MENU] again to scroll down the
+items in the menu.  But it's easier to think of as [MENU] <DOWN>
+
+Navigation
+
+Menus are available from:
+
+TIME mode
+CALCULATOR mode
+APPLICATIONS mode
+
+To bring up a menu, press [MENU].  The menu title is generally shown on the
+top line of the display, and menu options are shown on the bottom line of the
+display.  Whenever mutliple menu options are available, the rightmost lower
+character in the display displays two little arrows, pointing up and down. These
+indicate that you can press <UP> or <DOWN> to display the menu options.
+
+A menu item that begins with an arrow > symbol indicates that that item is
+itself a menu containing other items.
+
+Press <OK> to select the currently displayed menu item.
+
+Press <C> or [MODE] to exit from the current menu without making a selection.
+<C> will return to the previous mode.
+[MODE] will return to TIME mode. 
+
+TIME MENU:
+
+Menu available from TIME mode:
+
+CLOCK
+	Stopwatch
+	Calendar
+	> Setup
+		Set Time
+		Set Date
+		Calibrate
+		Set 12/24h
+		Set DST Zone
+		Set Location
+		
+
+In the above example, Setup is a sub-menu containing 6 items.
+
+CALCULATOR MENU:
+
+The calculator has a slightly different menu system, as it uses F-keys
+to allow quick selection of functions.  When you press [MENU] in calculator
+mode, you will see up to 6 functions displayed on the screen.  These are 
+arranged in two lines of three, or two lines of two.
+
+The F1 to F6 keys will select the function displayed in the similar relative
+position of the F-key on the keyboard.
+
+As with other menus, <UP> and <DOWN> will cycle through the available menus
+and <C> or <OK> will quit with no action.
+
+[MODE] will also return to the calculator.
+
+APPLICATION MENU:
+
+Menu from APPLICATION mode:
+
+	> Tools
+		Quadratic
+		Factorise
+	> Games
+		Chess
+		21
+		Lunar Lander
+	> Configure
+		Calculator
+		Clear EEPROM
+		Self Test
+		LCD Timeout
+		About
+
+
+
+
+
+
+
+
+
+Credits
+
+David L. Jones
+hugh
+zowki
+Andrew Davie
+
+
