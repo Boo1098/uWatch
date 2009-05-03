@@ -32,14 +32,13 @@ const packedMenu mathLogarithmic = {
 const packedMenu mathModeBase = {
     0, //CALC-STYLE
     printMenu, increment, decrement, 6,
-    {   0,0,0,0,
-    },
-    {   { " Rad ",            OperatePrecedence,        CALC_OP_MODERAD         },
-        { " Deg ",            OperatePrecedence,        CALC_OP_MODEDEG         },
-        { " BIN ",             OperatePrecedence,        CALC_OP_BASE2            },
-        { " OCT ",              OperatePrecedence,        CALC_OP_BASE10            },    //DUMMY
-        { " DEC ",              OperatePrecedence,        CALC_OP_BASE10            },
-        { " HEX ",            OperatePrecedence,        CALC_OP_BASE16            },
+    {},
+    {   { "  rad ",            OperatePrecedence,        CALC_OP_MODERAD         },
+        { "deg ",            OperatePrecedence,        CALC_OP_MODEDEG         },
+        { "",              OperatePrecedence,        CALC_OP_NULL            },
+        { "  bin",             OperatePrecedence,        CALC_OP_BASE2            },
+        { " dec ",              OperatePrecedence,        CALC_OP_BASE10            },
+        { "hex ",            OperatePrecedence,        CALC_OP_BASE16            },
     },
 };
 
@@ -78,12 +77,12 @@ const packedMenu mathBoolean = {
     printMenu, increment, decrement, 6,
     {},
     {
-        { " AND ", OperatePrecedence, CALC_OP_LOGIC_AND },
-        { " OR  ", OperatePrecedence, CALC_OP_LOGIC_OR },
-        { " XOR ", OperatePrecedence, CALC_OP_LOGIC_XOR }, 
-        { " NOT ", OperatePrecedence, CALC_OP_LOGIC_NOT },
-        { " NOR ", OperatePrecedence, CALC_OP_NULL },    //DUMMY
-        { " NAND", OperatePrecedence, CALC_OP_NULL },   //DUMMY
+        { "  and ", OperatePrecedence, CALC_OP_LOGIC_AND },
+        { " or ", OperatePrecedence, CALC_OP_LOGIC_OR },
+        { " xor", OperatePrecedence, CALC_OP_LOGIC_XOR }, 
+        { " nand", OperatePrecedence, CALC_OP_LOGIC_NAND },
+        { " nor", OperatePrecedence, CALC_OP_LOGIC_NOR },
+        { "  not", OperatePrecedence, CALC_OP_LOGIC_NOT },
     },
 };
 
@@ -93,9 +92,9 @@ const packedMenu mathConstant = {
     {   character_pi,character_minus1,
     },
     {   { "    \2",                     OperatePrecedence,        CALC_OP_PI              },
-        { "   c ", OperatePrecedence, CALC_OP_LIGHT },
-        { " Avog", OperatePrecedence, CALC_OP_AVOGADRO },
-        { "    e", OperatePrecedence, CALC_OP_AVOGADRO },
+        { "  c ", OperatePrecedence, CALC_OP_LIGHT },
+        { " Avo ", OperatePrecedence, CALC_OP_AVOGADRO },
+        { "    e", OperatePrecedence, CALC_OP_E },
         { "", OperatePrecedence, CALC_OP_NULL },
         { "", OperatePrecedence, CALC_OP_NULL },
     },
@@ -124,10 +123,10 @@ const packedMenu mathConversion2 = {
     },
     {   { " kg\3lb", OperatePrecedence, CALC_OP_CONV_KG_LB },
         { "   ",           OperatePrecedence,       CALC_OP_NULL},
-        { "lb\3kg", OperatePrecedence, CALC_OP_CONV_LB_KG },
-        { "Rec\3Pol",          OperatePrecedence,        CALC_OP_R2P              },
+        { " lb\3kg", OperatePrecedence, CALC_OP_CONV_LB_KG },
+        { "rec\3pol",          OperatePrecedence,        CALC_OP_R2P              },
         { "",           OperatePrecedence,       CALC_OP_NULL},
-        { " Pol\3Rec",          OperatePrecedence,        CALC_OP_P2R              },
+        { "  pol\3rec",          OperatePrecedence,        CALC_OP_P2R              },
     },
 };
 
@@ -135,11 +134,12 @@ const packedMenu mathTimeDate = {
     0, //CALC-STYLE
     printMenu, increment, decrement, 6,
     {},
-    {   { "Sunset",               OperatePrecedence,        CALC_OP_SUNSET          },
-        { " Days",                 OperatePrecedence,        CALC_OP_DAYS            },
-        { " DMY ",     OperatePrecedence,        CALC_OP_DMY             },
-        { " HMS ",     OperatePrecedence,        CALC_OP_HMS             },
-        { "  Hour",              OperatePrecedence,        CALC_OP_HOURS           },
+    {
+        { "  DMY",     OperatePrecedence,        CALC_OP_DMY             },
+        { " days ",                 OperatePrecedence,        CALC_OP_DAYS            },
+        { "sunst",               OperatePrecedence,        CALC_OP_SUNSET          },
+        { "  HMS ",     OperatePrecedence,        CALC_OP_HMS             },
+        { "hour",              OperatePrecedence,        CALC_OP_HOURS           },
         { "",           OperatePrecedence,       CALC_OP_NULL},
     },
 };
@@ -164,9 +164,9 @@ const packedMenu menuKeystroke = {
     0, //CALC-STYLE,
     printMenu, increment, decrement, 6,
     {},
-    {   { "Record",                 OperatePrecedence,        CALC_OP_RECORD          },
+    {   { "record",                 OperatePrecedence,        CALC_OP_RECORD          },
         { "   ",           OperatePrecedence,       CALC_OP_NULL},
-        { "  Play",                   OperatePrecedence,        CALC_OP_PLAY            },
+        { "  play",                   OperatePrecedence,        CALC_OP_PLAY            },
 //        { "2\2\3",           doCalcMenu, (int)(&menuKeystroke2) },
         { "",           OperatePrecedence,       CALC_OP_NULL},
         { "",           OperatePrecedence,       CALC_OP_NULL},
@@ -183,9 +183,9 @@ const packedMenu mathOther = {
     {   character_powerx,               //2
         character_squaring,             //3
     },
-    {   { " 1/x ",                    OperatePrecedence,        CALC_OP_RECIPROCAL      },
-        { "  x! ",                     OperatePrecedence,        CALC_OP_FACTORIAL       },
-        { "  x\3 ",                    OperatePrecedence,        CALC_OP_SQUARE          },
+    {   { "  1/x ",                    OperatePrecedence,        CALC_OP_RECIPROCAL      },
+        { " x!",                     OperatePrecedence,        CALC_OP_FACTORIAL       },
+        { "  x\3",                    OperatePrecedence,        CALC_OP_SQUARE          },
         { " sqrt",                    OperatePrecedence,        CALC_OP_SQRT            },
         { " abs ",                    OperatePrecedence,        CALC_OP_ABS             },
         { "",           OperatePrecedence,       CALC_OP_NULL},
@@ -200,12 +200,12 @@ const packedMenu mathComplex = {
     printMenu, increment, decrement, 6,
     {   character_right_menu,
     },
-    {   { " Con ", OperatePrecedence,        CALC_OP_CONV            },     //???
+    {   { " conv", OperatePrecedence,        CALC_OP_CONV            },     //???
         { "  // ", OperatePrecedence,        CALC_OP_PARALLEL        },     //???
-        { "Split", OperatePrecedence,        CALC_OP_COMPLEX_SPLIT   },
-        { " Join", OperatePrecedence,        CALC_OP_COMPLEX_JOIN            },
-        { " Conj", OperatePrecedence,        CALC_OP_CONJUGATE       },
-        { " Real", OperatePrecedence,        CALC_OP_REAL_PART            },
+        { " split", OperatePrecedence,        CALC_OP_COMPLEX_SPLIT   },
+        { " join", OperatePrecedence,        CALC_OP_COMPLEX_JOIN            },
+        { " conj", OperatePrecedence,        CALC_OP_CONJUGATE       },
+        { " real", OperatePrecedence,        CALC_OP_REAL_PART            },
 
     },
 };
