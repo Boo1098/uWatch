@@ -210,6 +210,7 @@ void drawCard( char *dest, int card ) {
 }
 
 void shuffle( int *deck ) {
+    Clock1MHz();
     int card, card2, shuf;
     for ( shuf = 0; shuf < 1000; shuf++ ) {
         card = rand() % 52;
@@ -218,6 +219,7 @@ void shuffle( int *deck ) {
         deck[card] = deck[card2];
         deck[card2] = temp;
     }
+    Clock250KHz();
 }
 
 
@@ -263,8 +265,8 @@ int drawHand( char *prefix, char *dest, int *hand, int count ) {
     int i;
     for ( i = 0; i < count; i++ ) {
         drawCard( dest + strlen( dest ), hand[i] );
-        if ( i == count-2 )
-            strcat( dest, " " );
+        //if ( i == count-2 )
+        //    strcat( dest, " " );
     }    
     int total = countTotal( hand, count );
     sprintf( dest + strlen(dest), " =%2d", total );
@@ -299,9 +301,14 @@ int twenty1( int p )
     int player[20];
     int dealer[20];
 
+    int key;
     while ( TRUE ) {
 
+        key = 0;
+
         shuffle( deck );
+
+        UpdateLCDline2( "" );
 
         card = 0;
         int cardn = 0;
@@ -310,27 +317,25 @@ int twenty1( int p )
     
             player[cardn++] = deck[card++];
     
-            total = drawHand( "        YOU: ", displayBuffer, player, cardn );
-            UpdateLCDline1( displayBuffer + strlen(displayBuffer) - 16 );
-            UpdateLCDline2( "" );
+            total = drawHand( "", displayBuffer, player, cardn );
+            UpdateLCDline1( displayBuffer );
 
             if ( card < 2 ) {
-                DelayMs(1500);
+                DelayMs(2000);
             } else if ( total < 22 ) {
 
-              int hitStand = 0;
-              if ( genericMenu( displayBuffer, &printHitStand, &increment, &decrement, 2, &hitStand ) == MODE_KEYMODE )
-                return MODE_KEYMODE;
-
-
+                int hitStand = 0;
+                if ( genericMenu( displayBuffer, &printHitStand, &increment, &decrement, 2, &hitStand ) == MODE_KEYMODE )
+                    return MODE_KEYMODE;
+    
                 if ( hitStand == 1 )     // stand
                     break;
             }
         }
 
         if ( total > 21 ) {
-            sprintf( displayBuffer + strlen( displayBuffer )," BUST!" );
-            UpdateLCDline1( displayBuffer + strlen(displayBuffer) - 16 );
+            //UpdateLCDline1( displayBuffer + strlen(displayBuffer) - 16 );
+            UpdateLCDline2( "BUST!" );
         }
         else {
 
@@ -342,29 +347,36 @@ int twenty1( int p )
         
                 dealer[cardn++] = deck[card++];
         
-                dealertotal = drawHand( "      DEALER: ", dout, dealer, cardn  );
-                UpdateLCDline2( dout + strlen(dout) - 16 );
+                dealertotal = drawHand( "D: ", dout, dealer, cardn  );
+                UpdateLCDline2( dout );
         
                 DelayMs(2500);
         
             }
 
+            char *result = "DEALER WINS!";
             if ( dealertotal > 21 ) {
-                sprintf( dout + strlen( dout )," BUST!" );
+                result = "DEALER BUST!";
             } else if ( dealertotal == total ) {
-                sprintf( dout + strlen( dout ), " PUSH" );
+                result = "PUSH!";
             } else if ( dealertotal < total ) {
-                sprintf( displayBuffer + strlen(displayBuffer), " WIN!" );
-            } else {
-                sprintf( dout + strlen( dout ), " WIN!" );
+                result = "YOU WIN!";
             }
 
-            UpdateLCDline1( displayBuffer + strlen(displayBuffer) - 16 );
-            UpdateLCDline2( dout + strlen(dout) - 16 );
+            int phase = 0;
+            while ( ! (key = KeyScan2( FALSE ))) {
+                phase++;
+                if ( phase & 0x100 )
+                    UpdateLCDline2( dout );
+                else
+                    UpdateLCDline2( result );
+            }
+            while ( KeyScan2(FALSE ));
+
         }
     
-
-        int key = GetDebouncedKey();
+        if ( !key )
+            key = GetDebouncedKey();
         IFEXIT( key );
     }
 

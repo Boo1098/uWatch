@@ -58,7 +58,7 @@ int genericMenu2( const packedMenu *menu, int *selection )
             custom_character( i + 2, menu->customCharacter[i] );
 
 
-    if ( menu->title )
+    if ( menu->title && strlen( menu->title ))
         UpdateLCDline1( menu->title );
 
 
@@ -107,29 +107,35 @@ int genericMenu2( const packedMenu *menu, int *selection )
                     return MODE_KEY_NEXT;
                 if ( PREVIOUS( key ) )
                     return MODE_KEY_PREVIOUS;
+    
+                // auto-selection only available in calculator mode   
+
+                int autoSel = ReturnNumber( key );
+                if ( autoSel >= 0 && autoSel <= 9 ) {
+    
+                    // scan menu items to find equivalent function for key
+                    // This is how function keys work in calculator mode -- finding the equivalent # in the op in the menu
+    
+                    int fkey[] = { -1,-1,-1,-1, 3, 4, 5, 0, 1, 2 };
+                    if ( !menu->title ) {
+                        if ( fkey[autoSel]>=0 ) {
+                            sel = fkey[autoSel];
+                            if ( menu->menu[sel].op != CALC_OP_NULL )
+                                break;
+                        } 
+                    }
+                }
             }    
     
-            int autoSel = ReturnNumber( key );
-            if ( autoSel >= 0 && autoSel <= 9 ) {
-
-                // scan menu items to find equivalent function for key
-                // This is how function keys work in calculator mode -- finding the equivalent # in the op in the menu
-
-                int fkey[] = { -1,-1,-1,-1, 3, 4, 5, 0, 1, 2 };
-                if ( !menu->title ) {
-                    if ( fkey[autoSel]>=0 ) {
-                        sel = fkey[autoSel];
-                        if ( menu->menu[sel].op != CALC_OP_NULL )
-                            break;
-                    } 
-                }
-            }
-    
-            if ( menu->inc && NEXT( key ) )
+            if ( menu->inc && NEXT( key ) ) {
                 ( *( menu->inc ) )( &sel, menu->max );
+                mask = 0;
+            }    
     
-            if ( menu->dec && PREVIOUS( key ) )
+            if ( menu->dec && PREVIOUS( key ) ) {
                 ( *( menu->dec ) )( &sel, menu->max );
+                mask = 0;
+            }
         }
 
     } while ( !ENTER(key) );
@@ -139,7 +145,7 @@ int genericMenu2( const packedMenu *menu, int *selection )
         ( *selection ) = sel;
 
     if ( menu->menu[sel].run )
-        ( *selection ) = ( menu->menu[sel].run )( menu->menu[sel].op );
+        mode = ( menu->menu[sel].run )( menu->menu[sel].op );
 
     return mode;
 }
@@ -167,21 +173,23 @@ int genericMenu( char *title,
     do {
 
         if ( printFunc ) {
-            char out2[17];
-            sprintf( out2, "%-15s\010", ( *printFunc )( &sel, max ));
-            UpdateLCDline2( out2 );
+            sprintf( displayBuffer, "%-15s\010", ( *printFunc )( &sel, max ));
+            UpdateLCDline2( displayBuffer );
         }
 
         key = GetDebouncedKey();
-
         IFEXIT( key );
+
+/*
+
+        // we DON'T have autokey here anymore, as it causes problems in time selection
 
         int autoSel = ReturnNumber( key );
         if ( autoSel >= 0 && autoSel < max ) {
             sel = autoSel;
             break;
         }
-
+*/
         if ( incrementFunc && NEXT( key ) )
             ( *incrementFunc )( &sel, max );
 

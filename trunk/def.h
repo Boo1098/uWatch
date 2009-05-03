@@ -214,6 +214,7 @@ unsigned int KeyScan2();
 void dayHasChanged();
 extern BOOL DST;
 
+
 BOOL inDST( int* gap );
 
 void UpdateXregDisplay(void);
@@ -304,6 +305,11 @@ extern BOOL NextMode;
 extern char displayBuffer[];
 
 int doCalendar();
+
+extern int displayFormat;
+
+#define FORMAT_BASE2 2
+#define FORMAT_DATE 1
 
 
 #endif

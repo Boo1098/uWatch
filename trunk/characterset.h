@@ -1,3 +1,5 @@
+#ifndef __CHARACTERSET_H
+#define __CHARACTERSET_H
 
 extern const unsigned char character_left_menu[];
 extern const unsigned char character_right_menu[];
@@ -46,3 +48,5 @@ extern const unsigned char character_boldSpace[];
 extern const unsigned char character_arrow_down[];
 extern const unsigned char character_arrow_up[];
 extern const unsigned char character_arrow_updown[];
+
+#endif

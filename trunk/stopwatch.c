@@ -1,6 +1,8 @@
 #include "def.h"
 #include "stopwatch.h"
 #include "menu.h"
+#include "uWatch-LCD.h"
+#include "characterset.h"
 
 #define STOPWATCH_START -1
 #define STOPWATCH_LAP -2
@@ -19,19 +21,27 @@ char *displayTime( int seconds ) {
     int minutes = (int) ( seconds / 60 );
     seconds -= minutes * 60;
     
-    sprintf( out, "%02d:%02d:%02d", hours, minutes, seconds );
+    if ( hours > 0 )
+        sprintf( out, "%02d:%02d:%02d", hours, minutes, seconds );
+    else
+        sprintf( out, "   %02d:%02d", minutes, seconds );
+
     return out;
 }
+
+extern int seconds( rtccTime *t );
 
 int getRT() {
 
     rtccTime time;
     RtccReadTime(&time);
-    return BCDtoDEC(time.f.hour) * 60 * 60 + BCDtoDEC(time.f.min) * 60 + BCDtoDEC(time.f.sec);
+    return seconds( &time );
 }
 
 
 char *stopWatchPrintMenu( int *item, menuItem *menu ) {
+
+    Clock1MHz();
 
     char out2[17];
     char out3[17];
@@ -52,7 +62,7 @@ char *stopWatchPrintMenu( int *item, menuItem *menu ) {
 
         case STOPWATCH_LAP:
 
-            sprintf( out2, "LAP  %s", displayTime( stopWatchLapTime ));
+            sprintf( out2, "LAP   %s", displayTime( stopWatchLapTime ));
             break;
 
 //        case STOPWATCH_SPLIT:
@@ -64,12 +74,21 @@ char *stopWatchPrintMenu( int *item, menuItem *menu ) {
         
     }
 
-    if ( !stopWatchActive )
-        sprintf( out3, "TIME %s", displayTime( now - stopWatchStart ));
-    else
-        sprintf( out3, "TIME %s", displayTime( stopWatchStart ));
+    if ( stopWatchActive ) {
+
+        sprintf( out3, "Time  %s", displayTime( now - stopWatchStart ));
+
+
+    } else {
+        sprintf( out3, "Time  %s\2", displayTime( stopWatchStart ) ); 
+
+    }
+
+    Clock250KHz();
+    
 
     UpdateLCDline1( out3 );
+   // Clock1MHz();
 
     strcpy( out, out2 );
     return out;
@@ -91,7 +110,9 @@ int stopWatchStartStop( int op ) {
 
 
 int stopWatchLap( int op ) {
-    stopWatchLapTime = getRT();
+    if ( stopWatchActive ) {
+        stopWatchLapTime = getRT() - stopWatchStart;
+    }
     return MODE_EXIT;
 }
 
@@ -102,29 +123,24 @@ int stopWatchLap( int op ) {
 int StopWatchMode() {
 
     const packedMenu stopWatchMenu = {
-        "ToDO",
+        "",
         stopWatchPrintMenu,
         increment, decrement, 2,
-        {   0,
-            0,
-            0,
-            0,
-        },
+        {},
         {   { "Start/Stop",  stopWatchStartStop, STOPWATCH_START },
             { "Lap", stopWatchLap, STOPWATCH_LAP },
             //{ "Split", stopWatchSplit, STOPWATCH_SPLIT },
         },
     };
 
-    int key;
+    int mode;
+    int sel = 0;
     do {
 
-        key = genericMenu2( &stopWatchMenu, 0 );
+        mode = genericMenu2( &stopWatchMenu, &sel );
+    } while ( mode != MODE_KEYMODE );
 
-
-    } while ( key != MODE_KEYMODE );
-
-    return key;
+    return mode;
 }
 
 
@@ -132,16 +148,16 @@ int StopWatchMode() {
 
 int StopWatch( int p ) {
 
-    Clock1MHz();
-    DisableSleepTimer();
+    custom_character( 2, characterDST );
 
     stopWatchActive = FALSE;
+    stopWatchStart = 0;
     stopWatchLapTime = 0;
 
     int status = StopWatchMode();
 
-    Clock250KHz();
-    EnableSleepTimer();
+    while ( KeyScan2( FALSE ));     // wait for mode release
+
     return status;
 }
 

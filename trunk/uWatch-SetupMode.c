@@ -109,7 +109,11 @@ int OneLineNumberEntry()
 
         key = GetDebouncedKey();
         int c = EnterNumber( key );
-        IFEXIT( c );
+        if ( c == KeyMode )
+            return MODE_KEYMODE;
+        if ( c == KeyClear )
+            Xreg = 0;
+            
 
     } while ( !ENTER( key ) );
 
@@ -135,28 +139,30 @@ char *printNumber( int *number, int max ) {
 
 char *printHour( int *hour, int max )
 {
+    Clock4MHz();
 
     // 12AM, 1AM... 12PM.. etc
     // OR 24 hour
 
     if ( TwelveHour ) {
 
-        int cbase = ( *hour ) > 11 ? 1 : 0;
+        int cbase = ( *hour ) > 11 ? 3 : 2;
         int h = ( *hour ) % 12;
         if ( !h ) h = 12;
 
-        sprintf( out, "%2d%c%c", h,
-                 custom_character( 2, &( AMPM[ cbase ][0] ) ),
-                 custom_character( 3, &( AMPM[ 2 ][0] ) ) );
+        sprintf( out, "%2d%c\4", h, cbase );
 
     } else
-        sprintf( out, "%2d", ( *hour ) );
+        sprintf( out, "%02d", ( *hour ) );
 
+    Clock250KHz();
     return out;
 }
 
 char *printMinSec( int *n, int max ) {
+    Clock4MHz();
     sprintf( out, "%02d", *n );
+    Clock250KHz();
     return out;
 }
 
@@ -169,13 +175,17 @@ int changeTime( int p )
     int m = BCDtoDEC( Time.f.min );
     int s = BCDtoDEC( Time.f.sec );
 
-    if ( genericMenu( "Hour", &printHour, &increment, &decrement, 24, &h ) == MODE_KEYMODE )
+    custom_character( 2, &( AMPM[ 0 ][0] ) );
+    custom_character( 3, &( AMPM[ 1 ][0] ) );
+    custom_character( 4, &( AMPM[ 2 ][0] ) );
+
+    if ( genericMenu( "Hour", &printHour, &decrement, &increment, 24, &h ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
-    if ( genericMenu( "Minute", &printMinSec, &increment, &decrement, 60, &m ) == MODE_KEYMODE )
+    if ( genericMenu( "Minute", &printMinSec, &decrement, &increment, 60, &m ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
-    if ( genericMenu( "Second", &printMinSec, &increment, &decrement, 60, &s ) == MODE_KEYMODE )
+    if ( genericMenu( "Second", &printMinSec, &decrement, &increment, 60, &s ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     SetTimeBCD( DECtoBCD( h ), DECtoBCD( m ), DECtoBCD( s ) );
@@ -310,12 +320,14 @@ int doCal( BOOL modify ) {
     int month = BCDtoDEC( Date.f.mon ) - 1;
     int day = BCDtoDEC( Date.f.mday );
 
+    int oldYear = year;
+    int oldMonth = month;
 
-    if ( genericMenu( "Year", &printNumber, &increment, &decrement, 9999, &year ) == MODE_KEYMODE )
+    if ( genericMenu( "Year", &printNumber, &decrement, &increment, 9999, &year ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     sprintf( out, "%d", year );
-    if ( genericMenu( out, &printMonth, &increment, &decrement, 12, &month ) == MODE_KEYMODE )
+    if ( genericMenu( out, &printMonth, &decrement, &increment, 12, &month ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     gYear = year;
@@ -323,10 +335,13 @@ int doCal( BOOL modify ) {
 
     sprintf( out, "%d, %s", year, monthName[ month ] );
     dim = daysInMonth( gYear, gMonth );
-    if ( day > dim )
+    //if ( day > dim )
+    //    day = 1;
+
+    if ( !modify && ( oldMonth != month || oldYear != year ))
         day = 1;
 
-    if ( genericMenu( out, processCalendar, incrementDay, decrementDay, dim, &day ) == MODE_KEYMODE )
+    if ( genericMenu( out, processCalendar, decrementDay, incrementDay, dim, &day ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     //TODO: year should be absolute, not limited from 2000...
@@ -353,12 +368,14 @@ int changeCalibration()
 {
 
     char *printCal( int *cal, int max ) {
+        Clock4MHz();
         sprintf( out, "CAL=%d", *cal );
+        Clock250KHz();
         return out;
     }
 
     int cal = RCFGCALbits.CAL;
-    if ( genericMenu( "Calibration", &printCal, increment, decrement, 256, &cal ) == MODE_KEYMODE )
+    if ( genericMenu( "Calibration", &printCal, decrement, increment, 256, &cal ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     RCFGCALbits.CAL = ( char ) cal;
     I2CmemoryWRITE( 63535, RCFGCALbits.CAL );     //store value in last byte
