@@ -548,7 +548,7 @@ void KeystrokeRecord( unsigned char key )
 //converts a keypad number key code into a real number
 int ReturnNumber( int key )
 {
-    char kmap[] = { Key0, Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8, Key9 };
+    static const char kmap[] = { Key0, Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8, Key9 };
     int s;
     for ( s = 0; s < 10; s++ )
         if ( kmap[s] == key )
@@ -1401,6 +1401,7 @@ void ProgramInit( void )
 }
 
 
+#if 0
 //************************************************
 void OpenTimer1( unsigned int config, unsigned int period )
 {
@@ -1408,9 +1409,7 @@ void OpenTimer1( unsigned int config, unsigned int period )
     PR1   = period;     /* assigning Period to Timer period register */
     T1CON = config;     /* Configure timer control reg */
 }
-
-
-
+#endif
 
 int setupTime( int p )
 {

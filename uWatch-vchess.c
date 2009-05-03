@@ -128,7 +128,7 @@ typedef unsigned long uint4;
 #define VERSION "VoidCHESS 1.4"
 
 // maximum moves in tree search
-#define MAX_STACK       100
+#define MAX_STACK       200
 #define MAX_PV          10
 #define MAX_DEPTH       10
 #define WIN_SCORE       10000
@@ -420,8 +420,6 @@ int showBoard() {
     EnableSleepTimer();
     ResetSleepTimer();
     
-    //Clock250KHz();              // guarantees best display for flicker
-
     unsigned int counter = 0;
     while ( TRUE ) {
 
@@ -471,8 +469,6 @@ int showBoard() {
     return MODE_EXIT;
 }
 
-
-
 int chessGame( int p )
 {
 
@@ -489,7 +485,6 @@ int chessGame( int p )
         if ( genericMenu2( &contMenu, 0 ) == MODE_KEYMODE )
             return MODE_KEYMODE;
     }
-
 
     if ( !contGame ) {
 
@@ -582,11 +577,7 @@ int chessGame( int p )
 
         if ( moveok )
             playMove( *mv );
-
-
-
     }
-
     return MODE_EXIT;
 }
 
@@ -600,15 +591,15 @@ static int computerMoves()
 
     Nodes = 0;
 
-    // boost one level when in check
-    if ( chk ) ++dmax;
+    /* bump the CPU whilst we think... */
+    StopSleepTimer();
 
     UpdateLCDline1( "thinking..." );
 
-    /* bump the CPU whilst we think... */
-    DisableSleepTimer();
-    Clock4MHz();
+    // boost one level when in check
+    if ( chk ) ++dmax;
 
+    Clock4MHz();
     memset( &MainPV, 0, sizeof( MainPV ) );
     for ( i = 1; i <= dmax; ++i ) {
         UsePV = 1;
@@ -620,8 +611,8 @@ static int computerMoves()
 
     /* and back again to slow.. */
     Clock250KHz();
-    EnableSleepTimer();
     ResetSleepTimer();
+    StartSleepTimer();
 
     if ( v <= -WIN_SCORE ) {
         UpdateLCDline2( "You Win!" );
@@ -632,7 +623,8 @@ static int computerMoves()
             playMove(*m);
             strcpy(lastMove, moveToStr(*m,1));
 
-        line = lastMove[4]-'0'-1;     // focus board display on the last move's line
+            // focus board display on the last move's line
+            line = lastMove[4]-'0'-1; 
 
             if (InCheck) lastMove[5]='+';
             UpdateLCDline1(lastMove);
