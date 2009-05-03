@@ -9,9 +9,9 @@
 #define STOPWATCH_SPLIT -3
 
 
-BOOL stopWatchActive;
-int stopWatchStart;         // starting seconds
-int stopWatchLapTime;
+BOOL stopWatchActive = FALSE;
+int stopWatchStart = 0;         // starting seconds
+int stopWatchLapTime = 0;
 
 
 char *displayTime( int seconds ) {
@@ -150,9 +150,6 @@ int StopWatch( int p ) {
 
     custom_character( 2, characterDST );
 
-    stopWatchActive = FALSE;
-    stopWatchStart = 0;
-    stopWatchLapTime = 0;
 
     int status = StopWatchMode();
 
