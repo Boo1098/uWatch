@@ -212,8 +212,7 @@ void drawCard( char *dest, int card ) {
 void shuffle( int *deck ) {
     Clock1MHz();
     int card, card2, shuf;
-    for ( shuf = 0; shuf < 1000; shuf++ ) {
-        card = rand() % 52;
+    for ( card = 0; card < 52; card++ ) {
         card2 = rand() % 52;
         int temp = deck[card];
         deck[card] = deck[card2];
@@ -298,7 +297,7 @@ int twenty1( int p )
     for ( card = 0; card < 52; card++ )
         deck[card] = card;
 
-    srand( seconds( &Time ));
+//    srand( seconds( &Time ));
 
     int player[20];
     int dealer[20];
