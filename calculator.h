@@ -1,4 +1,5 @@
 #ifndef __CALCULATOR_H
+#define __CALCULATOR_H
 
 int EnterNumber(int Key);
 
@@ -29,6 +30,4 @@ extern double iYregs[];
 extern double iZregs[];
 extern double iTregs[];
 
-
-#define __CALCULATOR_H
 #endif

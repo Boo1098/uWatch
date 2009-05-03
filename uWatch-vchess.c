@@ -420,7 +420,7 @@ int showBoard() {
     EnableSleepTimer();
     ResetSleepTimer();
     
-    Clock250KHz();              // guarantees best display for flicker
+    //Clock250KHz();              // guarantees best display for flicker
 
     unsigned int counter = 0;
     while ( TRUE ) {
@@ -429,22 +429,14 @@ int showBoard() {
         if ( !counter )
             counter = 0x8000;
 
-        if ( flickerPattern[ contrast ] & counter ) {
-            UpdateLCDline2( dispBoard[ line + 10 ]);        // BLACK + WHITE
-            UpdateLCDline1( dispBoard[ line + 11 ]);        // BLACK + WHITE
-        } else {
-            UpdateLCDline2( dispBoard[ line ] );            // BLACK ONLY
-            UpdateLCDline1( dispBoard[ line + 1 ] );        // BLACK ONLY
-        }
-        
+        int offset = (flickerPattern[ contrast ] & counter) ? 10 : 0;
+        UpdateLCDline2( dispBoard[ line + offset ]);
+        UpdateLCDline1( dispBoard[ line + offset + 1 ]);
 
         int key = KeyScan2();
         if ( !key )
             mask = 0xFFFF;
         key &= mask;
-
-        if ( key )
-            ResetSleepTimer();
 
         if ( key == KeyClear || ENTER(key))
             break;
@@ -558,7 +550,7 @@ int chessGame( int p )
             if (*buf) strcat(buf, ", ");
             strcat(buf, "move?");
             UpdateLCDline1(buf);
-            if ( OneLineNumberEntry() == KeyMode ) return MODE_KEYMODE; // escape
+            if ( OneLineNumberEntry() == MODE_KEYMODE ) return MODE_KEYMODE; // escape
             // parse move
             from = moveToBoard( DisplayXreg );
             to =  moveToBoard( DisplayXreg + 2 );
@@ -582,8 +574,10 @@ int chessGame( int p )
                     }
                 }
             }
-            if ( !moveok )
+            if ( !moveok ) {
                 UpdateLCDline1( "Illegal move!" );
+                GetDebouncedKey();
+            }    
         } while ( !moveok );
 
         if ( moveok )

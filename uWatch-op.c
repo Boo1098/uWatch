@@ -23,12 +23,15 @@
 
 /* implementation of the main calculator functions */
 
-#include <stdlib.h>
+//#include <stdlib.h>
 #include <math.h>
+//#include "def.h"
 #include "uWatch-op.h"
 #include "uWatch-astro.h"
 
+#define FORMAT_DATE 1
 extern int CalcDisplayBase;
+extern int displayFormat;
 
 
 #define LN10 2.302585092994045684017991454683
@@ -630,6 +633,12 @@ void Operation( int op )
             *irp = 0;
             break;
 
+        case CALC_OP_E:
+            Push();
+            *rp = exp(1.0);
+            *irp = 0;
+            break;
+
         case CALC_OP_HMS:
             *rp = hms( *rp );
             *irp = 0;
@@ -653,6 +662,8 @@ void Operation( int op )
                 caldati( *rp, &y, &m, &d );
                 *rp = y * 10000L + m * 100L + d;
                 *irp = 0;
+                displayFormat = FORMAT_DATE;
+
             }
             break;
 
@@ -772,6 +783,7 @@ void Operation( int op )
             CalcDisplayBase = 16;
             break;
 
+
         case CALC_OP_ABS:
             if ( !*irp )
                 *rp = fabs( *irp );
@@ -889,6 +901,18 @@ void Operation( int op )
 
         case CALC_OP_LOGIC_NOT:
             rp[0] = ((int)rp[0]) ^ -1;
+            break;
+
+        case CALC_OP_LOGIC_NOR:
+            rp[0] = ((int)rp[0]) | ((int) rp[1]);
+            rp[0] = ((int)rp[0]) ^ -1;
+            Drop();
+            break;
+
+        case CALC_OP_LOGIC_NAND:
+            rp[0] = ((int)rp[0]) & ((int) rp[1]);
+            rp[0] = ((int)rp[0]) ^ -1;
+            Drop();
             break;
 
     }

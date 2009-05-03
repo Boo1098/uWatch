@@ -107,7 +107,8 @@ int opPrec( int op )
     // bin ops: + - are 3
 
     int prec = 0;
-    if ( op == CALC_OP_NPOW ||
+    if ( //op == CALC_OP_AND || op == CALC_OP_OR || op == CALC_OP_NAND || op == CALC_OP_NOR ||
+            op == CALC_OP_NPOW ||
             op == CALC_OP_R2P  ||
             op == CALC_OP_PARALLEL ||
             op == CALC_OP_COMPLEX_JOIN ||
@@ -140,36 +141,6 @@ const char *monthName[12] = {
 
 
 
-
-
-
-
-
-
-
-
-/*
-static const = {
-
-    { "Logarithmic", log },
-    { "Trigonometry", trig },
-    { "Constant", constant },
-};
-
-
-void log() {
-
-
-}
-
-void trig() {
-
-}
-
-void constant() {
-
-}
-*/
 
 
 char LCDhistory1[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
@@ -577,16 +548,11 @@ void KeystrokeRecord( unsigned char key )
 //converts a keypad number key code into a real number
 int ReturnNumber( int key )
 {
-    if ( key == Key1 ) return( 1 );
-    if ( key == Key2 ) return( 2 );
-    if ( key == Key3 ) return( 3 );
-    if ( key == Key4 ) return( 4 );
-    if ( key == Key5 ) return( 5 );
-    if ( key == Key6 ) return( 6 );
-    if ( key == Key7 ) return( 7 );
-    if ( key == Key8 ) return( 8 );
-    if ( key == Key9 ) return( 9 );
-    if ( key == Key0 ) return( 0 );
+    char kmap[] = { Key0, Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8, Key9 };
+    int s;
+    for ( s = 0; s < 10; s++ )
+        if ( kmap[s] == key )
+            return s;
 
     IFEXIT( key );
 
@@ -666,34 +632,13 @@ unsigned int KeyScan2()
     if ( Col4 == 0 ) k = KeyEnter;
     ClearRow7;
 
-    if ( k != 0 ) { //key was pressed so lets debounce it
+    if ( k  ) {
+
         ResetSleepTimer();  //reset the sleep timer every time a key is pressed
-
-/*        if ( debounce ) {
-
-            DelayMs( KeyDelay );  //debounce delay
-            SetRow1;
-            SetRow2;
-            SetRow3;
-            SetRow4;
-            SetRow5;
-            SetRow6;
-            SetRow7;
-            do;
-            while (( Col1 == 0 ) || ( Col2 == 0 ) || ( Col3 == 0 ) || ( Col4 == 0 ) );  //wait for the key to be released
-            ClearRow1;
-            ClearRow2;
-            ClearRow3;
-            ClearRow4;
-            ClearRow5;
-            ClearRow6;
-            ClearRow7;
-        }
-*/
 
         if ( ProgRec ) {
             KeystrokeRecord( k );   //record the keystroke
-            if ( k == KeyMode ) return( 0 ); //don't return to main menu on MODE key
+//            if ( k == KeyMode ) return( 0 ); //don't return to main menu on MODE key
         }
 
     }
@@ -717,6 +662,10 @@ void BacklightOFF( void )
     ClearLED_POWER;
 }
 
+int seconds( rtccTime *t ) {
+    return BCDtoDEC((*t).f.hour) * 3600 + BCDtoDEC((*t).f.min) * 60 + BCDtoDEC((*t).f.sec);
+}
+
 void backlightControl()
 {
 
@@ -731,10 +680,7 @@ void backlightControl()
 
     RtccReadTime( &tEnd );          //read the RTCC registers
 
-    int tStartSec = tStart.f.hour * 60 * 60 + tStart.f.min * 60 + tStart.f.sec;
-    int tEndSec = tEnd.f.hour * 60 * 60 + tEnd.f.min * 60 + tEnd.f.sec;
-
-    if ( tEndSec - tStartSec < 2 )
+    if ( seconds( &tEnd ) - seconds( &tStart ) < 2 )
         BacklightOFF();
 
 }
@@ -1081,7 +1027,7 @@ void TimeDateDisplay( void )
 
     int BASE = TOFF;
     if ( !TwelveHour )
-        BASE += 2;
+        BASE += 1;
 
     // copy old time
     tt = Time;
@@ -1132,7 +1078,7 @@ void TimeDateDisplay( void )
     memset( s, ' ', MaxLCDdigits );
     s[MaxLCDdigits] = 0;
 
-    if ( temp >= 10 )
+    if ( temp >= 10 || !TwelveHour )
         s[BASE] = itochar( temp / 10 );
 
     s[BASE+1] = itochar( temp % 10 );
@@ -1509,6 +1455,8 @@ void doTimeMode()
             };
 
             genericMenu2( &TimeMenu, 0 );
+            while ( KeyScan2( FALSE ));
+
         }
 
     } while ( Key != KeyMode ); //loop until a key has been pressed
