@@ -92,8 +92,34 @@ Menu from APPLICATION mode:
 		About
 
 
+CHESS:
 
+The Display:
 
+The chessboard display can be scrolled using <UP> and <DOWN>
+
+The white pieces are drawn using a contrasting technique that may be controlled
+by using the number keys [1] through [9].  The lower the number, the
+blacker the white pieces appear.  The initial contrast level is "5".
+
+<C> or <ENTER> will switch between move entry and board display.
+
+In move entry, the last computer move (if any) is displayed on the top line.
+
+Moves are entered using column number row number format.  For example,
+5254 is E2-E4 equivalent.
+
+Illegal moves return to the board display.  Legal moves trigger the 
+computer player to search for a reply.
+
+When the computer moves, the board is displayed with the computer move
+positioned on the top line of the display.  YOu may switch back and forth
+between move entry and board display using <C> or <ENTER>
+
+The game may be discontinued by pressing [MODE] from the board display.
+
+When returning to chess, if a game was previously in progress, an option
+to continue or start a new game is presented.
 
 
 
