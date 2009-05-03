@@ -197,10 +197,10 @@ lunar:
 
 
 
-const unsigned char character_heart[] = { 0x0A, 0x1F, 0x1F, 0x1F, 0x0E, 0x04, 0x00, 0x00 };
-const unsigned char character_spade[] = { 0x04, 0x0E, 0x1F, 0x1F, 0x0A, 0x04, 0x04, 0 };
-const unsigned char character_diamond[] = { 0x00, 0x04, 0x0E, 0x1F, 0x0E, 0x04, 0x00, 0x00 };
-const unsigned char character_club[] = { 0x0E, 0x0E, 0x04, 0x1F, 0x1B, 0x04, 0x04, 0x00 };
+const unsigned char character_heart[] =     { 0x00, 0x0A, 0x1F, 0x1F, 0x1F, 0x0E, 0x04, 0x00 };
+const unsigned char character_spade[] =     { 0x04, 0x04, 0x0E, 0x1F, 0x1F, 0x1B, 0x04, 0x0E };
+const unsigned char character_diamond[] =   { 0x00, 0x04, 0x0E, 0x1F, 0x1F, 0x0E, 0x04, 0x00 };
+const unsigned char character_club[] =      { 0x0E, 0x0E, 0x04, 0x1F, 0x1F, 0x1B, 0x04, 0x0E };
 
 void drawCard( char *dest, int card ) {
     char *c[] = { "A","2","3","4","5","6","7","8","9","10","J","Q","K"  };
@@ -356,13 +356,13 @@ int twenty1( int p )
         
             }
 
-            char *result = "DEALER WINS!";
+            char *result = "Dealer WINS!";
             if ( dealertotal > 21 ) {
-                result = "DEALER BUST!";
+                result = "Dealer BUST!";
             } else if ( dealertotal == total ) {
                 result = "PUSH!";
             } else if ( dealertotal < total ) {
-                result = "YOU WIN!";
+                result = "You WIN!";
             }
 
             int phase = 0;
