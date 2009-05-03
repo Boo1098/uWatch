@@ -1014,6 +1014,10 @@ static BOOL checkDST()
 // display time offset
 #define TOFF 2
 
+int stopCount = 0;
+char *stopStar = " \2";
+
+
 //**********************************
 // displays the time and date on the LCD
 void TimeDateDisplay( void )
@@ -1024,6 +1028,9 @@ void TimeDateDisplay( void )
     rtccDate td;
     rtccTime tt;
     int point;
+
+    custom_character( 2, characterDST );
+
 
     int BASE = TOFF;
     if ( !TwelveHour )
@@ -1059,7 +1066,7 @@ void TimeDateDisplay( void )
     if ( checkDST() ) {
         // re-read time if changed
         RtccReadTime( &Time );          //read the RTCC registers
-        RtccReadDate( &Date );
+        //RtccReadDate( &Date );
 
         if ( td.l != Date.l )
             dayHasChanged(); // possible that the day changes
@@ -1077,6 +1084,10 @@ void TimeDateDisplay( void )
     // blank string then overwrite
     memset( s, ' ', MaxLCDdigits );
     s[MaxLCDdigits] = 0;
+
+    if ( stopWatchActive ) {
+        *s = stopStar[ (stopCount++ >> 3 ) & 1 ];
+    }
 
     if ( temp >= 10 || !TwelveHour )
         s[BASE] = itochar( temp / 10 );
@@ -1105,7 +1116,7 @@ void TimeDateDisplay( void )
     }
 
     if ( DST ) {
-        s[ point ] = custom_character( 2, characterDST );  // star after time if DST
+        s[ point ] = 2;  // star after time if DST
     }
 
     static const unsigned char moons[][8] = {
