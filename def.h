@@ -311,5 +311,8 @@ extern int displayFormat;
 #define FORMAT_BASE2 2
 #define FORMAT_DATE 1
 
+int seconds( rtccTime *t );
+
+
 
 #endif
