@@ -280,6 +280,17 @@ char *printHitStand(int *n, int max ) {
         return "Hit!";
 }
 
+void seedRandom(void) {
+    int seed;
+    
+    RtccReadTime( &Time );
+    RtccReadDate( &Date );
+    
+    seed = BCDtoDEC( Time.f.sec ) + BCDtoDEC( Time.f.min ) + BCDtoDEC( Time.f.hour ) + BCDtoDEC( Date.f.year ) + BCDtoDEC( Date.f.mon ) + BCDtoDEC( Date.f.mday );
+    
+    srand( seed );
+}
+
 int twenty1( int p )
 {
 #if 1
@@ -303,6 +314,8 @@ int twenty1( int p )
 
     int key;
     while ( TRUE ) {
+    
+        seedRandom();   //seed random number using time and date
 
         key = 0;
 
