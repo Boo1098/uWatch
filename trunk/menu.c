@@ -58,7 +58,7 @@ int genericMenu2( const packedMenu *menu, int *selection )
             custom_character( i + 2, menu->customCharacter[i] );
 
 
-    if ( menu->title && strlen( menu->title ))
+    if ( menu->title && *menu->title)
         UpdateLCDline1( menu->title );
 
 
@@ -116,7 +116,7 @@ int genericMenu2( const packedMenu *menu, int *selection )
                     // scan menu items to find equivalent function for key
                     // This is how function keys work in calculator mode -- finding the equivalent # in the op in the menu
     
-                    int fkey[] = { -1,-1,-1,-1, 3, 4, 5, 0, 1, 2 };
+                    static const int fkey[] = { -1,-1,-1,-1, 3, 4, 5, 0, 1, 2 };
                     if ( !menu->title ) {
                         if ( fkey[autoSel]>=0 ) {
                             sel = fkey[autoSel];
