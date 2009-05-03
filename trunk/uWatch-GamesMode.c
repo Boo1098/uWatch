@@ -69,16 +69,11 @@ int lunarLander( int p )
 
     while ( height > 0 ) {
         if ( fuelRemaining > 0 ) {
+lunar:
             UpdateLCDline1( "ENT - burn fuel" );
             UpdateLCDline2( "MENU - stats" );
             KeyPress2 = GetDebouncedKey();
             if ( KeyPress2 == KeyMode ) return MODE_KEYMODE;
-            if ( ENTER(KeyPress2) ) {  //enter fuel to burn
-                UpdateLCDline1( "Burn fuel(0-30):" );
-                Xreg = burnAmount;
-                c = OneLineNumberEntry();
-                burnAmount = Xreg;
-            }
             if ( KeyPress2 == KeyMenu ) { //stats menu
                 UpdateLCDline1( "1=Time  2=Height" );
                 UpdateLCDline2( "3=Speed 4=Fuel" );
@@ -112,6 +107,13 @@ int lunarLander( int p )
                     KeyPress2 = GetDebouncedKey();
                     if ( KeyPress2 == KeyMode ) return MODE_KEYMODE;
                 }
+                goto lunar;
+            }
+            if ( ENTER(KeyPress2) ) {  //enter fuel to burn
+                UpdateLCDline1( "Burn fuel(0-30):" );
+                Xreg = burnAmount;
+                c = OneLineNumberEntry();
+                burnAmount = Xreg;
             }
         }
 
