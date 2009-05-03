@@ -1022,6 +1022,8 @@ char *stopStar = " \2";
 // displays the time and date on the LCD
 void TimeDateDisplay( void )
 {
+    rand();             // causes other things to be random(ish)
+
     char s[MaxLCDdigits+1];
     BOOL pm = FALSE;
     unsigned int temp;
