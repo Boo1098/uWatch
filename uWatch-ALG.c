@@ -55,6 +55,7 @@ static void pressEnter() {
 // Note that all variables are global
 void ALGcalculator(void)
 {
+
     unsigned int Key;       //keypress variables
     DisplayXreg[0] = 0;
     DisplayYreg[0] = 0;
