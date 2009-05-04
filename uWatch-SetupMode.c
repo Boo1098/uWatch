@@ -659,23 +659,25 @@ int appSelfTest()
 
 char *printTimeout( int *timeout, int max )
 {
-    sprintf( out, "%3d seconds", *timeout / 128 );
+    sprintf( out, "%3d seconds", (*timeout) >> 8 );
     return out;
 }
 
+#define FIVESEC (128*5)
+
 void incTimeout( int *timeout, int max ) {
     if ( ((unsigned int)*timeout) < 53760 )
-        *timeout += 1280;
+        *timeout += FIVESEC;
 }
 
 void decTimeout( int *timeout, int max ) {
-    if ( ((unsigned int)*timeout) > 1280 )
-        *timeout -= 1280;
+    if ( ((unsigned int)*timeout) > FIVESEC )
+        *timeout -= FIVESEC;
 }
 
 int appLCDTimeout()
 {
-    return genericMenu( "LCD Timeout", &printTimeout, &incTimeout, &decTimeout, 2, (int*)&PR1 );
+    return genericMenu( "LCD Timeout", &printTimeout, &decTimeout, &incTimeout, 2, (int*)&PR1 );
 }
 
 
