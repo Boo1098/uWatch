@@ -167,7 +167,7 @@ static int computerMoves();
 int moveGen(int cases, int side);
 int moveToBoard(const char* p);
 void playMove(Move m);
-int search(int alpha, int beta, int depth, int top, int nullDepth, int tryPV, PVLine* ppv);
+int search(int alpha, int beta, int depth, int nullDepth, int tryPV, PVLine* ppv);
 const char* moveToStr(Move m, int fancy);
 
 
@@ -232,6 +232,7 @@ PVLine MainPV;
 int UsePV;
 uint Castle;
 Move Killer[MAX_PV];
+int Top;
 
 // represent a board in piece codes, will be translated into
 // pos codes on the 0x88 board
@@ -262,8 +263,8 @@ const byte offset[6][9] =
 };
 
 static int chessLevel;
-int computer;
-int runOnce = FALSE;
+static int computer;
+static int runOnce;
 
 const unsigned char character_king[] = { 0x04, 0x0e, 0x04, 0x11, 0x15, 0x0E, 0x0E, 0x1F };
 const unsigned char character_queen[] = { 0x00, 0x15, 0x00, 0x15, 0x15, 0x0E, 0x0E, 0x1F };
@@ -286,8 +287,7 @@ int chosen( int computerColour ) {
 /* data for the board display */
 static char dispBoard[20][17];
 static char lastMove[7];
-
-int contGame;
+static int contGame;
 
 int cont( int p ) {
     contGame = p;
@@ -471,14 +471,12 @@ int showBoard() {
 
 int chessGame( int p )
 {
-
-    computer = BLACK;
-    contGame = 0;
-
     int moveok;
     Move* mv;
     Move* first;
     int to, from, promote;
+
+    contGame = 0;
 
     if ( runOnce ) {
         // have previously run... so continue, or new game?    
@@ -487,7 +485,7 @@ int chessGame( int p )
     }
 
     if ( !contGame ) {
-
+        
         // choose colour    
         if ( genericMenu2( &colourMenu, 0 ) == MODE_KEYMODE )
             return MODE_KEYMODE;
@@ -505,8 +503,6 @@ int chessGame( int p )
     // requiring translation.
 
     custom_character( 0, character_blacksquare );
-    //custom_character( 4, character_arrow_updown );
-
     custom_character( 1, character_pawn );
     custom_character( 2, character_knight );
     custom_character( 3, character_king );
@@ -517,14 +513,12 @@ int chessGame( int p )
     runOnce = TRUE;
 
     for ( ;; ) {
-
-
         if ( computer == Side ) {
             if ( computerMoves() ) {
                 GetDebouncedKey();
+                runOnce = FALSE; // new game next time
                 break; // game over
             }
-            continue;
         }
 
         moveStackPtr = MoveStack;
@@ -605,35 +599,31 @@ static int computerMoves()
         UsePV = 1;
         InCheck = chk;
         moveStackPtr = MoveStack;
-        v = search( -WIN_SCORE, WIN_SCORE, i, i, 0, 1, &MainPV );
+        Top = i;
+        v = search( -WIN_SCORE, WIN_SCORE, i, 0, 1, &MainPV );
     }
-
 
     /* and back again to slow.. */
     Clock250KHz();
     ResetSleepTimer();
     StartSleepTimer();
 
-    if ( v <= -WIN_SCORE ) {
-        UpdateLCDline2( "You Win!" );
-        return -1;
-    } else {
-        if ( MainPV.n ) {
-            Move* m = MainPV.m;
-            playMove(*m);
-            strcpy(lastMove, moveToStr(*m,1));
+    if ( MainPV.n ) {
+        Move* m = MainPV.m;
+        playMove(*m);
+        strcpy(lastMove, moveToStr(*m,1));
 
-            // focus board display on the last move's line
-            line = lastMove[4]-'0'-1; 
+        // focus board display on the last move's line
+        line = lastMove[4]-'0'-1; 
 
-            if (InCheck) lastMove[5]='+';
-            UpdateLCDline1(lastMove);
-        }
+        if (InCheck) lastMove[5]='+';
+        UpdateLCDline1(lastMove);
+    }
 
-        if ( v >= WIN_SCORE ) {
-            UpdateLCDline2( "I Win!" );
-            return 1;
-        }
+    if (v <= -WIN_SCORE || v >= WIN_SCORE)
+    {
+        UpdateLCDline2((computer == (v>0)) ?  "I Win!" : "You Win!");
+        return 1;
     }
     return 0;
 }
@@ -1398,13 +1388,14 @@ int quiesce(int alpha, int beta, int depth)
 
     // if we're still in check, we've lost
     if (InCheck)
-        bv = -WIN_SCORE + 1;
+        bv = -WIN_SCORE + (Top - depth) - 1;
 
     moveStackPtr = first;
     return bv;
 }
     
-int search(int alpha, int beta, int depth, int top, int nullDepth, int tryPV, PVLine* ppv)
+int search(int alpha, int beta, int depth, int nullDepth, int tryPV,
+           PVLine* ppv)
 {
     Move* first;
     Move* mv;
@@ -1424,7 +1415,7 @@ int search(int alpha, int beta, int depth, int top, int nullDepth, int tryPV, PV
 
     first = moveStackPtr;
     bv = -WIN_SCORE;
-    ply = top - depth;
+    ply = Top - depth;
 
     ++Nodes;
 
@@ -1435,7 +1426,7 @@ int search(int alpha, int beta, int depth, int top, int nullDepth, int tryPV, PV
         if (MatScore[Side] >= 400)
         {
             Side = !Side;
-            v = -search(-beta, 1-beta, depth-1-2, top, nullDepth+1, 0, &pv);
+            v = -search(-beta, 1-beta, depth-1-2, nullDepth+1, 0, &pv);
             Side = !Side;
             if (v >= beta)
                 return v;
@@ -1470,15 +1461,15 @@ int search(int alpha, int beta, int depth, int top, int nullDepth, int tryPV, PV
 
             if (depth > 2 && tryPV && newPV)
             {
-                v = -search(-alpha-1, -alpha, depth-1, top, nullDepth, 0, &pv);
+                v = -search(-alpha-1, -alpha, depth-1, nullDepth, 0, &pv);
                 if (v > alpha && v < beta)
                 {
                     InCheck = chk;
-                    v = -search(-beta, -alpha, depth-1, top, nullDepth, 1, &pv);
+                    v = -search(-beta, -alpha, depth-1, nullDepth, 1, &pv);
                 }
             }
             else
-                v = -search(-beta, -alpha, depth-1, top, nullDepth, tryPV, &pv);
+                v = -search(-beta, -alpha, depth-1, nullDepth, tryPV, &pv);
             
             Castle = castle;
             unmakeMove(*mv, ep);
@@ -1488,13 +1479,6 @@ int search(int alpha, int beta, int depth, int top, int nullDepth, int tryPV, PV
                 bv = v;
                 if (v > alpha)
                 {
-                    if (v >= beta)
-                    {
-                        if (!mv->toPos && ply < MAX_PV && !nullDepth)
-                            Killer[ply] = *mv; // update killer move
-                        break;
-                    }
-
                     alpha = v;
                     newPV = 1;
 
@@ -1504,6 +1488,13 @@ int search(int alpha, int beta, int depth, int top, int nullDepth, int tryPV, PV
                     if (i == MAX_PV) --i;
                     memcpy(ppv->m + 1, pv.m, i * sizeof(Move));
                     ppv->n = i + 1;
+
+                    if (v >= beta)
+                    {
+                        if (!mv->toPos && ply < MAX_PV && !nullDepth)
+                            Killer[ply] = *mv; // update killer move
+                        break;
+                    }
                 }
             }
         }
@@ -1516,7 +1507,7 @@ int search(int alpha, int beta, int depth, int top, int nullDepth, int tryPV, PV
         {
             // mate seen, add ply to prevent mate declaration except
             // top-level
-            bv= -WIN_SCORE + ply; 
+            bv= -WIN_SCORE + ply - 1;
         }
     }
 
