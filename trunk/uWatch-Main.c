@@ -767,7 +767,7 @@ unsigned char itochar( int i )
 void dayHasChanged()
 {
     Year = BCDtoDEC( Date.f.year ) + 2000;
-    Month = BCDtoDEC( Date.f.mon ); // + 1;
+    Month = BCDtoDEC( Date.f.mon );
     Day = BCDtoDEC( Date.f.mday );
 
     // failsafe checks
@@ -1240,6 +1240,8 @@ void __attribute__(( __interrupt__, auto_psv ) ) _T1Interrupt( void )
     Sleep();                            //put the watch to SLEEP.
     //only the RTCC is kept running at this point.
     //when the watch wakes back up, operation will continue from this point.
+
+    Clock250KHz();      // testing if the speed is an issue with wake-from-sleep problem!
 
     IEC1bits.CNIE = 0;          //switch off the pin change interrupt
     IFS1bits.CNIF = 0;          //clear input change interrupt
