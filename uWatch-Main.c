@@ -1,6 +1,6 @@
 //********************************************************
 // uWatch
-// Version 1.5
+// Version 1.6
 // Last Update: 16th March 09
 // Written for the Microchip C30 Compiler
 // Copyright(c) 2008 David L. Jones
