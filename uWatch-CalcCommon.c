@@ -393,7 +393,7 @@ void FormatValue(char* dest,
     int p=0;
 
 
-    if ( 0 && format == FORMAT_DATE ) {
+/*    if ( 0 && format == FORMAT_DATE ) {
 
         unsigned long date = (long) value;
         int day = date % 100;
@@ -401,7 +401,7 @@ void FormatValue(char* dest,
         int year = date/10000;
         sprintf( dest, "%4dx%dx%d", year, month, day );
 
-    } else {
+    } else*/ {
 
     
         switch ( base )
@@ -456,6 +456,8 @@ void FormatValue(char* dest,
                 }
             }
             break;
+
+
             case 10:
                 if (ivalue == 0)
                 {
