@@ -1,7 +1,7 @@
 //********************************************************
 // uWatch
 // Algebraic Calculator Functions
-// Version 1.5.X
+// Version 1.6
 // Last Update: 12th June 08
 // Copyright(c) 2008 David L. Jones
 // Written for the Microchip C30 Compiler
