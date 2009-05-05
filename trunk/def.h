@@ -313,6 +313,7 @@ extern int displayFormat;
 
 int seconds( rtccTime *t );
 
+void setBase( int base );
 
 
 #endif

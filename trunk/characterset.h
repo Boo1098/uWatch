@@ -1,6 +1,10 @@
 #ifndef __CHARACTERSET_H
 #define __CHARACTERSET_H
 
+extern const unsigned char character_base2[];
+extern const unsigned char character_base8[];
+extern const unsigned char character_base16[];
+
 extern const unsigned char character_left_menu[];
 extern const unsigned char character_right_menu[];
 extern const unsigned char character_squaring[];
