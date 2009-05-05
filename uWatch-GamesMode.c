@@ -30,15 +30,6 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
-/*
-static unsigned int GetDebouncedKey()
-{
-    unsigned int KeyPress2;        //keypress variables
-    KeyPress2 = GetDebouncedKey();
-    return KeyPress2;
-}
-*/
-
 #include "def.h"
 #include "menu.h"
 #include "uWatch-vchess.h"
@@ -210,15 +201,13 @@ void drawCard( char *dest, int card ) {
 }
 
 void shuffle( int *deck ) {
-    Clock1MHz();
-    int card, card2, shuf;
+    int card, card2;
     for ( card = 0; card < 52; card++ ) {
         card2 = rand() % 52;
         int temp = deck[card];
         deck[card] = deck[card2];
         deck[card2] = temp;
     }
-    Clock250KHz();
 }
 
 
@@ -262,13 +251,11 @@ int drawHand( char *prefix, char *dest, int *hand, int count ) {
 
     strcpy( dest, prefix );
     int i;
-    for ( i = 0; i < count; i++ ) {
+    for ( i = 0; i < count; i++ )
         drawCard( dest + strlen( dest ), hand[i] );
-        //if ( i == count-2 )
-        //    strcat( dest, " " );
-    }    
+
     int total = countTotal( hand, count );
-    sprintf( dest + strlen(dest), " =%2d", total );
+    sprintf( dest + strlen(dest), " =%d", total );
     return total;
 }    
 
@@ -336,7 +323,7 @@ int twenty1( int p )
 
         if ( total > 21 ) {
             //UpdateLCDline1( displayBuffer + strlen(displayBuffer) - 16 );
-            UpdateLCDline2( "BUST!" );
+            UpdateLCDline2( "Bust!" );
         }
         else {
 
@@ -355,13 +342,13 @@ int twenty1( int p )
         
             }
 
-            char *result = "Dealer WINS!";
+            char *result = "Dealer Wins!";
             if ( dealertotal > 21 ) {
-                result = "Dealer BUST!";
+                result = "Dealer Bust!";
             } else if ( dealertotal == total ) {
-                result = "PUSH!";
+                result = "Push!";
             } else if ( dealertotal < total ) {
-                result = "You WIN!";
+                result = "You Win!";
             }
 
             int phase = 0;

@@ -294,7 +294,8 @@ void UpdateLCD( const char* s, int line )
 
     // prevent the sleep timer going off when we write to the
     // screen, so that the interrupt doesnt happen.
-    StopSleepTimer();
+    //StopSleepTimer();
+    DisableSleepTimer();
 
     c = 0;
     if ( line ) c = 40;
@@ -307,7 +308,8 @@ void UpdateLCD( const char* s, int line )
     }
 
     // sleep time ok from now on.
-    StartSleepTimer();
+    EnableSleepTimer();
+    //StartSleepTimer();
 }
 
 //***********************************
@@ -460,7 +462,8 @@ void i2c_stop( void )
 //Writes a data byte to the 24LC512 memory chip on the I2C bus
 void I2CmemoryWRITE( unsigned int address, unsigned char data )
 {
-    DisableSleepTimer();
+    //DisableSleepTimer();
+    StopSleepTimer();
 
     i2c_start();
     i2c_out_byte( 0xa0 );
@@ -474,7 +477,8 @@ void I2CmemoryWRITE( unsigned int address, unsigned char data )
     i2c_stop();
     DelayMs( 15 );
 
-    EnableSleepTimer();
+//    EnableSleepTimer();
+    StartSleepTimer();
     return;
 }
 
@@ -483,7 +487,8 @@ void I2CmemoryWRITE( unsigned int address, unsigned char data )
 unsigned char I2CmemoryREAD( unsigned int address )
 {
     unsigned char ch;
-    DisableSleepTimer();
+//    DisableSleepTimer();
+    StopSleepTimer();
 
     i2c_start();
     i2c_out_byte( 0xa0 );
@@ -498,7 +503,8 @@ unsigned char I2CmemoryREAD( unsigned int address )
     ch = i2c_in_byte();
     i2c_stop();
 
-    EnableSleepTimer();
+//    EnableSleepTimer();
+    StartSleepTimer();
     return( ch );
 }
 
@@ -701,7 +707,7 @@ unsigned int GetDebouncedKey()
             confirmed = TRUE;
             while ( !( Key = KeyScan2() ) );  // wait for any non-debounced key
 
-            ResetSleepTimer();                  // ANY keypress starts timer!
+            //ResetSleepTimer();                  // ANY keypress starts timer!
 
             int confirm;
             for ( confirm = 0; confirm < 20; confirm++ )
@@ -1220,7 +1226,7 @@ void TimeDateDisplay( void )
 // This is called by a timeout because the user as not pressed a key in a few minutes
 void __attribute__(( __interrupt__, auto_psv ) ) _T1Interrupt( void )
 {
-    StopSleepTimer();            //switch the SLEEP timer OFF
+    //StopSleepTimer();            //switch the SLEEP timer OFF
     LCDoff();                   //switch OFF LCD power
     BacklightOFF();             //switch off backlight
     _TRISB8 = 1;        //SCL
@@ -1257,8 +1263,8 @@ void __attribute__(( __interrupt__, auto_psv ) ) _T1Interrupt( void )
     i2c_high_sda();
 
 
-    ResetSleepTimer();
-    StartSleepTimer();            //switch the SLEEP timer back on
+    //ResetSleepTimer();
+    //StartSleepTimer();            //switch the SLEEP timer back on
 
     //restore the previous display contents, except time mode
     if ( WatchMode != WATCH_MODE_TIME ) {

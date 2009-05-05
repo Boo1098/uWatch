@@ -70,8 +70,6 @@ void ALGcalculator(void)
     {
 		Key = GetDebouncedKey();
 
-        ResetSleepTimer();		
-
         //start to process the keypress
         if (Key==KeyMode)       // mode key was pressed, exit calc mode
         {
