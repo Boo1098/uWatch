@@ -1514,6 +1514,9 @@ int main( void )
         WatchMode = WATCH_MODE_CALC;
         NextMode = TRUE;
 
+        // re-load custom base character...
+        setBase( CalcDisplayBase );
+
         if ( RPNmode ) {
             RPNcalculator();
         } else {

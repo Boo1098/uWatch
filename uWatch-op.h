@@ -126,4 +126,6 @@ extern void SwapXY();
 #define CALC_OP_AVOGADRO        64
 #define CALC_OP_E               65
 
+#define CALC_OP_BASE8           66
+
 #endif // __uwatch_op_h__

@@ -35,10 +35,10 @@ const packedMenu mathModeBase = {
     {},
     {   { "  rad ",            OperatePrecedence,        CALC_OP_MODERAD         },
         { "deg ",            OperatePrecedence,        CALC_OP_MODEDEG         },
-        { "",              OperatePrecedence,        CALC_OP_NULL            },
-        { "  bin",             OperatePrecedence,        CALC_OP_BASE2            },
+        { "bin",              OperatePrecedence,        CALC_OP_BASE2            },
+        { "oct",             OperatePrecedence,        CALC_OP_BASE8            },
         { " dec ",              OperatePrecedence,        CALC_OP_BASE10            },
-        { "hex ",            OperatePrecedence,        CALC_OP_BASE16            },
+        { "hex",            OperatePrecedence,        CALC_OP_BASE16            },
     },
 };
 

@@ -28,6 +28,13 @@
 //#include "def.h"
 #include "uWatch-op.h"
 #include "uWatch-astro.h"
+#include "characterset.h"
+#include "uWatch-LCD.h"
+//#include "def.h"
+
+int custom_character( int c, const unsigned char *p );
+int setBase( int base );
+
 
 #define FORMAT_DATE 1
 extern int CalcDisplayBase;
@@ -772,15 +779,19 @@ void Operation( int op )
             break;
 
         case CALC_OP_BASE2:
-            CalcDisplayBase = 2;
+            setBase(2);
+            break;
+
+        case CALC_OP_BASE8:
+            setBase(8);
             break;
 
         case CALC_OP_BASE10:
-            CalcDisplayBase = 10;
+            setBase(10);
             break;
 
         case CALC_OP_BASE16:
-            CalcDisplayBase = 16;
+            setBase(16);
             break;
 
 

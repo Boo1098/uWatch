@@ -34,6 +34,8 @@ This program is free software: you can redistribute it and/or modify
 #include "menu.h"
 #include "characterset.h"
 #include "calculator.h"
+#include "uWatch-LCD.h"
+
 
 
 int HexEntry();
@@ -218,12 +220,10 @@ int EnterNumber(int Key)
     int c = ReturnNumber(Key);
     if (c >= 0 && c <= 9)
     {
-        // ignore anything but 0 & 1 in binary mode
-        if (CalcDisplayBase == 2)
-        {
-            if (c > 1)
-                return 0;
-        }
+        if ( CalcDisplayBase == 2 && c > 1 )        // limit binary entry
+            return 0;
+        if ( CalcDisplayBase == 8 && c > 7 )        // limit octal entry
+            return 0;
         
         // key is 0 to 9
         ProcessNumberKey('0' + c);
@@ -387,7 +387,7 @@ void FormatValue(char* dest,
                  double value, double ivalue,
                  int space, BOOL tidy, int format )
 {
-    char base = (WatchMode == WATCH_MODE_CALC) ? CalcDisplayBase : 10;
+    char base = CalcDisplayBase; //(WatchMode == WATCH_MODE_CALC) ? CalcDisplayBase : 10;
 
     int index;
     int p=0;
@@ -408,54 +408,48 @@ void FormatValue(char* dest,
         {
     
         case 2:
-            {   
-                unsigned int uval=0;
-                char tmp[MaxLCDdigits+1];
-                memset( tmp, 0, sizeof(tmp));
-    
-                if ( (value > 32767) || (value < -32768) ) 
+        case 8:
+        case 16: {
+        
+            const char *digit = "0123456789ABCDEF";
+            
+            double max = pow( 2, 64 );
+            if ( fabs(value) > max )
+                strcpy( dest, "  * OVERFLOW *" );
+            else {
+            
+                unsigned long long uval;
+                if ( value < 0 )
                 {
-                    strcpy( dest, "  * OVERFLOW *" );
+                    uval  = (unsigned long long)(-1 * value);
+                    uval  = ~uval + 1;
                 }
-                else
-                {
-                    if ( value < 0 )
-                    {
-                        uval  = (unsigned int)(-1 * value);
-                        uval  = ~uval + 1;
-                    }
-                    else 
-                        uval = value;
-    
-                    if ( uval == 0 )
-                    {
-                        sprintf( dest, "%ib", 0 );
-                    }
-                    else 
-                    {
-                        p = 15;
+                else 
+                    uval = value;
         
-                        for ( index=0; (index < 16) && uval; index++ )
-                        {
-                            if ( uval & 1  )
-                                tmp[p--] = '1';
-                            else
-                                tmp[p--] = '0';
-        
-                            uval = (uval >> 1);             
-                        }
-                        
-                        strcpy( dest, tmp+(p+1) );
-        
-                        if ( index < 15 )
-                        {
-                            dest[index] = 'b';
-                            dest[index+1] = 0;
-                        }
-                    }
-                }
+                // Kind of clever -- builds the number 'backwards' into a string buffer
+            
+                char *p = displayBuffer + 70;       //arbitrary, just long enough is all
+                *p-- = 0;
+                *p-- = 1;           // 'base' character
+                
+                do {
+                    *p-- = digit[ uval & (base-1) ];
+                    uval /= base;
+                } while ( uval );
+                
+                p++;
+                
+                if ( strlen( p ) > 16 ) {
+                    p = p + strlen( p ) - 16;
+                    *p = '<';
+                }    
+                
+                strcpy( dest, p );
             }
-            break;
+        
+        }
+        break;
 
 
             case 10:
@@ -542,7 +536,7 @@ void FormatValue(char* dest,
                 dest[space] = 0;
     
                 break;
-            case 16:
+/*            case 16:
             {
                 unsigned long long ulVal=0;
                 double max = pow( 2, 64 );
@@ -586,19 +580,21 @@ void FormatValue(char* dest,
     
                         if ( index < 15 )
                         {
-                            dest[index] = 'h';
+                            dest[index] = 1; //'h';
                             dest[index+1] = 0;
                         }
                     }
                     else
                     {
-                        strcpy( dest, "0h" );
+                        strcpy( dest, "0\1" );
                     }
                 }
     
             }
             break;
+*/
         }
+
     }
 } 
 
@@ -1036,3 +1032,18 @@ int HexEntry(void)
     return genericMenu2( &hexMenu, 0 );
 }   
 
+void setBase( int base ) {
+
+    CalcDisplayBase = base;
+    switch ( base ) {
+        case 2:
+            custom_character( 1, character_base2 );
+            break;
+        case 8:
+            custom_character( 1, character_base8 );
+            break;
+        case 16:
+            custom_character( 1, character_base16 );
+            break;
+    }
+}
