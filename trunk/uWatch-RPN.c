@@ -58,8 +58,7 @@ void RPNcalculator(void)
     for (;;)
     {
 		Key = GetDebouncedKey();
-		
-        ResetSleepTimer();		
+
 
         //start to process the keypress
         // mode key was pressed, exit calc mode

@@ -108,9 +108,16 @@ int OneLineNumberEntry()
     do {
 
         key = GetDebouncedKey();
+
+        switch (key ) {
+            case KeyMenu:
+                return MODE_KEY_NEXT;
+            case KeyMode:
+                return MODE_KEYMODE;
+        }        
+
         int c = EnterNumber( key );
-        if ( c == KeyMode )
-            return MODE_KEYMODE;
+
         if ( c == KeyClear )
             Xreg = 0;
             
@@ -659,7 +666,7 @@ int appSelfTest()
 
 char *printTimeout( int *timeout, int max )
 {
-    sprintf( out, "%3d seconds", (*timeout) >> 8 );
+    sprintf( out, "%3d seconds", (*timeout) >> 7 );
     return out;
 }
 

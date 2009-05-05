@@ -107,7 +107,7 @@
 #define PeripheralIOOFF()   LATC=LATC&AND8
 
 #define DisableSleepTimer()     IEC0bits.T1IE = 0       //disable Timer1 interrupt
-#define EnableSleepTimer()      IEC0bits.T1IE = 1       //disable Timer1 interrupt
+#define EnableSleepTimer()      IEC0bits.T1IE = 1       //enable Timer1 interrupt
 
 #define StopSleepTimer()  T1CONbits.TON = 0
 

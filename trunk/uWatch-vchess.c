@@ -417,8 +417,8 @@ int showBoard() {
     int mask = 0;
 
     fixArrow( line );
-    EnableSleepTimer();
-    ResetSleepTimer();
+//    ResetSleepTimer();
+//    EnableSleepTimer();
     
     unsigned int counter = 0;
     while ( TRUE ) {
@@ -465,9 +465,61 @@ int showBoard() {
         }
     }
 
-    DisableSleepTimer();
+//    DisableSleepTimer();
     return MODE_EXIT;
 }
+/*
+
+int BoardKeyboard() {
+
+    int number = 0;
+    int position = 0;
+    int pressed[5];
+
+    int key;
+    do {
+        pressed[ position ] = 0;
+
+        key = ReturnNumber( GetDebouncedKey());
+        IFEXIT( key );
+
+        if ( position < 5 ) {
+            char c = 0;
+            switch( position ) {
+                case 0:
+                case 2:
+                    if ( key >0 && key <9 )
+                       c = key + 'A' - 1;
+                    break;
+                case 1:
+                case 3:
+                    if ( key > 0 && key < 9 )
+                    c = key + '0';
+                    break;
+                case 4:
+                    if ( key > 0 && key < 5 )
+                    c = key;
+                    break;
+            }
+    
+            if ( c ) {
+                pressed[ position ] = c;
+                pressed[ position+1] = 0;
+                position++;
+            }
+        }
+
+        *displayBuffer = 0;
+        int i;
+        for ( i = 0; i < position; i++ )
+            sprintf( displayBuffer + strlen( displayBuffer ), "%c", pressed[ i ] );
+        UpdateLCDline2( displayBuffer );
+
+    } while ( !ENTER( key ));
+
+    return number;
+}
+*/
 
 int chessGame( int p )
 {
@@ -534,12 +586,20 @@ int chessGame( int p )
                 return MODE_KEYMODE;
 
             // get move
-            char buf[16];
-            strcpy(buf, lastMove);
-            if (*buf) strcat(buf, ", ");
-            strcat(buf, "move?");
-            UpdateLCDline1(buf);
-            if ( OneLineNumberEntry() == MODE_KEYMODE ) return MODE_KEYMODE; // escape
+            strcpy(displayBuffer, lastMove);
+            if (*displayBuffer) strcat(displayBuffer, ", ");
+            strcat(displayBuffer, "move?");
+            UpdateLCDline1(displayBuffer);
+
+//            BoardKeyboard();
+
+            switch ( OneLineNumberEntry()) {
+                case MODE_KEYMODE:
+                    return MODE_KEYMODE;
+                case MODE_KEY_NEXT:
+                    continue;
+            }                
+
             // parse move
             from = moveToBoard( DisplayXreg );
             to =  moveToBoard( DisplayXreg + 2 );
@@ -586,7 +646,7 @@ static int computerMoves()
     Nodes = 0;
 
     /* bump the CPU whilst we think... */
-    StopSleepTimer();
+//    StopSleepTimer();
 
     UpdateLCDline1( "thinking..." );
 
@@ -605,8 +665,8 @@ static int computerMoves()
 
     /* and back again to slow.. */
     Clock250KHz();
-    ResetSleepTimer();
-    StartSleepTimer();
+//    ResetSleepTimer();
+//    StartSleepTimer();
 
     if ( MainPV.n ) {
         Move* m = MainPV.m;
