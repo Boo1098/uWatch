@@ -413,8 +413,9 @@ int showBoard() {
     int row;
     for ( row = 0; row < 8; row ++ )
         updateLine( dispBoard[ row + 11 ] + 4, dispBoard[ row + 1 ] + 4, row );
-
-    int mask = 0;
+    
+    extern unsigned int mask;
+    mask = 0;
 
     fixArrow( line );
 //    ResetSleepTimer();
@@ -593,7 +594,12 @@ int chessGame( int p )
 
 //            BoardKeyboard();
 
-            switch ( OneLineNumberEntry()) {
+            int temp = CalcDisplayBase;
+            CalcDisplayBase = 10;
+            int n = OneLineNumberEntry();
+            CalcDisplayBase = temp;
+
+            switch ( n ) {
                 case MODE_KEYMODE:
                     return MODE_KEYMODE;
                 case MODE_KEY_NEXT:

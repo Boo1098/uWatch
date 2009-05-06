@@ -66,6 +66,7 @@ int DegreesMode;               //FLAG, TRUE if degres mode is on, otherwise radi
 int ValueEntered;              //FLAG, TRUE if value has been entered by using the ENTER key
 int  EnableXregOverwrite;       //FLAG, TRUE if the Xreg will be automatically overwritten on first key press (the ENTER key enables this for example)
 int WatchMode;             //0=time mode, 1=calc mode, 2=setup mode
+unsigned int mask;
 
 char DisplayXreg[XBufSize+1];   //holds the value currently being entered by the user, or the Xreg
 char DisplayYreg[XBufSize+1];   //holds the value currently in Yreg
@@ -1277,7 +1278,9 @@ void __attribute__(( __interrupt__, auto_psv ) ) _T1Interrupt( void )
     // restore any custom characters to LCD GRAM
     restoreCustomCharacters();
 
-
+    // prevent mode-switch on sleep awakening
+    if ( KeyScan2() == KeyMode )
+        mask = 0;
 
     // removed by BOO
     // this is the ugly delay after wakeup where we see garbage...
@@ -1439,11 +1442,12 @@ int setupTime( int p )
 }
 
 
+
 void doTimeMode()
 {
-    unsigned int mask = 0;
     unsigned int Key;
 
+    mask = 0;
     do {
 
         WatchMode = WATCH_MODE_TIME;
