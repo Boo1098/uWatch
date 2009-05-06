@@ -63,7 +63,8 @@ int genericMenu2( const packedMenu *menu, int *selection )
 
 
     int key;
-    int mask = 0;
+    extern unsigned int mask;
+    mask = 0;
 
     do {
 

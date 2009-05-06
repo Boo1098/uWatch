@@ -387,10 +387,7 @@ void FormatValue(char* dest,
                  double value, double ivalue,
                  int space, BOOL tidy, int format )
 {
-    char base = CalcDisplayBase; //(WatchMode == WATCH_MODE_CALC) ? CalcDisplayBase : 10;
-
-    int index;
-    int p=0;
+    char base = (WatchMode == WATCH_MODE_CALC || WatchMode == WATCH_MODE_CALC_MENU ) ? CalcDisplayBase : 10;
 
 
 /*    if ( 0 && format == FORMAT_DATE ) {
@@ -403,13 +400,17 @@ void FormatValue(char* dest,
 
     } else*/ {
 
-    
+        int shift = 1;
         switch ( base )
         {
     
-        case 2:
+        case 16:
+            shift++;
         case 8:
-        case 16: {
+            shift += 2;
+        case 2:
+
+         {
         
             const char *digit = "0123456789ABCDEF";
             
@@ -435,7 +436,7 @@ void FormatValue(char* dest,
                 
                 do {
                     *p-- = digit[ uval & (base-1) ];
-                    uval /= base;
+                    uval >>= shift;
                 } while ( uval );
                 
                 p++;
@@ -683,13 +684,15 @@ void UpdateDisplayRegs(void)
 int xtio( char c )
 {
     if ( (c >= '0') && (c <= '9') )
-    {
-        char digit[2];
-        digit[1] = 0;
-        digit[0] = c;
+//    {
+//        char digit[2];
+//        digit[1] = 0;
+//        digit[0] = c;
+//
+//        return atoi( digit );
 
-        return atoi( digit );
-    }
+        return c-'0';
+//    }
     else
     {
         if ( (c >= 'A') && (c <= 'F') )
@@ -709,59 +712,52 @@ double ConvertDisplay(char* DisplayString, double* ip)
     switch ( base )
     {
         case 2:
-            {
-                int i=0;
-                int length=strlen(DisplayString);
-                double h=0.0;
-                
-                for( ; i < length; i++ )
-                {
-                    if ( DisplayString[(length-1)-i] == '1' )
-                    {
-                        h += (int)pow(2, i);
-                    }   
-                }
-                result = h; 
-            }
-            break;
-        case 10:
-            {
-                char* p = strchr(DisplayString, 'i');
-                if (p)
-                {
-                    // contains imaginary part
-                    char c = *--p; // +/- preceeding 
-                    *p = 0;
-                    result = atof( DisplayString );
-                    if (!p[2])
-                        *ip = 1; // +i is 1
-                    else
-                        *ip = atof(p + 2);
-
-                    if (c == '-')
-                        *ip = -*ip;
-
-                    // put back
-                    *p = c;
-                }
-                result = atof( DisplayString ); 
-            }
-            break;
+        case 8:
         case 16:
         {
-            int len = strlen( DisplayString );
-            double val=0;
-            int i;
-            for( i=0; i < len; i++ )
-            {
-                int d = xtio( DisplayString[(len-1)-i] );
-                
-                double power = pow( 16, i); 
-                val += (power * d);
-            }
-            result = val;
+            int sign = 1;
+            char *p = DisplayString;
+
+            // Handle sign
+            if ( *p == '-' ) {
+                sign = -1;
+                p++;
+            }    
+
+            do {
+                result = result * base + xtio(*p);
+                p++;
+            } while ( *p );
+
+            result *= sign;
         }
         break;
+
+
+        case 10:
+        {
+            char* p = strchr(DisplayString, 'i');
+            if (p)
+            {
+                // contains imaginary part
+                char c = *--p; // +/- preceeding 
+                *p = 0;
+                result = atof( DisplayString );
+                if (!p[2])
+                    *ip = 1; // +i is 1
+                else
+                    *ip = atof(p + 2);
+
+                if (c == '-')
+                    *ip = -*ip;
+
+                // put back
+                *p = c;
+            }
+            result = atof( DisplayString ); 
+        }
+        break;
+
     }
     return result;
 }
@@ -1004,8 +1000,8 @@ void KeyReplay(void)
 }
 
 int hexSelect( int sel ) {
-    char hex[10] = { 0,0,0,0, 'D', 'E', 'F', 'A', 'B', 'C' };
-    ProcessNumberKey( hex[sel] );
+    char hex[] = { 'D', 'E', 'F', 'A', 'B', 'C' };
+    ProcessNumberKey( hex[sel-4] );
     UpdateLCDline1(DisplayYreg);
     UpdateLCDline2(DisplayXreg);
     return MODE_EXIT;
@@ -1046,4 +1042,7 @@ void setBase( int base ) {
             custom_character( 1, character_base16 );
             break;
     }
+
+    UpdateXregDisplay();
+    UpdateYregDisplay();
 }
