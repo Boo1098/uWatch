@@ -339,7 +339,7 @@ void initDisplay() {
     strcpy( dispBoard[0], "    12345678    " );
     strcpy( dispBoard[10], dispBoard[0] );
 
-    strcpy( dispBoard[9], "    ABCDEFGH    " );
+    strcpy( dispBoard[9], "    abcdefgh    " );
     strcpy( dispBoard[19], dispBoard[9] );
     
     for ( line = 1; line <= 8; line++ ) {

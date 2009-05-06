@@ -55,7 +55,7 @@ int genericMenu2( const packedMenu *menu, int *selection )
     int i;
     for ( i = 0; i < MENU_CUSTOM_CHAR_COUNT; i++ )
         if ( menu->customCharacter[i] )
-            custom_character( i + 2, menu->customCharacter[i] );
+            custom_character( i + 4, menu->customCharacter[i] );
 
 
     if ( menu->title && *menu->title)

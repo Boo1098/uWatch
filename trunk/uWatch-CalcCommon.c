@@ -36,6 +36,13 @@ This program is free software: you can redistribute it and/or modify
 #include "calculator.h"
 #include "uWatch-LCD.h"
 
+void FormatValue(char* dest,
+                 double value, double ivalue,
+                 int space, BOOL tidy, int format, BOOL truncate );
+
+
+#define NUMBER_BASE 2
+#define NUMBER_EXTEND 0
 
 
 int HexEntry();
@@ -311,6 +318,19 @@ int EnterNumber(int Key)
         break;
     case KeyEXP: 
 
+        // IF the number displayed is too big (indicated by a < indicator at left side)
+        // then the EXP key is a trigger to display the extended number with scrolling viewer
+        if ( *DisplayXreg == '<' ) {
+
+            char *longstr = displayBuffer+200;
+            FormatValue( longstr, Xreg, iXreg, MaxLCDdigits, TRUE, FORMAT_DATE, FALSE );
+            int sel = strlen( longstr ) - 16;
+            viewString( 0, longstr, &sel, 2 );
+            UpdateLCDline2( DisplayXreg );
+            Key = 0;
+            break;
+        }
+
         Key = 0;
         if (l < XBufSize-1) // space for 2
         {
@@ -385,7 +405,7 @@ static void tidyNumber(char* p)
 
 void FormatValue(char* dest,
                  double value, double ivalue,
-                 int space, BOOL tidy, int format )
+                 int space, BOOL tidy, int format, BOOL truncate )
 {
     char base = (WatchMode == WATCH_MODE_CALC || WatchMode == WATCH_MODE_CALC_MENU ) ? CalcDisplayBase : 10;
 
@@ -412,7 +432,7 @@ void FormatValue(char* dest,
 
          {
         
-            const char *digit = "0123456789ABCDEF";
+            const char *digit = "0123456789ABCDEFGH";
             
             double max = pow( 2, 64 );
             if ( fabs(value) > max )
@@ -432,7 +452,7 @@ void FormatValue(char* dest,
             
                 char *p = displayBuffer + 70;       //arbitrary, just long enough is all
                 *p-- = 0;
-                *p-- = 1;           // 'base' character
+                *p-- = NUMBER_BASE;           // 'base' character
                 
                 do {
                     *p-- = digit[ uval & (base-1) ];
@@ -441,7 +461,7 @@ void FormatValue(char* dest,
                 
                 p++;
                 
-                if ( strlen( p ) > 16 ) {
+                if ( truncate && strlen( p ) > 16 ) {
                     p = p + strlen( p ) - 16;
                     *p = '<';
                 }    
@@ -783,11 +803,11 @@ void UpdateMANTDisplay()
     
     // leave a space on the left so it looks a bit different
     *p = ' ';
-    FormatValue( p + 1, Xreg, 0, MaxLCDdigits-1, FALSE, 0 );
+    FormatValue( p + 1, Xreg, 0, MaxLCDdigits-1, FALSE, 0, FALSE );
 
     p = DisplayXreg;
     *p++ = ' ';
-    FormatValue( p+1, iXreg, 0, MaxLCDdigits-2, FALSE, 0 );
+    FormatValue( p+1, iXreg, 0, MaxLCDdigits-2, FALSE, 0, FALSE );
     if (p[1] == '-')
         *p++ = '-';
 
@@ -801,7 +821,7 @@ void UpdateMANTDisplay()
 // Converts the Xreg double value into a string for the DisplayXreg
 void UpdateXregDisplay(void)
 {
-    FormatValue( DisplayXreg, Xreg, iXreg, MaxLCDdigits, TRUE, FORMAT_DATE );
+    FormatValue( DisplayXreg, Xreg, iXreg, MaxLCDdigits, TRUE, FORMAT_DATE, TRUE );
 }
 
 //***********************************
@@ -811,7 +831,7 @@ void UpdateYregDisplay(void)
     int l = MaxLCDdigits;
     if (!RPNmode) l -= 4; // leave space for indicator
 
-    FormatValue( DisplayYreg, Yreg, iYreg, l, TRUE, 0 );
+    FormatValue( DisplayYreg, Yreg, iYreg, l, TRUE, 0, TRUE );
 }
 
 
@@ -1030,16 +1050,21 @@ int HexEntry(void)
 
 void setBase( int base ) {
 
+    // LONG numbers use left menu (char 0) as indicator.
+    // Compatible with viewString -- don't change char usage 
+
+    custom_character( NUMBER_EXTEND, character_left_menu );
+
     CalcDisplayBase = base;
     switch ( base ) {
         case 2:
-            custom_character( 1, character_base2 );
+            custom_character( NUMBER_BASE, character_base2 );
             break;
         case 8:
-            custom_character( 1, character_base8 );
+            custom_character( NUMBER_BASE, character_base8 );
             break;
         case 16:
-            custom_character( 1, character_base16 );
+            custom_character( NUMBER_BASE, character_base16 );
             break;
     }
 
