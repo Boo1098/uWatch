@@ -777,7 +777,7 @@ void Operation( int op )
 
         case CALC_OP_ABS:
             if ( !*irp )
-                *rp = fabs( *irp );
+                *rp = fabs( *rp );
             else {
                 *rp = fabsC( rp, irp );
                 *irp = 0;
