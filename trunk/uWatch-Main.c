@@ -39,23 +39,9 @@ This program is free software: you can redistribute it and/or modify
 #include "calendar.h"
 #include "stopwatch.h"
 
-
-
-
-
 //define the config fuse bits
 _CONFIG1( JTAGEN_OFF & GCP_OFF & GWRP_OFF & BKBUG_OFF & COE_OFF & FWDTEN_OFF & WINDIS_OFF & FWPSA_PR128 & WDTPS_PS1 );
 _CONFIG2( IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSCMOD_NONE );
-
-
-
-
-
-
-
-
-
-
 
 // these flags were "char" except that makes bigger code!
 int CurrentMenu;               // The number of the currently active menu line. 0 to MaxRPNmenuItems
@@ -78,7 +64,6 @@ BOOL inDST( int* gap );
 void TimeDateDisplay( void );
 
 
-
 //the working registers (Treg not used for Algebraic)
 double Regs[4], iRegs[4];
 
@@ -87,9 +72,6 @@ double Regs[4], iRegs[4];
 int OperatorsXY[PAREN_LEVELS+1];
 int OperatorsYZ[PAREN_LEVELS+1];
 int OperatorsZT[PAREN_LEVELS+1];
-
-
-
 
 double Yregs[PAREN_LEVELS], Zregs[PAREN_LEVELS], Tregs[PAREN_LEVELS];
 double iYregs[PAREN_LEVELS], iZregs[PAREN_LEVELS], iTregs[PAREN_LEVELS];
@@ -123,8 +105,6 @@ int opPrec( int op )
     return prec;
 }
 
-
-
 const char *monthName[12] = {
     "January",
     "February",
@@ -139,10 +119,6 @@ const char *monthName[12] = {
     "November",
     "December"
 };
-
-
-
-
 
 char LCDhistory1[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
 char LCDhistory2[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off

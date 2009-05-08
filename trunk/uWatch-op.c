@@ -25,7 +25,6 @@
 
 //#include <stdlib.h>
 #include <math.h>
-//#include "def.h"
 #include "uWatch-op.h"
 #include "uWatch-astro.h"
 #include "characterset.h"
@@ -95,23 +94,8 @@ int moonPhase( int year, int month, int day )
 
       NOTE: integer math.
     */
-
-    int g, e;
-
-    if ( month == 1 ) --day;
-    else if ( month == 2 ) day += 30;
-    else { // m >= 3
-        day += 28 + ( month - 2 ) * 3059 / 100;
-
-        // adjust for leap years
-        if ( !( year & 3 ) ) ++day;
-        if (( year % 100 ) == 0 ) --day;
-    }
-
-    g = ( year - 1900 ) % 19 + 1;
-    e = ( 11 * g + 18 ) % 30;
-    if (( e == 25 && g > 11 ) || e == 24 ) e++;
-    return (((( e + day )*6 + 11 ) % 177 ) / 22 & 7 );
+    long jd = mjd(year, month, day);
+    return ((((((jd-5)*100)%2953)<<3) + 1476)/2953)&7;
 }
 
 // complex fabs
@@ -469,10 +453,6 @@ static void negOpNeg( double* rp, double *irp, void ( *f )( double*, double* ) )
     ( *f )( irp, rp );
     *irp = -*irp;
 }
-
-
-
-
 
 // Raw operation
 void Operation( int op )
@@ -927,6 +907,5 @@ void Operation( int op )
             break;
 
     }
-
 }
 
