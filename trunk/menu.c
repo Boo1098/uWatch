@@ -58,7 +58,7 @@ int genericMenu2( const packedMenu *menu, int *selection )
             custom_character( i + 4, menu->customCharacter[i] );
 
 
-    if ( menu->title && *menu->title)
+    if ( menu->title && *menu->title )
         UpdateLCDline1( menu->title );
 
 
