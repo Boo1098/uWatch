@@ -35,9 +35,7 @@ int custom_character( int c, const unsigned char *p );
 int setBase( int base );
 
 
-#define FORMAT_DATE 1
 extern int CalcDisplayBase;
-extern int displayFormat;
 
 
 #define LN10 2.302585092994045684017991454683
@@ -649,8 +647,6 @@ void Operation( int op )
                 caldati( *rp, &y, &m, &d );
                 *rp = y * 10000L + m * 100L + d;
                 *irp = 0;
-                displayFormat = FORMAT_DATE;
-
             }
             break;
 

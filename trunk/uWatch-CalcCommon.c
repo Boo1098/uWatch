@@ -38,7 +38,7 @@ This program is free software: you can redistribute it and/or modify
 
 void FormatValue(char* dest,
                  double value, double ivalue,
-                 int space, BOOL tidy, int format, BOOL truncate );
+                 int space, BOOL tidy, BOOL truncate );
 
 
 #define NUMBER_BASE 2
@@ -55,9 +55,6 @@ extern void ResetFlags(void);
 extern void StoreRecall(void);
 extern void SignKey(void);
 extern void UpdateDisplayRegX();
-
-
-int displayFormat;
 
 
 void Push()
@@ -322,6 +319,7 @@ int EnterNumber(int Key)
             }
         }
         break;
+
     case KeyEXP: 
 
         // IF the number displayed is too big (indicated by a < indicator at left side)
@@ -329,7 +327,7 @@ int EnterNumber(int Key)
         if ( *DisplayXreg == '<' ) {
 
             char *longstr = displayBuffer+200;
-            FormatValue( longstr, Xreg, iXreg, MaxLCDdigits, TRUE, FORMAT_DATE, FALSE );
+            FormatValue( longstr, Xreg, iXreg, MaxLCDdigits, squash, FALSE );
             int sel = strlen( longstr ) - 16;
             viewString( 0, longstr, &sel, 2 );
             UpdateLCDline2( DisplayXreg );
@@ -409,164 +407,159 @@ static void tidyNumber(char* p)
     }
 }
 
+BOOL squash = FALSE;
 void FormatValue(char* dest,
                  double value, double ivalue,
-                 int space, BOOL tidy, int format, BOOL truncate )
+                 int space, BOOL tidy, BOOL truncate )
 {
     char base = (WatchMode == WATCH_MODE_CALC || WatchMode == WATCH_MODE_CALC_MENU ) ? CalcDisplayBase : 10;
 
 
-/*    if ( 0 && format == FORMAT_DATE ) {
+    int shift = 1;
+    switch ( base )
+    {
 
-        unsigned long date = (long) value;
-        int day = date % 100;
-        int month = ( date/10 ) % 100;
-        int year = date/10000;
-        sprintf( dest, "%4dx%dx%d", year, month, day );
+        case 16:
+            shift++;
+        case 8:
+            shift += 2;
+        case 2:
 
-    } else*/ {
-
-        int shift = 1;
-        switch ( base )
-        {
-    
-            case 16:
-                shift++;
-            case 8:
-                shift += 2;
-            case 2:
-    
-             {
+         {
+        
+            const char *digit = "0123456789ABCDEFGH";
             
-                const char *digit = "0123456789ABCDEFGH";
-                
-                double max = pow( 2, 64 );
-                if ( fabs(value) > max )
-                    strcpy( dest, "  * OVERFLOW *" );
-                else {
-                
-                    unsigned long long uval;
-                    if ( value < 0 )
-                    {
-                        uval  = (unsigned long long)(-1 * value);
-                        uval  = ~uval + 1;
-                    }
-                    else 
-                        uval = value;
+            double max = pow( 2, 64 );
+            if ( fabs(value) > max )
+                strcpy( dest, "  * OVERFLOW *" );
+            else {
             
-                    // Kind of clever -- builds the number 'backwards' into a string buffer
-                
-                    char *p = displayBuffer + 70;       //arbitrary, just long enough is all
-                    *p-- = 0;
-                    *p-- = NUMBER_BASE;           // 'base' character
-                    
-                    do {
-                        *p-- = digit[ uval & (base-1) ];
-                        uval >>= shift;
-                    } while ( uval );
-                    
-                    p++;
-                    
-                    if ( truncate && strlen( p ) > 16 ) {
-                        p = p + strlen( p ) - 16;
-                        *p = '<';
-                    }    
-                    
-    
-    
-                    strcpy( dest, p );
-                }
-            
-            }
-            break;
-
-
-            case 10:
-                if (ivalue == 0)
+                unsigned long long uval;
+                if ( value < 0 )
                 {
-                    // fit into `space's on screen
-                    int p = space-1;
-                    int l;
-                    if (value < 0) --p; // adjust for sign
-                        
+                    uval  = (unsigned long long)(-1 * value);
+                    uval  = ~uval + 1;
+                }
+                else 
+                    uval = value;
+        
+                // Kind of clever -- builds the number 'backwards' into a string buffer
+            
+                char *p = displayBuffer + 70;       //arbitrary, just long enough is all
+                *p-- = 0;
+                *p-- = NUMBER_BASE;           // 'base' character
+                
+                do {
+                    *p-- = digit[ uval & (base-1) ];
+                    uval >>= shift;
+                } while ( uval );
+                
+                p++;
+                
+                if ( truncate && strlen( p ) > 16 ) {
+                    p = p + strlen( p ) - 16;
+                    *p = '<';
+                }    
+                
+
+
+                strcpy( dest, p );
+            }
+        
+        }
+        break;
+
+
+        case 10:
+            if (ivalue == 0)
+            {
+                // fit into `space's on screen
+                int p = space-1;
+                int l;
+                if (value < 0) --p; // adjust for sign
+                    
+                for (;;)
+                {
+                    sprintf(dest,"%.*g", p, value);
+                    l = strlen(dest);
+
+                    if (l <= space) 
+                        break;
+
+                    if (tidy)
+                    {
+                        // try tidying
+                        tidyNumber(dest);
+                        if (strlen(dest) <= space) 
+                            break;
+                    }
+
+                    p -= (l - space);
+                    if (p <= 0) break; // fail safe
+                }
+            }
+            else
+            {
+                int l;
+                char c = '+';
+                int id = 6;
+                int d = 7;
+
+//                if ( space > 16 ) {
+//                    id = space/2;
+//                    d = space/2;
+//                }
+
+                    
+                if (ivalue < 0)
+                {
+                    ivalue = -ivalue;
+                    c = '-';
+                }
+
+            again:
+
+                // textify the real part
+                sprintf(dest,"%.*g", d, value);
+
+                // tidy to save precious chars
+                tidyNumber(dest);
+                    
+                l = strlen(dest);                        
+                dest[l++] = c;
+                dest[l++] = 'i';
+                dest[l] = 0;
+                    
+                if (ivalue != 1)
+                {
+                    int li;
+                    // now fit as much of the ipart as we can
                     for (;;)
                     {
-                        sprintf(dest,"%.*g", p, value);
-                        l = strlen(dest);
-    
-                        if (l <= space) 
-                            break;
-    
-                        if (tidy)
-                        {
-                            // try tidying
-                            tidyNumber(dest);
-                            if (strlen(dest) <= space) 
-                                break;
-                        }
-    
-                        p -= (l - space);
-                        if (p <= 0) break; // fail safe
-                    }
-                }
-                else
-                {
-                    int l;
-                    char c = '+';
-                    int id = 6;
-                    int d = 7;
-                        
-                    if (ivalue < 0)
-                    {
-                        ivalue = -ivalue;
-                        c = '-';
-                    }
-    
-                again:
-    
-                    // textify the real part
-                    sprintf(dest,"%.*g", d, value);
-    
-                    // tidy to save precious chars
-                    tidyNumber(dest);
-                        
-                    l = strlen(dest);                        
-                    dest[l++] = c;
-                    dest[l++] = 'i';
-                    dest[l] = 0;
-                        
-                    if (ivalue != 1)
-                    {
-                        int li;
-                        // now fit as much of the ipart as we can
-                        for (;;)
-                        {
-                            sprintf(dest + l,"%.*g", id, ivalue);
-                            tidyNumber(dest+l);
-    
-                            li = strlen(dest);
-                            if (li <= space) break; // done
-    
-                            id -= (li - space);
-                            if (id <= 0) 
-                            {
-                                // very rarely we cant fit ANY of the ipart
-                                // on display. shorten the real part and
-                                // try again.
-                                d -= 2;
-                                id = d-1;
-                                if (d > 2) goto again;
-                            }
-                        }
-                    }
-                }
-    
-                // ensure we dont overrun whatever.
-                dest[space] = 0;
-    
-                break;
-        }
+                        sprintf(dest + l,"%.*g", id, ivalue);
+                        tidyNumber(dest+l);
 
+                        li = strlen(dest);
+                        if (li <= space) break; // done
+
+                        id -= (li - space);
+                        if (id <= 0) 
+                        {
+                            // very rarely we cant fit ANY of the ipart
+                            // on display. shorten the real part and
+                            // try again.
+                            d -= 2;
+                            id = d-1;
+                            if (d > 2) goto again;
+                        }
+                    }
+                }
+            }
+
+            // ensure we dont overrun whatever.
+            dest[space] = 0;
+
+            break;
     }
 } 
 
@@ -739,11 +732,11 @@ void UpdateMANTDisplay()
     
     // leave a space on the left so it looks a bit different
     *p = ' ';
-    FormatValue( p + 1, Xreg, 0, MaxLCDdigits-1, FALSE, 0, FALSE );
+    FormatValue( p + 1, Xreg, 0, MaxLCDdigits-1, FALSE, FALSE );
 
     p = DisplayXreg;
     *p++ = ' ';
-    FormatValue( p+1, iXreg, 0, MaxLCDdigits-2, FALSE, 0, FALSE );
+    FormatValue( p+1, iXreg, 0, MaxLCDdigits-2, FALSE, FALSE );
     if (p[1] == '-')
         *p++ = '-';
 
@@ -753,11 +746,14 @@ void UpdateMANTDisplay()
     UpdateLCDline2(DisplayXreg);
 }
 
+extern BOOL squash;
 //***********************************
 // Converts the Xreg double value into a string for the DisplayXreg
-void UpdateXregDisplay(void)
-{
-    FormatValue( DisplayXreg, Xreg, iXreg, MaxLCDdigits, TRUE, FORMAT_DATE, TRUE );
+void UpdateXregDisplay(void) {
+    FormatValue( DisplayXreg, Xreg, iXreg, MaxLCDdigits, squash, TRUE );
+//    strncpy( DisplayXreg, displayBuffer, 16 );
+//    if ( strlen( displayBuffer ) > 16 )
+//        *DisplayXreg = '<';
 }
 
 //***********************************
@@ -767,7 +763,7 @@ void UpdateYregDisplay(void)
     int l = MaxLCDdigits;
     if (!RPNmode) l -= 4; // leave space for indicator
 
-    FormatValue( DisplayYreg, Yreg, iYreg, l, TRUE, 0, TRUE );
+    FormatValue( DisplayYreg, Yreg, iYreg, l, TRUE, TRUE );
 }
 
 

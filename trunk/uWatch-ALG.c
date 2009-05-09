@@ -60,7 +60,7 @@ void ALGcalculator(void)
     DisplayXreg[0] = 0;
     DisplayYreg[0] = 0;
     ResetFlags();
-    CurrentMenu=0;
+    //CurrentMenu=0;
     UpdateXregDisplay();
     UpdateYregDisplay();
     UpdateLCDline1(DisplayYreg);

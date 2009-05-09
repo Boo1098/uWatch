@@ -50,7 +50,7 @@ void RPNcalculator(void)
 {
     unsigned int Key; //keypress variables
 
-    CurrentMenu=0;
+    //CurrentMenu=0;
     UpdateDisplayRegs();
     ResetFlags();
 
