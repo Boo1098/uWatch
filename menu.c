@@ -20,21 +20,20 @@ void decrement( int *selection, int max )
 }
 
 
-int menuNum = 0;
 int calculatorMenu( const packedMenu *menu[], int size ) {
 
     int mode = 0;
 
     while ( mode != MODE_EXIT && mode != MODE_KEYMODE ) {
 
-        mode = genericMenu2( menu[ menuNum ], &menuNum );   // last param "anywhere"
+        mode = genericMenu2( menu[ CurrentMenu ], &CurrentMenu );   // last param "anywhere"
 
         switch ( mode ) {
             case MODE_KEY_NEXT:
-                increment( &menuNum, size );
+                increment( &CurrentMenu, size );
                 break;
             case MODE_KEY_PREVIOUS:
-                decrement( &menuNum, size );
+                decrement( &CurrentMenu, size );
                 break;
         }
     }

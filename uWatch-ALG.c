@@ -87,64 +87,6 @@ void ALGcalculator(void)
             WatchMode = WATCH_MODE_CALC;
         }
 
-/*        // common menu mode or not
-        while (Key == KeyMenu)
-        {
-            int mi;
-            CalcMenuInfo* mifo;
-
-            // pressing menu completes.
-            CompleteXreg();
-
-            mifo = MainMenus + CurrentMenu;
-            mi = DriveMenu2(mifo);
-            Key = 0;
-            if (mi >= 0)
-            {
-                mi = mifo->ops[mi];
-                if (mi > 0)
-                {
-                    int p = opPrec(mi);
-                    if (!p)
-                    {
-                        // operator now!
-                        Operate(mi);
-                    }
-                    else
-                    {
-                        reduce(p);
-
-                        // push OP
-                        ResetFlags();
-                        PushOp(mi);
-
-                        // and values
-                        Push();
-                        Clx();
-
-                        EnableXregOverwrite = TRUE;
-                        UpdateDisplayRegs();
-                    }
-                }
-            }
-            else
-            {
-                // retrieve key pressed
-                Key = -mi;
-                if (Key == KeyMenu)
-                {
-                    if (++CurrentMenu>=DIM(MainMenus)) CurrentMenu=0;
-                }
-                else
-                {
-                    // escape from menu
-                    Key = 0;
-                    UpdateDisplayRegs();
-                }
-
-            }
-        }
-*/
 
         // handle numbers
         Key = EnterNumber(Key);
