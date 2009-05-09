@@ -299,7 +299,7 @@ extern unsigned int MemPointer;
 extern BOOL ProgPlay;
 extern BOOL ProgRec;
 
-extern int CurrentMenu; //to go?
+extern int CurrentMenu;
 extern BOOL NextMode;
 
 extern char displayBuffer[];

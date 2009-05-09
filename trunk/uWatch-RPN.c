@@ -81,57 +81,6 @@ void RPNcalculator(void)
             WatchMode = WATCH_MODE_CALC;
         }
 
-
-/*           
-
-        // common menu mode or not
-        while (Key == KeyMenu)
-        {
-
-            int mi;
-            CalcMenuInfo* mifo;
-
-            // pressing menu completes.
-            CompleteXreg();
-
-
-             mifo = MainMenus + CurrentMenu;
-            mi = DriveMenu2(mifo);
-                            
-            
-            Key = 0;
-            if (mi >= 0)
-            {
-                mi = mifo->ops[mi];
-                if (mi > 0)
-                {
-                    Operate(mi);
-                }
-            }
-            else
-            {
-                // retrieve key pressed
-                Key = -mi;
-                if (Key == KeyMenu)
-                {
-                    if (++CurrentMenu>=DIM(MainMenus)) CurrentMenu=0;
-                }
-                else
-                {
-                    // experimental complex MANT display
-                    if (Key == KeyMode && iXreg != 0)
-                        UpdateMANTDisplay();
-                    else
-                        UpdateDisplayRegs();
-
-                    // escape from menu
-                    Key = 0;
-
-                }
-            }
-      }
-  */
-
         // handle numbers
         Key = EnterNumber(Key);
         

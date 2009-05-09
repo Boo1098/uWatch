@@ -144,22 +144,7 @@ const packedMenu mathTimeDate = {
     },
 };
 
-/*const packedMenu menuKeystroke;
 
-const packedMenu menuKeystroke2 = {
-    0,  //CALC-STYLE,
-    printMenu, increment, decrement, 6,
-    {   left,right,0,0,
-    },
-    {   { "HOLY",                 OperatePrecedence,        CALC_OP_RECORD          },
-        { "",           OperatePrecedence,       CALC_OP_NULL},
-        { "SMOKE",                   OperatePrecedence,        CALC_OP_PLAY            },
-        { "2\2\3",           doCalcMenu, (int)(&menuKeystroke) },
-        { "",           OperatePrecedence,       CALC_OP_NULL},
-        { "",           OperatePrecedence,       CALC_OP_NULL},
-    },
-};
-*/
 const packedMenu menuKeystroke = {
     0, //CALC-STYLE,
     printMenu, increment, decrement, 6,
