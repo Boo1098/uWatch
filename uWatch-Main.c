@@ -105,20 +105,7 @@ int opPrec( int op )
     return prec;
 }
 
-const char *monthName[12] = {
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-};
+
 
 char LCDhistory1[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
 char LCDhistory2[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
@@ -180,8 +167,9 @@ typedef enum {
  * southern hemisphere will have negative shifts.
  */
 
+
 //TODO: check size in def.h (currently 7)
-const TimeZone TimeZones[] = {
+const TimeZone TimeZones[] __attribute__((packed)) = {
     { "No Zone", 0, 0, 0, 0 },
     { "Western Europe", MAKE_TZ( 3, lastSun ), MAKE_TZ( 10, lastSun ), 0x01, 1 },
     { "Central Europe", MAKE_TZ( 3, lastSun ), MAKE_TZ( 10, lastSun ), 0x02, 1 },
@@ -190,6 +178,23 @@ const TimeZone TimeZones[] = {
     { "USA", MAKE_TZ( 3, secondSun ), MAKE_TZ( 11, firstSun ), 0x02, 1 },
     { "Canada", MAKE_TZ( 3, secondSun ), MAKE_TZ( 11, firstSun ), 0x02, 1 },
 };
+
+
+const char *monthName[12] = {
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+};
+
 
 //***********************************
 //Delay for num milliseconds
@@ -1450,7 +1455,7 @@ void doTimeMode()
                 },
                 {   { "Stopwatch", StopWatch, 0 },
                     { "Calendar", doCalendar, 0 },
-                    { "\2Setup", setupTime, 0 },
+                    { "\4Setup", setupTime, 0 },
                 },
             };
 
@@ -1517,10 +1522,10 @@ extern int SetupMode();
             printMenu, increment, decrement, 3,
             {   character_right_menu,
             },
-            {   { "\2Tools", ToolsMode, 0 },
+            {   { "\4Tools", ToolsMode, 0 },
 //                { "\2Memo",  notebook, 0 },
-                { "\2Games", GamesMode, 0 },
-                { "\2Configure", SetupMode, 0 },
+                { "\4Games", GamesMode, 0 },
+                { "\4Configure", SetupMode, 0 },
             },
         };
 
