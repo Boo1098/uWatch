@@ -20,9 +20,9 @@ void decrement( int *selection, int max )
 }
 
 
+int menuNum = 0;
 int calculatorMenu( const packedMenu *menu[], int size ) {
 
-    int menuNum = 0;
     int mode = 0;
 
     while ( mode != MODE_EXIT && mode != MODE_KEYMODE ) {
