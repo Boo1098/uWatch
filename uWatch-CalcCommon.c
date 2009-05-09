@@ -151,7 +151,7 @@ int OperatePrecedence( int op ) {
 
     else {
 
-        // Algorithmic calculator has to deal with operator precedence
+        // Algebraic calculator has to deal with operator precedence
 
         reduce(p);
     
@@ -424,53 +424,55 @@ void FormatValue(char* dest,
         switch ( base )
         {
     
-        case 16:
-            shift++;
-        case 8:
-            shift += 2;
-        case 2:
-
-         {
-        
-            const char *digit = "0123456789ABCDEFGH";
+            case 16:
+                shift++;
+            case 8:
+                shift += 2;
+            case 2:
+    
+             {
             
-            double max = pow( 2, 64 );
-            if ( fabs(value) > max )
-                strcpy( dest, "  * OVERFLOW *" );
-            else {
+                const char *digit = "0123456789ABCDEFGH";
+                
+                double max = pow( 2, 64 );
+                if ( fabs(value) > max )
+                    strcpy( dest, "  * OVERFLOW *" );
+                else {
+                
+                    unsigned long long uval;
+                    if ( value < 0 )
+                    {
+                        uval  = (unsigned long long)(-1 * value);
+                        uval  = ~uval + 1;
+                    }
+                    else 
+                        uval = value;
             
-                unsigned long long uval;
-                if ( value < 0 )
-                {
-                    uval  = (unsigned long long)(-1 * value);
-                    uval  = ~uval + 1;
+                    // Kind of clever -- builds the number 'backwards' into a string buffer
+                
+                    char *p = displayBuffer + 70;       //arbitrary, just long enough is all
+                    *p-- = 0;
+                    *p-- = NUMBER_BASE;           // 'base' character
+                    
+                    do {
+                        *p-- = digit[ uval & (base-1) ];
+                        uval >>= shift;
+                    } while ( uval );
+                    
+                    p++;
+                    
+                    if ( truncate && strlen( p ) > 16 ) {
+                        p = p + strlen( p ) - 16;
+                        *p = '<';
+                    }    
+                    
+    
+    
+                    strcpy( dest, p );
                 }
-                else 
-                    uval = value;
-        
-                // Kind of clever -- builds the number 'backwards' into a string buffer
             
-                char *p = displayBuffer + 70;       //arbitrary, just long enough is all
-                *p-- = 0;
-                *p-- = NUMBER_BASE;           // 'base' character
-                
-                do {
-                    *p-- = digit[ uval & (base-1) ];
-                    uval >>= shift;
-                } while ( uval );
-                
-                p++;
-                
-                if ( truncate && strlen( p ) > 16 ) {
-                    p = p + strlen( p ) - 16;
-                    *p = '<';
-                }    
-                
-                strcpy( dest, p );
             }
-        
-        }
-        break;
+            break;
 
 
             case 10:
@@ -557,63 +559,6 @@ void FormatValue(char* dest,
                 dest[space] = 0;
     
                 break;
-/*            case 16:
-            {
-                unsigned long long ulVal=0;
-                double max = pow( 2, 64 );
-                if ( fabs(value) > max )
-                {
-                    strcpy( dest, "  * OVERFLOW *" );
-                }
-                else 
-                {
-                    if ( value < 0 )
-                    {
-                        ulVal  = (unsigned long long)(-1 * value);
-                        ulVal  = ~ulVal + 1;
-                    }
-                    else 
-                        ulVal = value;
-        
-        
-                    if ( ulVal )
-                    {           
-                        char tmp[17];
-                        memset( tmp, 0, 17 );
-                        p=15;
-                        for( index=0; (index < 16) && ulVal; index++ )
-                        {
-                            int d = ulVal % 16;
-                    
-                            char c=0;
-                    
-                            if ( d < 10 )
-                                c = '0' + d;
-                            else
-                                c = 'A' + (d-10);
-                            
-                            tmp[p--] = c;
-                    
-                            ulVal = ulVal >> 4;
-                        }
-            
-                        strcpy( dest, tmp+(p+1) );
-    
-                        if ( index < 15 )
-                        {
-                            dest[index] = 1; //'h';
-                            dest[index+1] = 0;
-                        }
-                    }
-                    else
-                    {
-                        strcpy( dest, "0\1" );
-                    }
-                }
-    
-            }
-            break;
-*/
         }
 
     }
@@ -626,9 +571,6 @@ void UpdateDisplayRegX()
     UpdateLCDline2(DisplayXreg);
 }
 
-//***********************************
-//Converts both X&Y regs from real numbers into display strings and then displays them
-//Also displays the current algebraic operator
 void UpdateDisplayRegs(void)
 {
     unsigned int i;
@@ -700,26 +642,14 @@ void UpdateDisplayRegs(void)
     UpdateLCDline2(DisplayXreg);
 }
 
-
 int xtio( char c )
 {
     if ( (c >= '0') && (c <= '9') )
-//    {
-//        char digit[2];
-//        digit[1] = 0;
-//        digit[0] = c;
-//
-//        return atoi( digit );
-
         return c-'0';
-//    }
-    else
-    {
-        if ( (c >= 'A') && (c <= 'F') )
-        {
-            return ( c - 'A') + 10;
-        }
-    }
+
+    if ( (c >= 'A') && (c <= 'F') )
+        return ( c - 'A' ) + 10;
+
     return 0;
 }
 
