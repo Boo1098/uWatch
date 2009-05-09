@@ -41,7 +41,7 @@ int calculatorMenu( const packedMenu *menu[], int size );
 
 extern const packedMenu mathMenu;
 extern const packedMenu *calcMenus[];
-#define CALC_MENU_SIZE 12
+#define CALC_MENU_SIZE 11
 
 
 #endif
