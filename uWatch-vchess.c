@@ -586,11 +586,14 @@ int chessGame( int p )
             if ( showBoard() == MODE_KEYMODE )
                 return MODE_KEYMODE;
 
+
             // get move
             strcpy(displayBuffer, lastMove);
             if (*displayBuffer) strcat(displayBuffer, ", ");
             strcat(displayBuffer, "move?");
             UpdateLCDline1(displayBuffer);
+
+
 
 //            BoardKeyboard();
 
@@ -598,6 +601,13 @@ int chessGame( int p )
             CalcDisplayBase = 10;
             int n = OneLineNumberEntry();
             CalcDisplayBase = temp;
+
+            if ( n < 0 ) {
+                UpdateLCDline2( "Switched sides" );
+                chosen( computer );
+                break;
+            }
+
 
             switch ( n ) {
                 case MODE_KEYMODE:
