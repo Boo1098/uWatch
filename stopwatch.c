@@ -10,21 +10,31 @@
 
 
 BOOL stopWatchActive = FALSE;
-int stopWatchStart = 0;         // starting seconds
-int stopWatchLapTime = 0;
+
+double stopWatchStart = 0;             // starting seconds
+double stopWatchLapTime = 0;
+double swTenths = 0;
+
+BOOL firstSecond;
 
 
-char *displayTime( int seconds ) {
+char *displayTime( double seconds ) {
 
     int hours = (int) ( seconds/ ( 60 * 60 ));
     seconds -= hours * 60 * 60;
     int minutes = (int) ( seconds / 60 );
     seconds -= minutes * 60;
     
-    if ( hours > 0 )
-        sprintf( out, "%02d:%02d:%02d", hours, minutes, seconds );
-    else
-        sprintf( out, "   %02d:%02d", minutes, seconds );
+    //if ( hours > 0 )
+        if ( seconds < 10 )
+            sprintf( out, "%02d:%02d:0%2.1f", hours, minutes, seconds );
+        else
+            sprintf( out, "%02d:%02d:%2.1f", hours, minutes, seconds );
+    //else
+    //    if ( seconds < 10 )
+    //        sprintf( out, "   %02d:0%2.1f", minutes, seconds );
+    //    else
+    //        sprintf( out, "   %02d:%2.1f", minutes, seconds );
 
     return out;
 }
@@ -39,20 +49,23 @@ int getRT() {
 }
 
 
+static int lastNow = 0;
+static int currentTime;
+static int stopWatchDuration = 0;
+char ch = '*';
+int delay = 2200;
+
 char *stopWatchPrintMenu( int *item, menuItem *menu ) {
 
-    Clock1MHz();
+    Clock4MHz();
 
-    char out2[17];
-    char out3[17];
-
-    int now = getRT();
-
+    char out2[20];
 
 
     switch ( menu[*item].op ) {
 
         case STOPWATCH_START:
+
 
             if ( stopWatchActive )
                 strcpy( out2, "STOP" );
@@ -62,7 +75,7 @@ char *stopWatchPrintMenu( int *item, menuItem *menu ) {
 
         case STOPWATCH_LAP:
 
-            sprintf( out2, "LAP   %s", displayTime( stopWatchLapTime ));
+            sprintf( out2, "LAP  %s", displayTime( stopWatchLapTime ));
             break;
 
 //        case STOPWATCH_SPLIT:
@@ -74,21 +87,47 @@ char *stopWatchPrintMenu( int *item, menuItem *menu ) {
         
     }
 
+    DelayMs( delay );
+
     if ( stopWatchActive ) {
 
-        sprintf( out3, "Time  %s", displayTime( now - stopWatchStart ));
+        currentTime = getRT();
+
+        swTenths += 0.1;
+
+        if ( swTenths > 0.9 ) {
+            delay += 2000 * ( swTenths - 0.9 );
+            swTenths = 0.9;
+        }
+
+        if ( currentTime != lastNow ) {
 
 
-    } else {
-        sprintf( out3, "Time  %s\2", displayTime( stopWatchStart ) ); 
+            if ( firstSecond ) {
+                stopWatchStart += 0.9 - swTenths;
+                firstSecond = FALSE;
+                ch='Y';
+            } else {
+
+                if ( swTenths < 0.9 ) {
+                    delay -= 2000 * ( 0.9 - swTenths );
+                }    
+
+            }
+
+            swTenths = 0;
+            lastNow = currentTime;
+        }
 
     }
 
+
+    sprintf( displayBuffer, "Time %s%c", displayTime( currentTime - stopWatchStart + swTenths ),
+        stopWatchActive ? ' ':'\2' );
+
     Clock250KHz();
     
-
-    UpdateLCDline1( out3 );
-   // Clock1MHz();
+    UpdateLCDline1( displayBuffer );
 
     strcpy( out, out2 );
     return out;
@@ -98,12 +137,16 @@ int stopWatchStartStop( int op ) {
 
     if ( stopWatchActive ) {
         stopWatchActive = FALSE;
-        stopWatchStart = getRT() - stopWatchStart;
+        //stopWatchStart = getRT() - stopWatchStart;
 
     } else {
 
         stopWatchActive = TRUE;
+        firstSecond = TRUE;
+        swTenths = 0;
         stopWatchStart = getRT();
+        lastNow = stopWatchStart;
+        currentTime = stopWatchStart;
     }
     return MODE_EXIT;
 }
@@ -111,7 +154,7 @@ int stopWatchStartStop( int op ) {
 
 int stopWatchLap( int op ) {
     if ( stopWatchActive ) {
-        stopWatchLapTime = getRT() - stopWatchStart;
+        stopWatchLapTime = lastNow - stopWatchStart + swTenths;
     }
     return MODE_EXIT;
 }
