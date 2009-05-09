@@ -202,7 +202,7 @@ const packedMenu *calcMenus[CALC_MENU_SIZE] = {
     &mathOther,
     &mathTrigonometry,
     &mathHyperbolic,
-    &mathBoolean,
+//    &mathBoolean,
     &mathModeBase,
     &mathLogarithmic,
     &mathConstant,

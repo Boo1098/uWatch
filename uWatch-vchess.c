@@ -360,7 +360,7 @@ void updateLine( char *destW, char *destB, int line ) {
         
         if ( pos > 0 ) {
             visual = Board[ pos + POSMAT ];         // type = custom char# too
-            if (!(pos & BLACKPOS ))                    // black piece?  QUICKEST WAY TO DO THIS!
+            if ( pos & BLACKPOS )                    // black piece?  QUICKEST WAY TO DO THIS!
                 *destB = visual;
         }
 
@@ -602,12 +602,12 @@ int chessGame( int p )
             int n = OneLineNumberEntry();
             CalcDisplayBase = temp;
 
-            if ( DisplayXreg < 0 ) {
+/*            if ( DisplayXreg < 0 ) {
                 UpdateLCDline2( "Switched sides" );
                 chosen( computer );
                 break;
             }
-
+*/
 
             switch ( n ) {
                 case MODE_KEYMODE:
