@@ -180,8 +180,8 @@ const packedMenu menuKeystroke = {
 const packedMenu mathOther = {
     0, //CALC-STYLE
     printMenu, increment, decrement, 6,
-    {   character_powerx,               //2
-        character_squaring,             //3
+    {   character_powerx,               //4
+        character_squaring,             //5
     },
     {   { "  1/x ",                    OperatePrecedence,        CALC_OP_RECIPROCAL      },
         { " x!",                     OperatePrecedence,        CALC_OP_FACTORIAL       },
@@ -198,8 +198,7 @@ const packedMenu mathOther = {
 const packedMenu mathComplex = {
     0,  //CALC-STYLE
     printMenu, increment, decrement, 6,
-    {   character_right_menu,
-    },
+    {},
     {   { " conv", OperatePrecedence,        CALC_OP_CONV            },     //???
         { "  // ", OperatePrecedence,        CALC_OP_PARALLEL        },     //???
         { " split", OperatePrecedence,        CALC_OP_COMPLEX_SPLIT   },
