@@ -298,6 +298,7 @@ extern unsigned int MemPointer;
 
 extern BOOL ProgPlay;
 extern BOOL ProgRec;
+extern BOOL squash;
 
 extern int CurrentMenu;
 extern BOOL NextMode;

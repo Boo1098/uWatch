@@ -26,7 +26,7 @@ int calculatorMenu( const packedMenu *menu[], int size ) {
 
     while ( mode != MODE_EXIT && mode != MODE_KEYMODE ) {
 
-        mode = genericMenu2( menu[ CurrentMenu ], &CurrentMenu );   // last param "anywhere"
+        mode = genericMenu2( menu[ CurrentMenu ], 0 );   // last param "anywhere"
 
         switch ( mode ) {
             case MODE_KEY_NEXT:
@@ -154,7 +154,6 @@ int genericMenu2( const packedMenu *menu, int *selection )
 
 int genericMenu( char *title,
                  char *( *printFunc )( int *num, int max ),
-//                 int ( *idleFunc )( int *halt ),
                  void ( *incrementFunc )( int *num, int max ),
                  void ( *decrementFunc )( int *num, int max ),
                  int max, int *selection )
@@ -163,7 +162,6 @@ int genericMenu( char *title,
     int sel = selection ? ( *selection ) : 0;
 
     custom_character( 0, character_arrow_updown );
-//    custom_character( 1, right_menu );
 
 
     if ( title )
@@ -180,16 +178,6 @@ int genericMenu( char *title,
         key = GetDebouncedKey();
         IFEXIT( key );
 
-/*
-
-        // we DON'T have autokey here anymore, as it causes problems in time selection
-
-        int autoSel = ReturnNumber( key );
-        if ( autoSel >= 0 && autoSel < max ) {
-            sel = autoSel;
-            break;
-        }
-*/
         if ( incrementFunc && NEXT( key ) )
             ( *incrementFunc )( &sel, max );
 
@@ -294,14 +282,10 @@ int viewString( char *title, char *string,
                 sel = max-1;
         }
 
-        if ( PREVIOUS( key ) ) {
-            if ( sel == 2 )
-                sel--;
-            sel--;
-            if ( sel <= 0 )
+        if ( PREVIOUS( key ) )
+            if ( --sel < 2 )
                 sel = 0;
-        }    
-
+    
     } while ( !ENTER(key) );
 
 

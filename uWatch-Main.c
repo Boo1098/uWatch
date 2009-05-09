@@ -44,7 +44,7 @@ _CONFIG1( JTAGEN_OFF & GCP_OFF & GWRP_OFF & BKBUG_OFF & COE_OFF & FWDTEN_OFF & W
 _CONFIG2( IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSCMOD_NONE );
 
 // these flags were "char" except that makes bigger code!
-int CurrentMenu;               // The number of the currently active menu line. 0 to MaxRPNmenuItems
+int CurrentMenu = 0;               // The number of the currently active menu line. 0 to MaxRPNmenuItems
 int ExponentIncluded;          //FLAG, TRUE if Exponent has already been entered
 int DecimalIncluded;           //FLAG, TRUE if decimal point has already been entered
 int ComplexIncluded;           // entering +i
