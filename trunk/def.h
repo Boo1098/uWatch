@@ -47,7 +47,7 @@
 
 #define KeyDelay        200     //200ms key delay
 #define MaxLCDdigits    16
-#define XBufSize        32
+#define XBufSize        128
 
 #define OR0  1          //OR function bit masks
 #define OR1  2
@@ -236,7 +236,7 @@ void I2CmemoryWRITE( unsigned int address, unsigned char data );
 
 /* timezone information */
 typedef struct {
-    char*               region;
+    const char*               region;
     unsigned char       dstStart;    // when to jump forward
     unsigned char       dstEnd;      // when to fall back
     unsigned char       hour;        // hour of the day to change (BCD)
