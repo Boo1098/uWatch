@@ -247,36 +247,42 @@ int EnterNumber(int Key)
         Key = 0;
         if (l<XBufSize-1) // allow for 2 
         {
-            //only do if decimal point does not already exist AND there is no exponent
-            char* p = DisplayXreg + l - 1;
-            if (ExponentIncluded)
-            {
-                // interpret '.' after 'e' as '+i'
-                EnterComplex();
-            }
-            else
-            {
-                if (DecimalIncluded)
+            if ( CalcDisplayBase == 16 )
+                HexEntry();
+            else if ( CalcDisplayBase == 10 ) {
+
+
+                //only do if decimal point does not already exist AND there is no exponent
+                char* p = DisplayXreg + l - 1;
+                if (ExponentIncluded)
                 {
-                    if (!ComplexIncluded)
-                    {
-                        // last was '.', re-interpret as +i
-                        if (*p == '.') *p = 0;
-                        EnterComplex();
-                    }
+                    // interpret '.' after 'e' as '+i'
+                    EnterComplex();
                 }
                 else
                 {
-                    // insert a 0 if not following a digit
-                    if (l == 0 || !isdigit(*p) || ValueEntered == TRUE)
+                    if (DecimalIncluded)
                     {
-                        //decimal point needs a 0 added to the start
-                        ProcessNumberKey('0');
+                        if (!ComplexIncluded)
+                        {
+                            // last was '.', re-interpret as +i
+                            if (*p == '.') *p = 0;
+                            EnterComplex();
+                        }
                     }
-                    
-                    ProcessNumberKey('.');
-                    UpdateLCDline2(DisplayXreg);
-                    DecimalIncluded=TRUE;
+                    else
+                    {
+                        // insert a 0 if not following a digit
+                        if (l == 0 || !isdigit(*p) || ValueEntered == TRUE)
+                        {
+                            //decimal point needs a 0 added to the start
+                            ProcessNumberKey('0');
+                        }
+                        
+                        ProcessNumberKey('.');
+                        UpdateLCDline2(DisplayXreg);
+                        DecimalIncluded=TRUE;
+                    }
                 }
             }
             UpdateLCDline2(DisplayXreg);
@@ -334,10 +340,10 @@ int EnterNumber(int Key)
         Key = 0;
         if (l < XBufSize-1) // space for 2
         {
-            if ( CalcDisplayBase == 16 )
-                HexEntry();
-            else
-            {
+//            if ( CalcDisplayBase == 16 )
+//                HexEntry();
+//            else
+//            {
                 if (!ExponentIncluded)  //can't add exponent twice
                 {
                     ExponentIncluded=TRUE;
@@ -350,7 +356,7 @@ int EnterNumber(int Key)
                     ProcessNumberKey('e');
                     UpdateLCDline2(DisplayXreg);
                 }
-            }
+//            }
         }
         break;
     case KeySign: 

@@ -169,7 +169,7 @@ typedef enum {
 
 
 //TODO: check size in def.h (currently 7)
-const TimeZone TimeZones[] __attribute__((packed)) = {
+const TimeZone TimeZones[] = {
     { "No Zone", 0, 0, 0, 0 },
     { "Western Europe", MAKE_TZ( 3, lastSun ), MAKE_TZ( 10, lastSun ), 0x01, 1 },
     { "Central Europe", MAKE_TZ( 3, lastSun ), MAKE_TZ( 10, lastSun ), 0x02, 1 },
