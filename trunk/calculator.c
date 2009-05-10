@@ -222,6 +222,7 @@ const packedMenu2 menuKeystroke = {
 
 const charSet mathOtherCharset[] = {
     character_squaring,             //4
+    character_powerx,        
 };
 
 const menuItem mathOtherMenu[] = {
@@ -230,20 +231,20 @@ const menuItem mathOtherMenu[] = {
     { "  x\4",   OperatePrecedence, CALC_OP_SQUARE         },
     { " sqrt",   OperatePrecedence, CALC_OP_SQRT           },
     { " abs ",   OperatePrecedence, CALC_OP_ABS            },
-    { "", OperatePrecedence, CALC_OP_NULL },
+    { " y\5  ",  OperatePrecedence, CALC_OP_NPOW           },  // DUPLICATE!
 };
 
 const packedMenu2 mathOther = {
     0, //CALC-STYLE
     printMenu,
-    1, mathOtherCharset, 6, mathOtherMenu
+    2, mathOtherCharset, 6, mathOtherMenu
 };
 
 
 
 const menuItem mathComplexMenu[] = {
     { " imag",  OperatePrecedence, CALC_OP_IMAGINARY_PART  },  
-    { "  // ",  OperatePrecedence, CALC_OP_PARALLEL        },     //???
+    { "  // ",  OperatePrecedence, CALC_OP_PARALLEL        },  // 1/(1/X+1/y)
     { " split", OperatePrecedence, CALC_OP_COMPLEX_SPLIT   },
     { " join",  OperatePrecedence, CALC_OP_COMPLEX_JOIN    },
     { " conj",  OperatePrecedence, CALC_OP_CONJUGATE       },
