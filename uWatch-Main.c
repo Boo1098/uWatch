@@ -175,7 +175,38 @@ typedef enum {
  */
 
 
-//TODO: check size in def.h (currently 7)
+char *TimeZone_name[] = {
+    "None",
+    "Western Europe",
+    "Central Europe",
+    "Eastern Europe",
+    "Australia",
+    "USA",
+    "Canada",
+};
+
+unsigned char TimeZone_dstStart[] = {
+    0,
+    MAKE_TZ( 3, lastSun ),
+    MAKE_TZ( 3, lastSun ),
+    MAKE_TZ( 3, lastSun ),
+    MAKE_TZ( 3, firstSun ),
+    MAKE_TZ( 3, secondSun ),
+    MAKE_TZ( 3, secondSun ),
+};
+
+unsigned char TimeZone_dstEnd[] = {
+    0,
+    MAKE_TZ( 10, lastSun ),
+    MAKE_TZ( 10, lastSun ),
+    MAKE_TZ( 10, lastSun ),
+    MAKE_TZ( 10, firstSun ),
+    MAKE_TZ( 11, firstSun),
+    MAKE_TZ( 11, firstSun ),
+};
+
+
+/*//TODO: check size in def.h (currently 7)
 const TimeZone TimeZones[] = {
     { "No Zone", 0, 0, 0, 0 },
     { "Western Europe", MAKE_TZ( 3, lastSun ), MAKE_TZ( 10, lastSun ), 0x01, 1 },
@@ -185,6 +216,28 @@ const TimeZone TimeZones[] = {
     { "USA", MAKE_TZ( 3, secondSun ), MAKE_TZ( 11, firstSun ), 0x02, 1 },
     { "Canada", MAKE_TZ( 3, secondSun ), MAKE_TZ( 11, firstSun ), 0x02, 1 },
 };
+*/
+
+unsigned char TimeZone_hour[] = {
+    0,
+    1,
+    2,
+    0,
+    2,
+    2,
+    2,
+};
+
+char TimeZone_amount[] = {
+    0,
+    1,
+    1,
+    1,
+    -1,
+    1,
+    1,
+};
+
 
 
 const char *monthName[12] = {
@@ -509,7 +562,7 @@ unsigned int KeystrokeReplay( void )
     if ( !ProgPlay ) return( 0 );
 
     key = I2CmemoryREAD( MemPointer );  //read the keystroke from EEPROM
-    if ( key == 0 ) {                   //check for end of keystroke replay
+    if ( !key ) {                   //check for end of keystroke replay
         ProgPlay = FALSE;               //disable keystroke replay
         return( 0 );
     }
@@ -523,7 +576,7 @@ unsigned int KeystrokeReplay( void )
 // Function assumes that MemPointer has been set correctly
 void KeystrokeRecord( unsigned char key )
 {
-    if ( ProgPlay == TRUE ) return; //can't record while in play mode
+    if ( ProgPlay ) return; //can't record while in play mode
 
     if ( key == KeyMode ) {             //check for end of record mode
         I2CmemoryWRITE( MemPointer, 0 );  //store a zero to end programming mode
@@ -581,50 +634,50 @@ unsigned int KeyScan2()
 
     // note that two attempts must be made to access the first column due to read-modify-write
     SetRow1;
-    if ( Col1 == 0 ) k = KeyDiv;
-    if ( Col1 == 0 ) k = KeyDiv;  //need to try again for this column
-    if ( Col2 == 0 ) k = KeyMult;
-    if ( Col3 == 0 ) k = KeyMinus;
-    if ( Col4 == 0 ) k = KeyPlus;
+    if ( !Col1 ) k = KeyDiv;
+    if ( !Col1 ) k = KeyDiv;  //need to try again for this column
+    if ( !Col2 ) k = KeyMult;
+    if ( !Col3 ) k = KeyMinus;
+    if ( !Col4 ) k = KeyPlus;
     ClearRow1;
     SetRow2;
-    if ( Col1 == 0 ) k = KeySign;
-    if ( Col1 == 0 ) k = KeySign;
-    if ( Col2 == 0 ) k = KeyPoint;
-    if ( Col3 == 0 ) k = Key0;
-    if ( Col4 == 0 ) k = KeyMode;
+    if ( !Col1 ) k = KeySign;
+    if ( !Col1 ) k = KeySign;
+    if ( !Col2 ) k = KeyPoint;
+    if ( !Col3 ) k = Key0;
+    if ( !Col4 ) k = KeyMode;
     ClearRow2;
     SetRow3;
-    if ( Col1 == 0 ) k = Key7;
-    if ( Col1 == 0 ) k = Key7;
-    if ( Col2 == 0 ) k = Key4;
-    if ( Col3 == 0 ) k = Key1;
+    if ( !Col1 ) k = Key7;
+    if ( !Col1 ) k = Key7;
+    if ( !Col2 ) k = Key4;
+    if ( !Col3 ) k = Key1;
     ClearRow3;
     SetRow4;
-    if ( Col1 == 0 ) k = Key8;
-    if ( Col1 == 0 ) k = Key8;
-    if ( Col2 == 0 ) k = Key5;
-    if ( Col3 == 0 ) k = Key2;
+    if ( !Col1 ) k = Key8;
+    if ( !Col1 ) k = Key8;
+    if ( !Col2 ) k = Key5;
+    if ( !Col3 ) k = Key2;
     ClearRow4;
     SetRow5;
-    if ( Col1 == 0 ) k = Key9;
-    if ( Col1 == 0 ) k = Key9;
-    if ( Col2 == 0 ) k = Key6;
-    if ( Col3 == 0 ) k = Key3;
+    if ( !Col1 ) k = Key9;
+    if ( !Col1 ) k = Key9;
+    if ( !Col2 ) k = Key6;
+    if ( !Col3 ) k = Key3;
     ClearRow5;
     SetRow6;
-    if ( Col1 == 0 ) k = KeyXY;
-    if ( Col1 == 0 ) k = KeyXY;
-    if ( Col2 == 0 ) k = KeyLP;
-    if ( Col3 == 0 ) k = KeyEXP;
-    if ( Col4 == 0 ) k = KeyRCL;
+    if ( !Col1 ) k = KeyXY;
+    if ( !Col1 ) k = KeyXY;
+    if ( !Col2 ) k = KeyLP;
+    if ( !Col3 ) k = KeyEXP;
+    if ( !Col4 ) k = KeyRCL;
     ClearRow6;
     SetRow7;
-    if ( Col1 == 0 ) k = KeyClear;
-    if ( Col1 == 0 ) k = KeyClear;
-    if ( Col2 == 0 ) k = KeyRP;
-    if ( Col3 == 0 ) k = KeyMenu;
-    if ( Col4 == 0 ) k = KeyEnter;
+    if ( !Col1 ) k = KeyClear;
+    if ( !Col1 ) k = KeyClear;
+    if ( !Col2 ) k = KeyRP;
+    if ( !Col3 ) k = KeyMenu;
+    if ( !Col4 ) k = KeyEnter;
     ClearRow7;
 
     if ( k  ) {
@@ -843,12 +896,12 @@ void IdleI2C1( void )
 }
 
 // put these in the code segment
-static const char days[8][4] = {"   ", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+static const char *days = {"SunMonTueWedThuFriSat"};
 
 // N(ew),C(rescent),Q(uarter),W(axing),F(ull),w(aning),q(uarter),c(rescent)
 //static const char mphase[8] = "NCQWFwqc";
 
-static BOOL beforeWhenTest( DstWhen w, const TimeZone* tz, int* gap )
+static BOOL beforeWhenTest( DstWhen w, int* gap )
 {
     unsigned int t = 0;
     unsigned int d;
@@ -883,7 +936,7 @@ static BOOL beforeWhenTest( DstWhen w, const TimeZone* tz, int* gap )
     // NB: hour in BCD
     if ( MJD == t - 1 ) { // day before?
         // near midnight rollover?
-        if ( !tz->hour ) {
+        if ( !TimeZone_hour[ dstRegion ] ) {
             if ( BCDtoDEC( Time.f.hour ) >= 23 ) {
                 *gap = 1;
             }
@@ -896,7 +949,7 @@ static BOOL beforeWhenTest( DstWhen w, const TimeZone* tz, int* gap )
     if ( MJD == t ) {
         // we're on the same day as the limit, figure out how many
         // hours before. if so, set gap
-        int dt = tz->hour - BCDtoDEC( Time.f.hour );
+        int dt = TimeZone_hour[ dstRegion ] - BCDtoDEC( Time.f.hour );
         if ( dt > 0 ) {
             *gap = dt;
             return TRUE;
@@ -913,10 +966,10 @@ BOOL inDST( int* gap )
     BOOL res = FALSE;
 
     if ( dstRegion > 0 ) {
-        const TimeZone* tz = &TimeZones[dstRegion];
+        //const TimeZone* tz = &TimeZones[dstRegion];
 
-        unsigned int mStart = tz->dstStart >> 4;
-        unsigned int mEnd = tz->dstEnd >> 4;
+        unsigned int mStart = TimeZone_dstStart[ dstRegion ] >> 4;
+        unsigned int mEnd = TimeZone_dstEnd[ dstRegion ] >> 4;
 
         if ( Month >= mStart && Month <= mEnd ) {
             if ( Month > mStart && Month < mEnd ) {
@@ -925,15 +978,15 @@ BOOL inDST( int* gap )
                 // otherwise we are on the start month or the end month
                 if ( Month == mStart ) {
                     // in DST if not before start point
-                    res = !beforeWhenTest( tz->dstStart & 0xf, tz, gap );
+                    res = !beforeWhenTest( TimeZone_dstStart[ dstRegion ] & 0xf, gap );
                 } else { // mEnd
                     // in DST if before end point
-                    res = beforeWhenTest( tz->dstEnd & 0xf, tz, gap );
+                    res = beforeWhenTest( TimeZone_dstEnd[ dstRegion ] & 0xf, gap );
                 }
             }
         }
 
-        if ( tz->amount < 0 ) {
+        if ( TimeZone_amount[ dstRegion ] < 0 ) {
             // when amount is negative, this indicates the range is
             // oppsite, so we invert the result
             res = !res;
@@ -980,8 +1033,8 @@ static BOOL checkDST()
     int gap;
     BOOL dst = inDST( &gap );
     if ( DST != dst ) {
-        const TimeZone* tz = TimeZones + dstRegion;
-        int a = tz->amount;
+        //const TimeZone* tz = TimeZones + dstRegion;
+        int a = TimeZone_amount[ dstRegion ];
         if ( a < 0 ) a = -a;
 
         if ( dst ) {
@@ -1164,10 +1217,8 @@ void TimeDateDisplay( void )
     // blank line again
     memset( s, ' ', MaxLCDdigits );
 
-    temp = BCDtoDEC( DayOfWeek );
-    s[0] = days[temp][0];
-    s[1] = days[temp][1];
-    s[2] = days[temp][2];
+    temp = 3 * (BCDtoDEC( DayOfWeek ) - 1);
+    memcpy( s, days+temp, 3 );
 
     s[3] = ',';
 
@@ -1527,7 +1578,7 @@ int main( void )
         }
 
         //user did something in the calc mode, so return to time/date
-        if ( NextMode == FALSE ) continue;
+        if ( !NextMode ) continue;
 
         WatchMode = WATCH_MODE_APPS;
 
