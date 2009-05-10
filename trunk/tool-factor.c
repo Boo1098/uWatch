@@ -9,24 +9,22 @@
 char displayBuffer[400];
 
 
-
-void check( unsigned long int nx, unsigned long int in, int *factors ) {
-           
-    unsigned long int fact = nx / in;
-    if ( fact * in == nx ) {
+int check( unsigned long* nx, unsigned long int in, int *factors ) 
+{
+    // return 1 if factor and reduce nx
+    unsigned long int fact = *nx / in;
+    if ( fact * in == *nx ) {
 
         if ( *factors )
             strcat( displayBuffer, "," );
     
         sprintf( out, "%lu", in );
         strcat( displayBuffer, out );
-        if ( fact != in ) {
-            sprintf( out, ",%lu", fact );
-            strcat( displayBuffer, out );
-            (*factors)++;
-        }
         (*factors)++;
+        *nx = fact;
+        return 1;
     }
+    return 0;
 }
 
 int factor( int p )
@@ -36,12 +34,8 @@ int factor( int p )
     unsigned long int idleEnd;
     int factors=0;
 
-    //notebook();
-
-//        viewString( "Address:", view, 0, 0 );
-
     UpdateLCDline1("Factor this");
-    Xreg = 0;
+    //Xreg = 0; allow number to be carried in from calculator.
     OneLineNumberEntry();
     Xreg = fabs(Xreg);
 
@@ -56,23 +50,31 @@ int factor( int p )
         idleEnd = sqrt( nx );
         sprintf( displayBuffer, "%lu = (", nx );
         viewString( "Factors...", displayBuffer, 0, 1 );
-    
-        for ( in = 2; in <= idleEnd; in++ ) {
-    
-            int key = KeyScan2();
-    
-            if ( key == KeyClear ) {
-                strcat( displayBuffer, " ..." );
-                nb = "Halted!";
-                break;
+
+        if (nx > 0)
+        {
+            // elminate 2s
+            while (check(&nx, 2, &factors)) ;
+
+            // elminate 3s
+            while (check(&nx, 3, &factors)) ;
+
+            for (in = 5; in <= idleEnd && in <= nx; in += 4)
+            {
+                while (check( &nx, in, &factors )) ;  
+                in += 2;
+                while (check( &nx, in, &factors )) ;
+
+                int key = KeyScan2();
+                if ( key == KeyClear ) {
+                    strcat( displayBuffer, " ..." );
+                    nb = "Halted!";
+                    break;
+                }
+                if ( key == KeyMode ) return MODE_KEYMODE;
             }
-    
-            if ( key == KeyMode )
-                return MODE_KEYMODE;
-    
-            check( nx, in, &factors );
+            if (nx > 1) check(&nx, nx, &factors); // put remainder
         }
-    
         strcat( displayBuffer, ")" );
     }
 
