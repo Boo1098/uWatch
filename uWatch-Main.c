@@ -177,9 +177,7 @@ typedef enum {
 
 char *TimeZone_name[] = {
     "None",
-    "Western Europe",
-    "Central Europe",
-    "Eastern Europe",
+    "Europe",
     "Australia",
     "USA",
     "Canada",
@@ -188,17 +186,13 @@ char *TimeZone_name[] = {
 unsigned char TimeZone_dstStart[] = {
     0,
     MAKE_TZ( 3, lastSun ),
-    MAKE_TZ( 3, lastSun ),
-    MAKE_TZ( 3, lastSun ),
-    MAKE_TZ( 3, firstSun ),
+    MAKE_TZ( 4, firstSun ),  // AUS ends in April now since 2008 true??
     MAKE_TZ( 3, secondSun ),
     MAKE_TZ( 3, secondSun ),
 };
 
 unsigned char TimeZone_dstEnd[] = {
     0,
-    MAKE_TZ( 10, lastSun ),
-    MAKE_TZ( 10, lastSun ),
     MAKE_TZ( 10, lastSun ),
     MAKE_TZ( 10, firstSun ),
     MAKE_TZ( 11, firstSun),
@@ -222,16 +216,12 @@ unsigned char TimeZone_hour[] = {
     0,
     1,
     2,
-    0,
-    2,
     2,
     2,
 };
 
 char TimeZone_amount[] = {
     0,
-    1,
-    1,
     1,
     -1,
     1,
@@ -1092,11 +1082,6 @@ void TimeDateDisplay( void )
     // read current time
     RtccReadTime( &Time );          //read the RTCC registers
 
-    // if time not changed, we're done
-    //if ( tt.l == Time.l && TwelveHour == last12 ) {
-        // no need to update
-        //tmp return;
-    //}
     last12 = TwelveHour;
 
     // copy old date
