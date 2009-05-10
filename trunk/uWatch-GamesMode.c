@@ -182,7 +182,6 @@ lunar:
         GetDebouncedKey();
         return MODE_EXIT;
     }
-
     return MODE_EXIT;
 }
 
@@ -196,15 +195,15 @@ const unsigned char character_club[] =      { 0x0E, 0x0E, 0x04, 0x1F, 0x1F, 0x1B
 
 void drawCard( char *dest, int card ) {
     char *c[] = { "A","2","3","4","5","6","7","8","9","10","J","Q","K"  };
-    int suit = ( card % 4 ) + 2;
-    int val = (int) (card / 4);
-    sprintf( dest, "%s%c", c[val], suit|8 ); 
+    int suit = ( card & 3 ) + 2;
+    //int val = (int) (card >> 2);
+    sprintf( dest, "%s%c", c[card>>2], suit|8 ); 
 }
 
 void shuffle( int *deck ) {
     int card, card2;
     for ( card = 0; card < 52; card++ ) {
-        card2 = rand() % 52;
+        card2 = rand32() % 52;
         int temp = deck[card];
         deck[card] = deck[card2];
         deck[card2] = temp;
@@ -212,20 +211,13 @@ void shuffle( int *deck ) {
 }
 
 
-int valueof( int card ) {
-    int val = card / 4;
-    switch (val ) {
-        case 0:
-            return 11;
-        case 10:
-        case 11:
-        case 12:
-        case 13:
-            return 10;
-    }
-    return val+1;
+int valueof( int card ) 
+{
+    int val = card >> 2;
+    if (!val) val = 11; // ACE
+    ++val; // to value
+    if (val > 10) val = 10; // max 10
 }
-
 
 int countTotal( int *hand, int cards ) {
     // find HIGHEST total < 22
@@ -244,7 +236,6 @@ int countTotal( int *hand, int cards ) {
             total -= 10;
         i++;
     }
-
     return total;
 }
 
@@ -272,20 +263,14 @@ int twenty1( int p )
 {
 #if 1
 
-
     custom_character( 2, character_heart );
     custom_character( 3, character_spade );
     custom_character( 4, character_diamond );
     custom_character( 5, character_club );
 
-
-
     int deck[52];
     int card;
-    for ( card = 0; card < 52; card++ )
-        deck[card] = card;
-
-//    srand( seconds( &Time ));
+    for ( card = 0; card < 52; card++ ) deck[card] = card;
 
     int player[20];
     int dealer[20];
@@ -340,8 +325,7 @@ int twenty1( int p )
                 UpdateLCDline2( dout );
         
                 DelayMs(2500);
-        
-            }
+                    }
 
             char *result = "Dealer Wins!";
             if ( dealertotal > 21 ) {
@@ -368,10 +352,9 @@ int twenty1( int p )
             key = GetDebouncedKey();
         IFEXIT( key );
     }
-
 #endif
     return MODE_EXIT;
-    }
+}
 
 //***********************************
 // The main games mode routine

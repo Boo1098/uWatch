@@ -428,10 +428,8 @@ void FormatValue(char* dest,
         case 2:
 
          {
-        
             const char *digit = "0123456789ABCDEFGH";
-            
-            double max = pow( 2, 64 );
+            double max = 18446744073709551616.0;  // pow( 2, 64 );
             if ( fabs(value) > max )
                 strcpy( dest, "  * OVERFLOW *" );
             else {
@@ -462,15 +460,11 @@ void FormatValue(char* dest,
                     p = p + strlen( p ) - 16;
                     *p = '<';
                 }    
-                
-
-
                 strcpy( dest, p );
             }
         
         }
         break;
-
 
         case 10:
             if (ivalue == 0)

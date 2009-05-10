@@ -24,13 +24,11 @@
 
 /* implementation of the main calculator functions */
 
-//#include <stdlib.h>
 #include <math.h>
 #include "uWatch-op.h"
 #include "uWatch-astro.h"
 #include "characterset.h"
 #include "uWatch-LCD.h"
-//#include "def.h"
 
 int custom_character( int c, const unsigned char *p );
 int setBase( int base );
@@ -446,7 +444,8 @@ static void powC( double* rp, double* irp, double a, double b )
 double stat_sum = 0;
 double stat_count = 0;
 double stat_sum2 = 0;
-
+double stat_mean;
+double stat_var;
 
 // helper function for the type
 // op (a + i b) = - i op(-b + ia)
@@ -775,7 +774,6 @@ void Operation( int op )
             setBase(16);
             break;
 
-
         case CALC_OP_ABS:
             if ( !*irp )
                 *rp = fabs( *rp );
@@ -825,9 +823,13 @@ void Operation( int op )
             break;
 
         case CALC_OP_HYP_TAN:
-
             if ( !*irp )
-                *rp = tanh( *rp );
+            {
+                // void use of tanh 
+                double sh, ch;
+                sinhandcosh(*rp, &sh, &ch);
+                *rp = sh/ch;
+            }
             else {
                 // tanh (a + ib) = -i tan(-b + i a)
                 negOpNeg( rp, irp, opTan );
@@ -922,30 +924,44 @@ void Operation( int op )
             stat_sum = 0;
             stat_sum2 = 0;
             stat_count = 0;
+            stat_mean = 0;
+            stat_var = 0;
             break;
 
         case CALC_OP_STAT_SIGMAX:
+            Push();
             *rp = stat_sum;
             break;
 
         case CALC_OP_STAT_SIGMAX2:
+            Push();
             *rp = stat_sum2;
             break;
 
         case CALC_OP_STAT_SD:
-            *rp = sqrt( stat_sum2 / stat_count - (( stat_sum / stat_count ) * ( stat_sum / stat_count ))   );
+            Push();
+            *rp = 0;
+            if (stat_count > 1)
+                *rp = sqrt(stat_var/(stat_count-1));
             break;
 
         case CALC_OP_STAT_MEAN:
-            *rp = stat_sum / stat_count;
+            Push();
+            *rp = stat_mean;
             break;
 
         case CALC_OP_STAT_ADD:
-            stat_sum += *rp;
-            stat_sum2 += (*rp) * (*rp);
-            stat_count++;
+            {
+                double dx = *rp - stat_mean;
+                ++stat_count;
+                if (dx) {
+                    stat_mean += dx/stat_count;
+                    if (stat_count > 1) stat_var += dx*(*rp - stat_mean);
+                }
+                stat_sum += *rp;
+                stat_sum2 += (*rp) * (*rp);
+            }
             break;
-
     }
 }
 

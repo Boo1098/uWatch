@@ -210,7 +210,7 @@ int viewString( char *title, char *string,
 //  to continuously press the key to scroll.
 
 
-    int max = strlen( string );;
+    int max = strlen( string );
 
     if ( title )
         UpdateLCDline1( title );
@@ -222,7 +222,6 @@ int viewString( char *title, char *string,
     custom_character( 1, character_right_menu );
 
     while ( KeyScan2() );            // wait for key release so no ENTER auto-press!
-
 
     int key = 0;
     do {
@@ -256,8 +255,6 @@ int viewString( char *title, char *string,
         int desiredlen = 16 - strlen( t3);
         while ( strlen( t2 ) < desiredlen )
             strcat( t2, " " );
-
-
 
         sprintf( out, "%s%s", t2, t3 );
 

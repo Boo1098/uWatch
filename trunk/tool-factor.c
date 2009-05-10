@@ -20,16 +20,12 @@ void check( unsigned long int nx, unsigned long int in, int *factors ) {
     
         sprintf( out, "%lu", in );
         strcat( displayBuffer, out );
-        
         if ( fact != in ) {
             sprintf( out, ",%lu", fact );
             strcat( displayBuffer, out );
             (*factors)++;
         }
         (*factors)++;
-    
-        //int sel = strlen( displayBuffer ) - 4;
-        //viewString( "Calculating:", displayBuffer, &sel, 1 );
     }
 }
 
@@ -47,20 +43,19 @@ int factor( int p )
     UpdateLCDline1("Factor this");
     Xreg = 0;
     OneLineNumberEntry();
-    nx = fabs(Xreg);
-    Xreg = 0;
+    Xreg = fabs(Xreg);
 
     const char *nb = "Result";
-    
-    if (nx > (unsigned long int)(long int)(-1)) //checks if number > max long int??
-        sprintf( displayBuffer, "%lu: too large", nx );
 
+    if (Xreg > 4294967296.0) {
+        sprintf( displayBuffer, "too large");
+    }
     else {
 
+        nx = Xreg; Xreg = 0;
         idleEnd = sqrt( nx );
         sprintf( displayBuffer, "%lu = (", nx );
         viewString( "Factors...", displayBuffer, 0, 1 );
-    
     
         for ( in = 2; in <= idleEnd; in++ ) {
     
