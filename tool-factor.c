@@ -6,7 +6,7 @@
 #include "menu.h"
 #include "characterset.h"
 
-char displayBuffer[512];
+char displayBuffer[400];
 
 
 

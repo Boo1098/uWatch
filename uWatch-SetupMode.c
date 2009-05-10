@@ -215,11 +215,7 @@ const unsigned char *qday[] = {
 
 
 inline int leap( int year ) {
-    return ( ( year % 4 ) == 0 )
-        && (    (( year % 100 ) != 0 )
-             || (( year % 400 ) == 0 )
-           );
-//        ? 1 : 0;
+    return ( !( year % 4 ) ) && ( ( year % 100 ) || ( !( year % 400 )));
 }
 
 int daysInMonth( int year, int month ) {
@@ -409,13 +405,13 @@ int change1224()
 
 int changeDST()
 {
-
+    extern char *TimeZone_name[];
     char *printDST( int *zone, int max ) {
-        return ( char * ) TimeZones[ *zone ].region;
+        return TimeZone_name[ *zone ];
     }
 
     int region = dstRegion;
-    if ( genericMenu( "DST Zone", printDST, increment, decrement, DIM( TimeZones ), &region ) == MODE_KEYMODE )
+    if ( genericMenu( "DST Zone", printDST, increment, decrement, 7, &region ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     dstRegion = region;
