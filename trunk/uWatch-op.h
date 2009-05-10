@@ -133,7 +133,7 @@ extern void SwapXY();
 
 #define CALC_OP_STAT_CLX        69
 #define CALC_OP_STAT_SIGMAX     70
-#define CALC_OP_STAT_SIGMAX2    71
+#define CALC_OP_STAT_SUB        71
 #define CALC_OP_STAT_SD         72
 #define CALC_OP_STAT_MEAN       73
 #define CALC_OP_STAT_ADD        74
