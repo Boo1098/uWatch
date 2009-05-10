@@ -443,7 +443,6 @@ static void powC( double* rp, double* irp, double a, double b )
 
 double stat_sum = 0;
 double stat_count = 0;
-double stat_sum2 = 0;
 double stat_mean;
 double stat_var;
 
@@ -922,7 +921,6 @@ void Operation( int op )
 
         case CALC_OP_STAT_CLX:
             stat_sum = 0;
-            stat_sum2 = 0;
             stat_count = 0;
             stat_mean = 0;
             stat_var = 0;
@@ -933,10 +931,16 @@ void Operation( int op )
             *rp = stat_sum;
             break;
 
-        case CALC_OP_STAT_SIGMAX2:
-            Push();
-            *rp = stat_sum2;
-            break;
+       case CALC_OP_STAT_SUB:
+           // remove a data point
+           // this is done by adjusting back the sum vars
+           if (stat_count > 1) {
+               double t = *rp - stat_mean;
+               stat_mean -= t/--stat_count;
+               stat_var -= (*rp - stat_mean)*t;
+               stat_sum -= *rp;
+           }
+           break;
 
         case CALC_OP_STAT_SD:
             Push();
@@ -959,7 +963,6 @@ void Operation( int op )
                     if (stat_count > 1) stat_var += dx*(*rp - stat_mean);
                 }
                 stat_sum += *rp;
-                stat_sum2 += (*rp) * (*rp);
             }
             break;
     }
