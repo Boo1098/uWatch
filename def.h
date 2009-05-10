@@ -237,7 +237,7 @@ extern const char *monthName[12];
 
 void I2CmemoryWRITE ( unsigned int address, unsigned char data );
 
-/* timezone information */
+/*// timezone information
 typedef struct
 {
     const char*               region;
@@ -246,8 +246,9 @@ typedef struct
     unsigned char       hour;        // hour of the day to change (BCD)
     char                amount;      // amount to change
 } TimeZone;
+*/
 
-extern const TimeZone TimeZones[7];
+//extern const TimeZone TimeZones[7];
 
 extern int dstRegion;
 
