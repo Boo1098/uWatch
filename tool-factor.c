@@ -73,9 +73,6 @@ int factor( int p )
                     idleEnd = sqrt( nx );                    
                 }
 
-#if 0
-                // taken this out as we are now fast enough.
-                // putting back in does no harm, but takes code space.
                 int key = KeyScan2();
                 if ( key == KeyClear ) {
                     strcat( displayBuffer, " ..." );
@@ -83,7 +80,6 @@ int factor( int p )
                     break;
                 }
                 if ( key == KeyMode ) return MODE_KEYMODE;
-#endif
             }
             if (nx > 1) check(&nx, nx, &factors); // put remainder
         }
