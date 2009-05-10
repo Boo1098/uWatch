@@ -194,9 +194,13 @@ const unsigned char character_diamond[] =   { 0x00, 0x04, 0x0E, 0x1F, 0x1F, 0x0E
 const unsigned char character_club[] =      { 0x0E, 0x0E, 0x04, 0x1F, 0x1F, 0x1B, 0x04, 0x0E };
 
 void drawCard( char *dest, int card ) {
-    char *c[] = { "A","2","3","4","5","6","7","8","9","10","J","Q","K"  };
+    char *c = "A234567890JQK";
+    if (( card>>2) == 9 )   // a 10?
+        *dest++ = '1';
     int suit = ( card & 3 ) + 2;
-    sprintf( dest, "%s%c", c[card>>2], suit|8 ); 
+    *dest++ = c[card>>2];
+    *dest++ = suit|8;
+    *dest = 0;
 }
 
 void shuffle( int *deck ) {
