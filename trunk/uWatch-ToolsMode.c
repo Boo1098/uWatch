@@ -38,16 +38,13 @@ This program is free software: you can redistribute it and/or modify
 #include "tool-factor.h"
 
 
-
-
-
 int quadratic( int p ) {
 
-    //quadratic (Solve ax^2 + bx + c = 0 given B*B-4*A*C >= 0)
+    //quadratic (Solve ax^2 + bx + c = 0 
 
-    float a,b,c;
-    float d;
-    float root1,root2;
+    double a,b,c;
+    double d;
+    double root1, root2;
     
     custom_character( 2, character_squaring );
     UpdateLCDline1( "a x\2?" );
@@ -70,53 +67,35 @@ int quadratic( int p ) {
     IFEXIT( OneLineNumberEntry() );
 
     c = Xreg;
-//    Xreg = 0;
-
-    if ( a == (int)a )
-        sprintf( displayBuffer, "%d", (int)a );
-    else
-        sprintf( displayBuffer, "%f", a );
-
-    strcat( displayBuffer, "x\2+" );
-
-    if ( b == (int)b )
-        sprintf( out, "%d", (int)b );
-    else
-        sprintf( out, "%f", b );
-   
-    strcat( displayBuffer, out );
-    strcat( displayBuffer, "x+" );
-
-    if ( c == (int)c )
-        sprintf( out, "%d ", (int)c );
-    else
-        sprintf( out, "%f ", c );
-
-    strcat( displayBuffer, out );
-
     
+    sprintf( displayBuffer, "%gx\2%+gx%+g", a, b, c );
+
+    char* ebuf = displayBuffer + strlen(displayBuffer);
+
     if ( !a )
-        strcat( displayBuffer, ": no roots." );
-    else {
-    
+        sprintf(ebuf, ": root %g.", -c/b);
+    else 
+    {
         d = b*b - 4*a*c;
-    
         if ( d < 0 )
-            strcat( displayBuffer, ": invalid (b\2-4ac < 0)." );
-        else {
-    
-            d  = sqrt(d);   //compute the square root of discriminant d
-            root1 = (-b + d)/(2.0*a);   //first root
-            root2 = (-b - d)/(2.0*a);   //second root
-    
-            char buffer[64];
-            sprintf( buffer, ": roots %f, %f.", root1, root2 );
-            strcat( displayBuffer, buffer );
+        {
+            d = sqrt(-d)/a/2;
+            root1 = b/a/-2;
+            sprintf(ebuf, ": roots %g+/-%gi", root1, d);
+        }
+        else
+        {
+            d = sqrt(d);
+            if (b < 0) d = -d;
+            d = (d + b)/-2;
+            
+            root1 = d/a;
+            root2 = d != 0 ? c/d : 0;
+            sprintf(ebuf, ": roots %g, %g", root1, root2);
         }
     }
-    
     return viewString( "Equation", displayBuffer, 0, VIEW_AUTOSCROLL );
-    }
+}
     
 
 
