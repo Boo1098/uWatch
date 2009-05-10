@@ -1017,7 +1017,7 @@ char *stopStar = " \2";
 // displays the time and date on the LCD
 void TimeDateDisplay( void )
 {
-    rand();             // causes other things to be random(ish)
+    rand32();             // causes other things to be random(ish)
 
     char s[MaxLCDdigits+1];
     BOOL pm = FALSE;
@@ -1553,7 +1553,12 @@ extern int SetupMode();
 
         genericMenu2( &appsMenu, 0 );
     }
-
-
-
 }
+
+unsigned long rand32()
+{
+    static unsigned int seed = 0;
+    seed = 1664525L*seed + 1013904223L;
+    return seed;
+}
+

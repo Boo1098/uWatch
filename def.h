@@ -319,6 +319,7 @@ extern int displayFormat;
 int seconds ( rtccTime *t );
 
 void setBase ( int base );
+extern unsigned long rand32();
 
 
 #endif
