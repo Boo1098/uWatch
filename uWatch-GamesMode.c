@@ -196,7 +196,6 @@ const unsigned char character_club[] =      { 0x0E, 0x0E, 0x04, 0x1F, 0x1F, 0x1B
 void drawCard( char *dest, int card ) {
     char *c[] = { "A","2","3","4","5","6","7","8","9","10","J","Q","K"  };
     int suit = ( card & 3 ) + 2;
-    //int val = (int) (card >> 2);
     sprintf( dest, "%s%c", c[card>>2], suit|8 ); 
 }
 
@@ -210,13 +209,16 @@ void shuffle( int *deck ) {
     }
 }
 
-
 int valueof( int card ) 
 {
     int val = card >> 2;
     if (!val) val = 11; // ACE
-    ++val; // to value
-    if (val > 10) val = 10; // max 10
+    else
+    {
+        ++val; // to value
+        if (val > 10) val = 10; // max 10
+    }
+    return val;
 }
 
 int countTotal( int *hand, int cards ) {
