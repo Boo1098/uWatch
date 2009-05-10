@@ -86,7 +86,7 @@ void SetDateBCDandUpdate( int y, int m, int d )
         dayHasChanged();
 
         // infer whether we are in DST
-        DST = inDST( &y ); // dummy
+        DST = inDST( &y ); // y is dummy
     }
 }
 
@@ -411,11 +411,11 @@ int changeDST()
     }
 
     int region = dstRegion;
-    if ( genericMenu( "DST Zone", printDST, increment, decrement, 7, &region ) == MODE_KEYMODE )
+    if ( genericMenu( "DST Zone", printDST, increment, decrement, 5, &region ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     dstRegion = region;
-    DST = inDST( &dstRegion );
+    DST = inDST( &region ); // region is dummy
     return MODE_EXIT;
 }
 
