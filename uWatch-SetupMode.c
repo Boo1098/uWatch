@@ -43,15 +43,15 @@ This program is free software: you can redistribute it and/or modify
 
 void SetTimeBCD( unsigned int h, unsigned int m, unsigned int s )
 {
-    if ( h < 0x24 && m < 0x60 && s < 0x60 ) {
+    //if ( h < 0x24 && m < 0x60 && s < 0x60 ) {
         RCFGCALbits.RTCPTR = 1;     //select correct RTC register
         RTCVAL = h;
 
         //the result is now a 16bit BCD number
-        m = ( m << 8 ) + s;
+        //m = ( m << 8 ) + s;
         RCFGCALbits.RTCPTR = 0;     //select correct RTC register
-        RTCVAL = m;
-    }
+        RTCVAL = ( m << 8 ) + s;
+    //}
 }
 
 int SetDateBCD( unsigned int y, unsigned int m, unsigned int d )
@@ -138,15 +138,15 @@ int OneLineNumberEntry()
 
 char *printNumber( int *number, int max ) {
     // decimal to string is VERY slow -- hence the turbo
-    Clock4MHz();
+    //Clock4MHz();
     sprintf( out, "%d", *number );
-    Clock250KHz();
+    //Clock250KHz();
     return out;
 }
 
 char *printHour( int *hour, int max )
 {
-    Clock4MHz();
+    //Clock4MHz();
 
     // 12AM, 1AM... 12PM.. etc
     // OR 24 hour
@@ -162,14 +162,12 @@ char *printHour( int *hour, int max )
     } else
         sprintf( out, "%02d", ( *hour ) );
 
-    Clock250KHz();
+    //Clock250KHz();
     return out;
 }
 
 char *printMinSec( int *n, int max ) {
-    Clock4MHz();
     sprintf( out, "%02d", *n );
-    Clock250KHz();
     return out;
 }
 
@@ -215,12 +213,12 @@ const unsigned char *qday[] = {
 };
 
 
-int leap( int year ) {
+inline int leap( int year ) {
     return ( ( year % 4 ) == 0 )
         && (    (( year % 100 ) != 0 )
              || (( year % 400 ) == 0 )
-           )
-        ? 1 : 0;
+           );
+//        ? 1 : 0;
 }
 
 int daysInMonth( int year, int month ) {
@@ -360,29 +358,19 @@ int doCal( BOOL modify ) {
 }
 
 
-int changeDate()
-{
-    return doCal( TRUE );
-}
-
-int doCalendar() {
-
-    return doCal( FALSE );
-}
-
 
 int changeCalibration()
 {
 
-    char *printCal( int *cal, int max ) {
-        Clock4MHz();
-        sprintf( out, "CAL=%d", *cal );
-        Clock250KHz();
-        return out;
-    }
+    //char *printCal( int *cal, int max ) {
+        //Clock4MHz();
+    //    sprintf( out, "CAL=%d", *cal );
+        //Clock250KHz();
+    //    return out;
+    //}
 
     int cal = RCFGCALbits.CAL;
-    if ( genericMenu( "Calibration", &printCal, decrement, increment, 256, &cal ) == MODE_KEYMODE )
+    if ( genericMenu( "Calibration", printNumber, decrement, increment, 256, &cal ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     RCFGCALbits.CAL = ( char ) cal;
     I2CmemoryWRITE( 63535, RCFGCALbits.CAL );     //store value in last byte
@@ -395,10 +383,12 @@ int change1224()
 {
 
     char *print1224( int *sel, int max ) {
+
+
         if ( *sel ) {
-            sprintf( out, "12h 8:34:00%c%c",
-                     custom_character( 2, &( AMPM[1][0] ) ),
-                     custom_character( 3, &( AMPM[2][0] ) ) );
+            custom_character( 2, &( AMPM[1][0] ) );
+            custom_character( 3, &( AMPM[2][0] ) );
+            sprintf( out, "12h 8:34:00\2\3" );
         } else
             sprintf( out, "24h 20:34:00" );
 
@@ -412,7 +402,7 @@ int change1224()
     int mode1224 = TwelveHour ? 1 : 0;
     if ( genericMenu( "Time Format", print1224, sel1224, sel1224, 0, &mode1224 ) == MODE_KEYMODE )
         return MODE_KEYMODE;
-    TwelveHour = mode1224 ? TRUE : FALSE;
+    TwelveHour = mode1224; // ? TRUE : FALSE;
     return MODE_EXIT;
 }
 
@@ -702,17 +692,19 @@ int appAbout()
 
 int SetupMode( int p )
 {
-    const packedMenu setupMenu = {
+
+    const menuItem setupMenuMenu[] = {
+        { "Calculator", &appCalculatorMode, 0 },
+        { "Clear EEPROM", &appClearEEPROM, 0 },
+        { "Self Test", &appSelfTest, 0 },
+        { "LCD timeout", &appLCDTimeout, 0 },
+        { "About", &appAbout, 0 },
+    };
+
+    const packedMenu2 setupMenu = {
         "Configure",
         printMenu,
-        increment, decrement, 5,
-        {},
-        {   { "Calculator", &appCalculatorMode, 0 },
-            { "Clear EEPROM", &appClearEEPROM, 0 },
-            { "Self Test", &appSelfTest, 0 },
-            { "LCD timeout", &appLCDTimeout, 0 },
-            { "About", &appAbout, 0 },
-        },
+        0, 0, 5, setupMenuMenu
     };
 
     return genericMenu2( &setupMenu, 0 );

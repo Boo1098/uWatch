@@ -33,91 +33,93 @@ This program is free software: you can redistribute it and/or modify
 
 
 // strobes the LCD for data transmission
-void LCD_STROBE(void)
+void LCD_STROBE ( void )
 {
-	SetLCD_EN;
-	ClearLCD_EN;
-//	DelayMs(1);
+    SetLCD_EN;
+    ClearLCD_EN;
+//  DelayMs(1);
 }
 
 // sets the LCD data bits
-void SetLCDdata(char ch)
+void SetLCDdata ( char ch )
 {
-	PORTC=(PORTC&0xFF00)+ch;
+    PORTC= ( PORTC&0xFF00 ) +ch;
 }
 
 // write a character to the LCD at current cursor position
-void lcd_write(unsigned char ch)
+void lcd_write ( unsigned char ch )
 {
-	PORTC=(PORTC&0xFF00)+ch;
-	LCD_STROBE();
+    PORTC= ( PORTC&0xFF00 ) +ch;
+    LCD_STROBE();
 }
 
 // clear both lines of the LCD screen
-void lcd_clear(void)
+void lcd_clear ( void )
 {
-	ClearLCD_RS;
-	lcd_write(0x1);
+    ClearLCD_RS;
+    lcd_write ( 0x1 );
 }
 
 // write a string to the LCD
-int lcd_puts(const char * s, int lmax)
+int lcd_puts ( const char * s, int lmax )
 {
     SetLCD_RS; // write characters
 
     int i = 0;
-    while(s[i])
+    while ( s[i] )
     {
-        if (i == lmax) break;
-        lcd_write(s[i++]);
+        if ( i == lmax ) break;
+        lcd_write ( s[i++] );
     }
     return i;
 }
 
 const unsigned char *custom_char_memory[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-int custom_character( int charctr,const unsigned char* custom ) 
+int custom_character ( int charctr,const unsigned char* custom )
 {
-    custom_char_memory[charctr] = custom;	// save for power-up restoration
+    custom_char_memory[charctr] = custom;   // save for power-up restoration
 
     int i;
     ClearLCD_RS;
-    lcd_write( 0x40 + charctr * 8 );
+    lcd_write ( 0x40 + charctr * 8 );
     SetLCD_RS;
-    for ( i = 0; i < 8; i++ ) {
-        lcd_write( custom[i] );
-	}
-    return charctr | 8;			// avoid '0' problem
+    for ( i = 0; i < 8; i++ )
+    {
+        lcd_write ( custom[i] );
+    }
+    return charctr | 8;         // avoid '0' problem
 }
 
 
 // LCD GRAM is dynamic, so custom characters need to be restored on LCD power-up
-void restoreCustomCharacters() {
-	int i;
+void restoreCustomCharacters()
+{
+    int i;
     for ( i = 0; i < 8; i++ )
         if ( custom_char_memory[i] )
-    	    custom_character( i, custom_char_memory[i] );
+            custom_character ( i, custom_char_memory[i] );
 }
 
 
 // move cursor to a specified position
 // use position 40 for start of 2nd LCD line
-void lcd_goto(unsigned char pos)
+void lcd_goto ( unsigned char pos )
 {
-	ClearLCD_RS;
-	lcd_write(0x80+pos);
+    ClearLCD_RS;
+    lcd_write ( 0x80+pos );
 }
 
 /* initialise the LCD - put into 4 bit mode */ //BOO: seems to be 8-bit
-void lcd_init(void)
+void lcd_init ( void )
 {
-	SetLCD_POWER;		//switch on the LCD power
-	DelayMs(50);
-	ClearLCD_RS;		// write control bytes
-	DelayMs(20);		// power on delay
-	lcd_write(0x0C );//F);
-	DelayMs(20);
-	lcd_write(0x01);		// CLEAR DISPLAY
-	DelayMs(20);
-	lcd_write(0x3C );// BOO: turn off cursor was 38);	//8 bit mode, 2 lines
+    SetLCD_POWER;       //switch on the LCD power
+    DelayMs ( 50 );
+    ClearLCD_RS;        // write control bytes
+    DelayMs ( 20 );     // power on delay
+    lcd_write ( 0x0C );//F);
+    DelayMs ( 20 );
+    lcd_write ( 0x01 );     // CLEAR DISPLAY
+    DelayMs ( 20 );
+    lcd_write ( 0x3C );// BOO: turn off cursor was 38); //8 bit mode, 2 lines
 }

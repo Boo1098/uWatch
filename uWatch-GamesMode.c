@@ -35,14 +35,14 @@ This program is free software: you can redistribute it and/or modify
 #include "uWatch-vchess.h"
 #include "uWatch-LCD.h"
 
+#if LUNAR_LANDER
 
-
-int lunarLander( int p )
+int lunarLander( int p )        // COST: 1434 bytes
 {
-#if 1
+
     int KeyPress2;
 
-    UpdateLCDline1( "--LUNAR LANDAR--" );
+    UpdateLCDline1( "--LUNAR LANDER--" );
     UpdateLCDline2( "    By zowki    " );
 
     if ( GetDebouncedKey() == KeyMode )
@@ -181,11 +181,11 @@ lunar:
         GetDebouncedKey();
         return MODE_EXIT;
     }
-#endif
 
     return MODE_EXIT;
 }
 
+#endif
 
 
 const unsigned char character_heart[] =     { 0x00, 0x0A, 0x1F, 0x1F, 0x1F, 0x0E, 0x04, 0x00 };
@@ -376,16 +376,27 @@ int twenty1( int p )
 // The main games mode routine
 
     int GamesMode( int p ) {
-        const packedMenu gamesMenu = {
+
+        const menuItem gameMenu[] = {
+            { "Chess",  chessGame, 0 },
+            { "21", twenty1, 0 },
+#if LUNAR_LANDER
+            { "Lunar Lander", lunarLander, 0 },
+#endif
+        };
+
+        const packedMenu2 gamesMenu = {
             "Game",
             printMenu,
-            increment, decrement, 3,
-            {},
-            {   { "Chess",  chessGame, 0 },
-                { "21", twenty1, 0 },
-                { "Lunar Lander", lunarLander, 0 },
-            },
+            0, 0,
+#if LUNAR_LANDER
+            3,
+#else
+            2,
+#endif
+            gameMenu
         };
+
 
         return genericMenu2( &gamesMenu, 0 );
     }

@@ -12,6 +12,8 @@
 #include <string.h>
 #include "uWatch-op.h"
 
+#define LUNAR_LANDER 1
+
 
 #define RevString   "1.6.0"
 
@@ -170,8 +172,8 @@
 #define KeyLP       13
 #define KeyMode     23
 
-void UpdateLCDline1( const char* s );
-void UpdateLCDline2( const char* s );
+void UpdateLCDline1 ( const char* s );
+void UpdateLCDline2 ( const char* s );
 int OneLineNumberEntry();
 
 #define ENTER(key) ( ((key) == KeyEnter) || ((key)==KeyLP) )
@@ -193,11 +195,11 @@ extern char DisplayXreg[];
 #define iZreg (iRegs[2])
 #define iTreg (iRegs[3])
 
-void Clock1MHz( void );
-void Clock4MHz( void );
-void Clock250KHz( void );
-void Clock125KHz( void );
-void Clock32KHz( void );
+void Clock1MHz ( void );
+void Clock4MHz ( void );
+void Clock250KHz ( void );
+void Clock125KHz ( void );
+void Clock32KHz ( void );
 
 //************************************
 // resets the sleep timer
@@ -207,18 +209,18 @@ void Clock32KHz( void );
 extern rtccTime Time;
 extern rtccDate Date;
 
-unsigned int BCDtoDEC( unsigned int num );
-unsigned int DECtoBCD( unsigned int num );
+unsigned int BCDtoDEC ( unsigned int num );
+unsigned int DECtoBCD ( unsigned int num );
 unsigned int KeyScan2();
 
 void dayHasChanged();
 extern BOOL DST;
 
 
-BOOL inDST( int* gap );
+BOOL inDST ( int* gap );
 
-void UpdateXregDisplay(void);
-void ResetFlags(void);
+void UpdateXregDisplay ( void );
+void ResetFlags ( void );
 
 extern int  EnableXregOverwrite;
 
@@ -232,10 +234,11 @@ extern BOOL TwelveHour;
 
 extern const char *monthName[12];
 
-void I2CmemoryWRITE( unsigned int address, unsigned char data );
+void I2CmemoryWRITE ( unsigned int address, unsigned char data );
 
 /* timezone information */
-typedef struct {
+typedef struct
+{
     const char*               region;
     unsigned char       dstStart;    // when to jump forward
     unsigned char       dstEnd;      // when to fall back
@@ -253,9 +256,9 @@ extern int dstRegion;
 extern double Longitude;
 extern double Latitude;
 
-unsigned char I2CmemoryREAD( unsigned int address );
+unsigned char I2CmemoryREAD ( unsigned int address );
 
-void DelayMs( int num );
+void DelayMs ( int num );
 
 extern int OperatorsXY[];
 extern int OperatorsYZ[];
@@ -266,7 +269,7 @@ extern int OperatorsZT[];
 #define OperatorYZ OperatorsYZ[0]
 #define OperatorZT OperatorsZT[0]
 
-int opPrec( int op );
+int opPrec ( int op );
 
 extern int ValueEntered;
 
@@ -279,7 +282,7 @@ extern int CalcDisplayBase;
 extern int WatchMode;
 
 
-int ReturnNumber( int key );
+int ReturnNumber ( int key );
 
 #define WATCH_MODE_TIME         0
 #define WATCH_MODE_CALC         1
@@ -312,9 +315,9 @@ extern int displayFormat;
 #define FORMAT_BASE2 2
 #define FORMAT_DATE 1
 
-int seconds( rtccTime *t );
+int seconds ( rtccTime *t );
 
-void setBase( int base );
+void setBase ( int base );
 
 
 #endif

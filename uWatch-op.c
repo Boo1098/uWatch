@@ -442,6 +442,10 @@ static void powC( double* rp, double* irp, double a, double b )
     PtoR( rp, irp );
 }
 
+double stat_sum = 0;
+double stat_count = 0;
+double stat_sum2 = 0;
+
 
 // helper function for the type
 // op (a + i b) = - i op(-b + ia)
@@ -900,6 +904,45 @@ void Operation( int op )
             rp[0] = ((int)rp[0]) & ((int) rp[1]);
             rp[0] = ((int)rp[0]) ^ -1;
             Drop();
+            break;
+
+        case CALC_OP_PERMUTATION:
+            *rp = factorial( rp[1] ) / factorial ( rp[1] - rp[0] );
+            Drop();
+            break;
+            
+        case CALC_OP_COMBINATION:
+            *rp = factorial( rp[1] ) / ( factorial( rp[0] ) *  factorial ( rp[1] - rp[0] ));
+            Drop();
+            break;
+
+
+        case CALC_OP_STAT_CLX:
+            stat_sum = 0;
+            stat_sum2 = 0;
+            stat_count = 0;
+            break;
+
+        case CALC_OP_STAT_SIGMAX:
+            *rp = stat_sum;
+            break;
+
+        case CALC_OP_STAT_SIGMAX2:
+            *rp = stat_sum2;
+            break;
+
+        case CALC_OP_STAT_SD:
+            *rp = sqrt( stat_sum2 / stat_count - (( stat_sum / stat_count ) * ( stat_sum / stat_count ))   );
+            break;
+
+        case CALC_OP_STAT_MEAN:
+            *rp = stat_sum / stat_count;
+            break;
+
+        case CALC_OP_STAT_ADD:
+            stat_sum += *rp;
+            stat_sum2 += (*rp) * (*rp);
+            stat_count++;
             break;
 
     }

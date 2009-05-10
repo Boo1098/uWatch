@@ -20,7 +20,7 @@ void decrement( int *selection, int max )
 }
 
 
-int calculatorMenu( const packedMenu *menu[], int size ) {
+int calculatorMenu( const packedMenu2 *menu[], int size ) {
 
     int mode = 0;
 
@@ -41,7 +41,7 @@ int calculatorMenu( const packedMenu *menu[], int size ) {
 }
 
 
-int genericMenu2( const packedMenu *menu, int *selection )
+int genericMenu2( const packedMenu2 *menu, int *selection )
 {
     int mode = MODE_EXIT;
 
@@ -50,24 +50,26 @@ int genericMenu2( const packedMenu *menu, int *selection )
     // Draw the menu indicators
     custom_character( 0, character_arrow_updown );
 
-    // Menu may itself define custom characters it requires.  Character #s are from 2-7
-    int i;
-    for ( i = 0; i < MENU_CUSTOM_CHAR_COUNT; i++ )
-        if ( menu->customCharacter[i] )
-            custom_character( i + 4, menu->customCharacter[i] );
+    // Menu may itself define custom characters it requires.  Character #s are from 4-7
 
+        int i;
+        for ( i = 0; i < menu->csetsize; i++ )
+            custom_character( i + 4, (menu->charset)[i] );
 
     if ( menu->title && *menu->title )
         UpdateLCDline1( menu->title );
-
 
     int key;
     extern unsigned int mask;
     mask = 0;
 
+    const menuItem *pmenu = menu->menu;
+
+
     do {
 
         if ( menu->print ) {
+
 
             if ( !menu->title ) {
 
@@ -75,20 +77,20 @@ int genericMenu2( const packedMenu *menu, int *selection )
                 // and the OP values are associated with function keypresses.  Here we
                 // draw BOTH LCD lines and we also highlight the current selection
 
-                sprintf( out, "%s%s%s", menu->menu[0].name, menu->menu[1].name, menu->menu[2].name );
+                sprintf( out, "%s%s%s", pmenu[0].name, pmenu[1].name, pmenu[2].name );
                 UpdateLCDline1( out );
-                sprintf( out, "%s%s%s", menu->menu[3].name, menu->menu[4].name, menu->menu[5].name );
+                sprintf( out, "%s%s%s", pmenu[3].name, pmenu[4].name, pmenu[5].name );
                 UpdateLCDline2( out );
 
             } else {
 
                 char out2[17];
-                sprintf( out2, "%-15s\010", ( *( menu->print ) )( &sel, (menuItem *)(menu->menu) ) );
+                sprintf( out2, "%-15s\010", ( *( menu->print ) )( &sel, pmenu ) );
                 UpdateLCDline2( out2 );
             }
         }
 
-        if ( menu->menu[sel].op < 0 ) { // NO DEBOUNCE? .. ???
+        if ( pmenu[sel].op < 0 ) { // NO DEBOUNCE? .. USED IN STOPWATCH MODE
             key = KeyScan2();
             if ( !key )
                 mask = 0xFFFF;
@@ -120,20 +122,21 @@ int genericMenu2( const packedMenu *menu, int *selection )
                     if ( !menu->title ) {
                         if ( fkey[autoSel]>=0 ) {
                             sel = fkey[autoSel];
-                            if ( menu->menu[sel].op != CALC_OP_NULL )
+                            if ( pmenu[sel].op != CALC_OP_NULL )
                                 break;
                         } 
                     }
                 }
             }    
     
-            if ( menu->inc && NEXT( key ) ) {
-                ( *( menu->inc ) )( &sel, menu->max );
+
+            if ( NEXT( key ) ) {
+                increment( &sel, menu->menusize );
                 mask = 0;
             }    
     
-            if ( menu->dec && PREVIOUS( key ) ) {
-                ( *( menu->dec ) )( &sel, menu->max );
+            if ( PREVIOUS( key ) ) {
+                decrement( &sel, menu->menusize );
                 mask = 0;
             }
         }
@@ -144,8 +147,8 @@ int genericMenu2( const packedMenu *menu, int *selection )
     if ( selection )
         ( *selection ) = sel;
 
-    if ( menu->menu[sel].run )
-        mode = ( menu->menu[sel].run )( menu->menu[sel].op );
+    if ( pmenu[sel].run )
+        mode = ( pmenu[sel].run )( pmenu[sel].op );
 
     return mode;
 }
@@ -297,7 +300,7 @@ int viewString( char *title, char *string,
 }
 
 
-char *printMenu( int *item, menuItem *menu )
+char *printMenu( int *item, const menuItem *menu )
 {
     return (char *) menu[*item].name;
 }

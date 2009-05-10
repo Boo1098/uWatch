@@ -51,11 +51,9 @@ int getRT() {
 
 static int lastNow = 0;
 static int currentTime;
-static int stopWatchDuration = 0;
-char ch = '*';
 int delay = 2200;
 
-char *stopWatchPrintMenu( int *item, menuItem *menu ) {
+char *stopWatchPrintMenu( int *item, const menuItem *menu ) {
 
     Clock4MHz();
 
@@ -106,7 +104,6 @@ char *stopWatchPrintMenu( int *item, menuItem *menu ) {
             if ( firstSecond ) {
                 stopWatchStart += 0.9 - swTenths;
                 firstSecond = FALSE;
-                ch='Y';
             } else {
 
                 if ( swTenths < 0.9 ) {
@@ -165,16 +162,18 @@ int stopWatchLap( int op ) {
 
 int StopWatchMode() {
 
-    const packedMenu stopWatchMenu = {
+
+    const menuItem stopWatchMenuMenu[] = {
+        { "Start/Stop",  stopWatchStartStop, STOPWATCH_START },
+        { "Lap", stopWatchLap, STOPWATCH_LAP },
+    };
+
+    const packedMenu2 stopWatchMenu = {
         "",
         stopWatchPrintMenu,
-        increment, decrement, 2,
-        {},
-        {   { "Start/Stop",  stopWatchStartStop, STOPWATCH_START },
-            { "Lap", stopWatchLap, STOPWATCH_LAP },
-            //{ "Split", stopWatchSplit, STOPWATCH_SPLIT },
-        },
+        0, 0, 2, stopWatchMenuMenu
     };
+
 
     int mode;
     int sel = 0;

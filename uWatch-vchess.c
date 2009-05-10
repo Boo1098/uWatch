@@ -295,25 +295,27 @@ int cont( int p ) {
 }
 
 
-const packedMenu contMenu = {
+const menuItem contMenuMenu[] = {
+    { "Continue", &cont, TRUE },
+    { "New Game", &cont, FALSE },
+};
+
+const packedMenu2 contMenu = {
     "- VCHESS v1.4 -",
     printMenu,
-    increment, decrement, 2,
-    {},
-    {   { "Continue", &cont, TRUE },
-        { "New Game", &cont, FALSE },
-    },
+    0, 0, 2, contMenuMenu
 };
 
 
-const packedMenu colourMenu = {
+const menuItem colourMenuMenu[] = {
+    { "White", &chosen, WHITE },
+    { "Black", &chosen, BLACK },
+};
+
+const packedMenu2 colourMenu = {
     "- VCHESS v1.4 -",
     printMenu,
-    increment, decrement, 2,
-    {},
-    {   { "White", &chosen, WHITE },
-        { "Black", &chosen, BLACK },
-    },
+    0, 0, 2, colourMenuMenu
 };
 
 int levelChoose( int p ) {
@@ -321,15 +323,17 @@ int levelChoose( int p ) {
     return MODE_EXIT;
 }
 
-const packedMenu levelMenu = {
+const menuItem levelMenuMenu[] = {
+    { "Easy",   levelChoose, 2 },
+    { "Medium", levelChoose, 3 },
+    { "Hard",   levelChoose, 4 },
+};
+
+
+const packedMenu2 levelMenu = {
     "Difficulty?",
     printMenu,
-    increment, decrement, 3,
-    {},
-    {   { "Easy", &levelChoose, 2 },
-        { "Medium", &levelChoose, 3 },
-        { "Hard", &levelChoose, 4 },
-    },
+    0, 0, 3, levelMenuMenu
 };
 
 

@@ -127,5 +127,14 @@ extern void SwapXY();
 #define CALC_OP_E               65
 
 #define CALC_OP_BASE8           66
+#define CALC_OP_PERMUTATION     67
+#define CALC_OP_COMBINATION     68
+
+#define CALC_OP_STAT_CLX        69
+#define CALC_OP_STAT_SIGMAX     70
+#define CALC_OP_STAT_SIGMAX2    71
+#define CALC_OP_STAT_SD         72
+#define CALC_OP_STAT_MEAN       73
+#define CALC_OP_STAT_ADD        74
 
 #endif // __uwatch_op_h__

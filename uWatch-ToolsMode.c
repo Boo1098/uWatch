@@ -49,7 +49,7 @@ int quadratic( int p ) {
     float root1,root2;
     
     custom_character( 2, character_squaring );
-    UpdateLCDline1( "[?]x\2 + bx + c" );
+    UpdateLCDline1( "a x\2?" );
 
     Xreg = 0;
 
@@ -57,13 +57,13 @@ int quadratic( int p ) {
 
     a = Xreg;
 
-    UpdateLCDline1( "ax\2 + [?]x + c" );
+    UpdateLCDline1( "b x?" );
     Xreg = 0;
 
     IFEXIT( OneLineNumberEntry() );
 
     b = Xreg;
-    UpdateLCDline1( "ax\2 + bx + [?]" );
+    UpdateLCDline1( "c?" );
     Xreg = 0;
 
     IFEXIT( OneLineNumberEntry() );
@@ -95,13 +95,13 @@ int quadratic( int p ) {
 
     
     if ( a == 0 )
-        strcat( displayBuffer, "has no roots." );
+        strcat( displayBuffer, ": no roots." );
     else {
     
         d = b*b - 4*a*c;
     
         if ( d < 0 )
-            strcat( displayBuffer, "is invalid (b\2-4ac < 0)." );
+            strcat( displayBuffer, ": invalid (b\2-4ac < 0)." );
         else {
     
             d  = sqrt(d);   //compute the square root of discriminant d
@@ -109,7 +109,7 @@ int quadratic( int p ) {
             root2 = (-b - d)/(2.0*a);   //second root
     
             char buffer[64];
-            sprintf( buffer, " has roots %f and %f.", root1, root2 );
+            sprintf( buffer, ": roots %f, %f.", root1, root2 );
             strcat( displayBuffer, buffer );
         }
     }
@@ -124,14 +124,15 @@ int quadratic( int p ) {
 
 int ToolsMode( int p )
 {
-    const packedMenu toolsMenu = {
-        "Application",
+    const menuItem toolsMenuMenu[] = {
+        { "Quadratic",  quadratic, 0 },
+        { "Factorise", factor, 0 },
+    };
+
+    const packedMenu2 toolsMenu = {
+        "Apps",
         printMenu,
-        increment, decrement, 2,
-        {},
-        {   { "Quadratic",  quadratic, 0 },
-            { "Factorise", factor, 0 },
-        },
+        0, 0, 2, toolsMenuMenu
     };
 
     return genericMenu2( &toolsMenu, 0 );
