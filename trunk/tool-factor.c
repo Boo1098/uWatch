@@ -9,7 +9,7 @@
 char displayBuffer[400];
 
 
-int check( unsigned long* nx, unsigned long int in, int *factors ) 
+int check( unsigned long* nx, unsigned long int in, int* factors ) 
 {
     // return 1 if factor and reduce nx
     unsigned long int fact = *nx / in;
@@ -20,8 +20,8 @@ int check( unsigned long* nx, unsigned long int in, int *factors )
     
         sprintf( out, "%lu", in );
         strcat( displayBuffer, out );
-        (*factors)++;
         *nx = fact;
+        ++*factors;
         return 1;
     }
     return 0;
@@ -47,7 +47,6 @@ int factor( int p )
     else {
 
         nx = Xreg; Xreg = 0;
-        idleEnd = sqrt( nx );
         sprintf( displayBuffer, "%lu = (", nx );
         viewString( "Factors...", displayBuffer, 0, 1 );
 
@@ -59,12 +58,24 @@ int factor( int p )
             // elminate 3s
             while (check(&nx, 3, &factors)) ;
 
-            for (in = 5; in <= idleEnd && in <= nx; in += 4)
+            idleEnd = sqrt( nx );
+            
+            for (in = 5; in <= idleEnd; in += 4)
             {
-                while (check( &nx, in, &factors )) ;  
+                unsigned long t = nx;
+                while (check( &nx, in, &factors )) ;
                 in += 2;
                 while (check( &nx, in, &factors )) ;
 
+                if (t != nx)
+                {
+                    // we've factored, so reduce the limit
+                    idleEnd = sqrt( nx );                    
+                }
+
+#if 0
+                // taken this out as we are now fast enough.
+                // putting back in does no harm, but takes code space.
                 int key = KeyScan2();
                 if ( key == KeyClear ) {
                     strcat( displayBuffer, " ..." );
@@ -72,6 +83,7 @@ int factor( int p )
                     break;
                 }
                 if ( key == KeyMode ) return MODE_KEYMODE;
+#endif
             }
             if (nx > 1) check(&nx, nx, &factors); // put remainder
         }
