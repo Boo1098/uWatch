@@ -242,7 +242,7 @@ const packedMenu2 mathOther = {
 
 
 const menuItem mathComplexMenu[] = {
-    { " conv",  OperatePrecedence, CALC_OP_CONV            },     //???
+    { " imag",  OperatePrecedence, CALC_OP_IMAGINARY_PART  },  
     { "  // ",  OperatePrecedence, CALC_OP_PARALLEL        },     //???
     { " split", OperatePrecedence, CALC_OP_COMPLEX_SPLIT   },
     { " join",  OperatePrecedence, CALC_OP_COMPLEX_JOIN    },

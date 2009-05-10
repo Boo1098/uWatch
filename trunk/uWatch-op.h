@@ -51,8 +51,6 @@ extern void Push();
 extern void Drop();
 extern void KeyRecord(void);
 extern void KeyReplay(void);
-//extern int Conversions(void);
-//extern void BaseMode(void);
 extern void SwapXY();
 
 /* Operation Codes */
@@ -86,7 +84,7 @@ extern void SwapXY();
 #define CALC_OP_DAYS            26
 #define CALC_OP_RECORD          27
 #define CALC_OP_PLAY            28
-#define CALC_OP_CONV            29
+#define CALC_OP_IMAGINARY_PART  29
 #define CALC_OP_PARALLEL        30
 #define CALC_OP_PLUS            31
 #define CALC_OP_MINUS           32

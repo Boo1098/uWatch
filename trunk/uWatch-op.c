@@ -803,6 +803,10 @@ void Operation( int op )
             *irp = 0;
             break;
 
+        case CALC_OP_IMAGINARY_PART:
+            *rp = *irp;
+            *irp = 0;
+            break;
         case CALC_OP_HYP_SIN:
             // sinh (a + ib) = -i sin(-b + i a)
             // NB: wont lose accuracy if real.
