@@ -177,7 +177,7 @@ static void ProcessNumberKey(char digit)
     if (ValueEntered==TRUE)
     {
         //check to see if we don't have to overwrite the Xreg
-        if (EnableXregOverwrite==FALSE)
+        if (!EnableXregOverwrite)
         {
             PushStackUp(); //push the stck up for the first key entry, i.e. *don't* overwrite the Xreg
             UpdateLCDline1(DisplayYreg);
@@ -270,7 +270,7 @@ int EnterNumber(int Key)
                     else
                     {
                         // insert a 0 if not following a digit
-                        if (l == 0 || !isdigit(*p) || ValueEntered == TRUE)
+                        if ( !l || !isdigit(*p) || ValueEntered )
                         {
                             //decimal point needs a 0 added to the start
                             ProcessNumberKey('0');
@@ -349,8 +349,7 @@ int EnterNumber(int Key)
                     ExponentIncluded=TRUE;
                 
                     // EXP is first key pressed, so add a 1 to the front
-                    if (l == 0 || !isdigit(DisplayXreg[l-1]) ||
-                        ValueEntered == TRUE)
+                    if ( !l || !isdigit(DisplayXreg[l-1]) || ValueEntered )
                         ProcessNumberKey('1');
                     
                     ProcessNumberKey('e');
@@ -467,7 +466,7 @@ void FormatValue(char* dest,
         break;
 
         case 10:
-            if (ivalue == 0)
+            if ( !ivalue )
             {
                 // fit into `space's on screen
                 int p = space-1;
@@ -583,6 +582,19 @@ void UpdateDisplayRegs(void)
         {
             switch (OperatorXY)
             {
+//            case CALC_OP_LOGIC_AND:
+//            case CALC_OP_LOGIC_OR:
+//            case CALC_OP_LOGIC_NOR:
+//            case CALC_OP_LOGIC_NAND:
+//            case CALC_OP_LOGIC_XOR:
+//                c = 'L';
+//                break;
+
+            case CALC_OP_PERMUTATION:
+            case CALC_OP_COMBINATION:
+                c = 'C';
+                break;
+
             case CALC_OP_PLUS:  c='+'; break;
             case CALC_OP_MINUS: c='-'; break;
             case CALC_OP_MULT:  c='x'; break;
@@ -714,7 +726,7 @@ double ConvertDisplay(char* DisplayString, double* ip)
 void CompleteXreg(void)
 {
     //if ENTER has not been pressed then do it for them
-    if (ValueEntered==FALSE)
+    if (!ValueEntered)
     {
         Xreg=ConvertDisplay(DisplayXreg, &iXreg);
         ResetFlags();

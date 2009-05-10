@@ -95,7 +95,7 @@ int quadratic( int p ) {
     strcat( displayBuffer, out );
 
     
-    if ( a == 0 )
+    if ( !a )
         strcat( displayBuffer, ": no roots." );
     else {
     

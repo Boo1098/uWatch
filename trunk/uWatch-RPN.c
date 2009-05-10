@@ -130,6 +130,8 @@ void RPNcalculator(void)
             UpdateDisplayRegs();	//update display again
             break;
         }
+
+
     }
 }
 

@@ -906,7 +906,7 @@ int addPawnMove(Move mv, int all)
     if (mc)
     {
         int r = mv.to &0xF0;
-        if (r == 0x70 || r == 0) // rank 1 o 8
+        if (r == 0x70 || !r ) // rank 1 o 8
         {
             // consider promotion
             mv.promote = queen;
@@ -1205,7 +1205,7 @@ int makeMove(Move m, int* ep)
             Castle &= ~4;
         else if (from == 0x77)
             Castle &= ~8;
-        else if (from == 0)
+        else if ( !from )
             Castle &= ~1;
         else if (from == 0x7)
             Castle &= ~2;
