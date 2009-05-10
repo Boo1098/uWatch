@@ -90,8 +90,14 @@ int opPrec( int op )
     // bin ops: + - are 3
 
     int prec = 0;
-    if ( //op == CALC_OP_AND || op == CALC_OP_OR || op == CALC_OP_NAND || op == CALC_OP_NOR ||
-            op == CALC_OP_NPOW ||
+    if (    op == CALC_OP_LOGIC_AND
+         || op == CALC_OP_LOGIC_OR
+         || op == CALC_OP_LOGIC_NAND
+         || op == CALC_OP_LOGIC_NOR
+         || op == CALC_OP_LOGIC_XOR
+         || op == CALC_OP_PERMUTATION
+         || op == CALC_OP_COMBINATION
+         || op == CALC_OP_NPOW ||
             op == CALC_OP_R2P  ||
             op == CALC_OP_PARALLEL ||
             op == CALC_OP_COMPLEX_JOIN ||
@@ -1405,18 +1411,21 @@ void OpenTimer1( unsigned int config, unsigned int period )
 
 int setupTime( int p )
 {
+    extern int doCal( int modify );
 
-    const packedMenu sampleMenu = {
+    const menuItem timeMenu[] = {
+        { "Set Time",       &changeTime,         0  },
+        { "Set Date",       doCal,         TRUE  },
+        { "Calibrate",      &changeCalibration,  0  },
+        { "Set 12/24h",     &change1224,         0  },
+        { "Set DST Zone",   &changeDST,          0  },
+        { "Set Location",   &changeLocation,     0  },
+    };
+
+    const packedMenu2 sampleMenu = {
         "Clock Settings",
-        printMenu, increment, decrement, 6,
-        {},
-        {   { "Set Time",       &changeTime,         0  },
-            { "Set Date",       &changeDate,         0  },
-            { "Calibrate",      &changeCalibration,  0  },
-            { "Set 12/24h",     &change1224,         0  },
-            { "Set DST Zone",   &changeDST,          0  },
-            { "Set Location",   &changeLocation,     0  },
-        },
+        printMenu,
+        0, 0, 6, timeMenu
     };
 
     return genericMenu2( &sampleMenu, 0 );
@@ -1448,16 +1457,24 @@ void doTimeMode()
 
             WatchMode = WATCH_MODE_TIME_MENU;
 
-            const packedMenu TimeMenu = {
-                "Clock",
-                printMenu, increment, decrement, 3,
-                {   character_right_menu,
-                },
-                {   { "Stopwatch", StopWatch, 0 },
-                    { "Calendar", doCalendar, 0 },
-                    { "\4Setup", setupTime, 0 },
-                },
+            extern int doCal( int modify );
+
+            const menuItem tMenu2[] = {
+                { "Stopwatch",  StopWatch,  0 },
+                { "Calendar",   doCal, FALSE },
+                { "\4Setup",    setupTime,  0 },
             };
+
+            const charSet tCharset2[] = {
+                character_right_menu,
+            };
+
+            const packedMenu2 TimeMenu = {
+                "Clock",
+                printMenu,
+                1, tCharset2, 3, tMenu2
+            };
+
 
             genericMenu2( &TimeMenu, 0 );
             while ( KeyScan2( FALSE ));
@@ -1517,16 +1534,20 @@ extern int GamesMode();
 extern int ToolsMode();
 extern int SetupMode();
 
-        const packedMenu appsMenu = {
+        const charSet appCharset[] = {
+            character_right_menu,
+        };
+
+        const menuItem appMenu[] = {
+            { "\4Tools",     ToolsMode, 0 },
+            { "\4Games",     GamesMode, 0 },
+            { "\4Configure", SetupMode, 0 },
+        };
+
+        const packedMenu2 appsMenu = {
             "Application",
-            printMenu, increment, decrement, 3,
-            {   character_right_menu,
-            },
-            {   { "\4Tools", ToolsMode, 0 },
-//                { "\2Memo",  notebook, 0 },
-                { "\4Games", GamesMode, 0 },
-                { "\4Configure", SetupMode, 0 },
-            },
+            printMenu,
+            1, appCharset, 3, appMenu
         };
 
         genericMenu2( &appsMenu, 0 );

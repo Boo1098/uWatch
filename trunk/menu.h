@@ -10,21 +10,25 @@ typedef struct {
     int op;
 } menuItem;
 
+
+typedef const unsigned char * charSet;
+
 typedef struct {
     const char *title;
-    char *( *print )( int *sel, menuItem *menu );
-    void ( *inc )( int *sel, int max );
-    void ( *dec )( int *sel, int max );
-    const int max;
-    const unsigned char *customCharacter[MENU_CUSTOM_CHAR_COUNT];
-    const menuItem menu[MENU_ITEM_MAX];
-} packedMenu;
+    char *( *print )( int *sel, const menuItem *menu );
+    int csetsize;
+    const charSet *charset;
+    int menusize;
+    const menuItem *menu;
+} packedMenu2;
 
-char *printMenu( int *item, menuItem *menu );
+
+
+char *printMenu( int *item, const menuItem *menu );
 void increment( int *selection, int max );
 void decrement( int *selection, int max );
 
-int genericMenu2( const packedMenu *menu, int *selection );
+int genericMenu2( const packedMenu2 *menu, int *selection );
 
 int genericMenu( char *title,
                  char *( *printFunc )( int *num, int max ),
@@ -37,11 +41,11 @@ int genericMenu( char *title,
 #define VIEW_AUTOSCROLL 2
 
 int viewString( char *title, char *string, int *selection, int viewControl );
-int calculatorMenu( const packedMenu *menu[], int size );
+int calculatorMenu( const packedMenu2 *menu[], int size );
 
-extern const packedMenu mathMenu;
-extern const packedMenu *calcMenus[];
-#define CALC_MENU_SIZE 11
+extern const packedMenu2 mathMenu;
+extern const packedMenu2 *calcMenus[];
+#define CALC_MENU_SIZE 14
 
 
 #endif

@@ -46,43 +46,41 @@ int factor( int p )
     UpdateLCDline1("Factor this");
     Xreg = 0;
     OneLineNumberEntry();
-    nx = Xreg;
+    nx = fabs(Xreg);
     Xreg = 0;
 
-    if (nx > (unsigned long int)(long int)(-1)) //checks if number > max long int??
-        sprintf( displayBuffer, "%lu is too large", nx );
-
-
-    else if ( Xreg < 0 ) //checks for negative,0
-        sprintf( displayBuffer, "Enter positive numbers only." );
+    const char *nb = "Result";
     
+    if (nx > (unsigned long int)(long int)(-1)) //checks if number > max long int??
+        sprintf( displayBuffer, "%lu: too large", nx );
+
     else {
 
         idleEnd = sqrt( nx );
         sprintf( displayBuffer, "%lu = (", nx );
-        viewString( "Factorising...", displayBuffer, 0, 1 );
-
-        const char *nb = "Result";
+        viewString( "Factors...", displayBuffer, 0, 1 );
+    
     
         for ( in = 2; in <= idleEnd; in++ ) {
-
+    
             int key = KeyScan2();
-
+    
             if ( key == KeyClear ) {
                 strcat( displayBuffer, " ..." );
                 nb = "Halted!";
                 break;
             }
-
+    
             if ( key == KeyMode )
                 return MODE_KEYMODE;
-
+    
             check( nx, in, &factors );
         }
-
+    
         strcat( displayBuffer, ")" );
-        viewString( (char *) nb, displayBuffer, 0, 2 );
     }
+
+    viewString( (char *) nb, displayBuffer, 0, 2 );
 
     return MODE_EXIT;
 

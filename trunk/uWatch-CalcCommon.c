@@ -224,9 +224,8 @@ int EnterNumber(int Key)
     int c = ReturnNumber(Key);
     if (c >= 0 && c <= 9)
     {
-        if ( CalcDisplayBase == 2 && c > 1 )        // limit binary entry
-            return 0;
-        if ( CalcDisplayBase == 8 && c > 7 )        // limit octal entry
+        if (( CalcDisplayBase == 2 && c > 1 )        // limit binary entry
+            || ( CalcDisplayBase == 8 && c > 7 ))        // limit octal entry
             return 0;
         
         // key is 0 to 9
@@ -324,6 +323,10 @@ int EnterNumber(int Key)
 
         // IF the number displayed is too big (indicated by a < indicator at left side)
         // then the EXP key is a trigger to display the extended number with scrolling viewer
+        // Note, this is only operational in base 2,8,16 at the moment
+
+        Key = 0;
+
         if ( *DisplayXreg == '<' ) {
 
             char *longstr = displayBuffer+200;
@@ -331,11 +334,9 @@ int EnterNumber(int Key)
             int sel = strlen( longstr ) - 16;
             viewString( 0, longstr, &sel, 2 );
             UpdateLCDline2( DisplayXreg );
-            Key = 0;
             break;
         }
 
-        Key = 0;
         if (l < XBufSize-1) // space for 2
         {
 //            if ( CalcDisplayBase == 16 )
@@ -963,18 +964,19 @@ int hexSelect( int sel ) {
 // enter a HEX digit A-F onto the current Xreg string
 int HexEntry(void)
 {
-    const packedMenu hexMenu = {
+    const menuItem hexMenuMenu[] = {
+        { "   A ", hexSelect, 7 },
+        { "  B  ", hexSelect, 8 },
+        { " C", hexSelect, 9 },
+        { "   D ", hexSelect, 4 },
+        { "  E  ", hexSelect, 5 },
+        { " F", hexSelect, 6 },
+    };
+
+    const packedMenu2 hexMenu = {
         0,
-        printMenu, increment, decrement, 6,
-        {   character_right_menu,
-        },
-        {   { "   A ", hexSelect, 7 },
-            { "  B  ", hexSelect, 8 },
-            { " C", hexSelect, 9 },
-            { "   D ", hexSelect, 4 },
-            { "  E  ", hexSelect, 5 },
-            { " F", hexSelect, 6 },
-        },
+        printMenu,
+        0, 0, 6, hexMenuMenu
     };
 
     return genericMenu2( &hexMenu, 0 );
