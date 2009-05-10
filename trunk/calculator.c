@@ -119,7 +119,7 @@ const charSet mathStatsCharset[] = {
 const menuItem mathStatsMenu[] = {
     { " clx ",      OperatePrecedence, CALC_OP_STAT_CLX     },
     { " \366x  ",   OperatePrecedence, CALC_OP_STAT_SIGMAX  },
-    { " \366x\4 ",  OperatePrecedence, CALC_OP_STAT_SUB     },
+    { " \366-  ",  OperatePrecedence, CALC_OP_STAT_SUB     },
     { "  \345  ",   OperatePrecedence, CALC_OP_STAT_SD      },
     { "  \370 ",    OperatePrecedence, CALC_OP_STAT_MEAN    },
     { "  \366+ ",   OperatePrecedence, CALC_OP_STAT_ADD     },
