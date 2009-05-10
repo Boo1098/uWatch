@@ -265,6 +265,13 @@ char *printHitStand(int *n, int max ) {
 }
 
 
+static void shuffling(int* deck)
+{
+    shuffle( deck );
+    UpdateLCDline2( "shuffling..." );
+    DelayMs(1000);
+}
+
 int twenty1( int p )
 {
 #if 1
@@ -276,33 +283,35 @@ int twenty1( int p )
 
     int deck[52];
     int card;
-    for ( card = 0; card < 52; card++ ) deck[card] = card;
-
     int player[20];
     int dealer[20];
+    
+    for ( card = 0; card < 52; card++ ) deck[card] = card;
+    shuffling(deck);
+    card = 0;
 
     int key;
     while ( TRUE ) {
 
         key = 0;
 
-        shuffle( deck );
-
         UpdateLCDline2( "" );
 
-        card = 0;
         int cardn = 0;
+        int pcard = 0;
         int total = 0;
         while ( total < 22 ) {
     
-            player[cardn++] = deck[card++];
+            player[cardn++] = deck[card];
+            ++pcard;
+            if (++card == 52) { shuffling(deck); card = 0; }
     
             total = drawHand( "", displayBuffer, player, cardn );
             UpdateLCDline1( displayBuffer );
 
-            if ( card < 2 ) {
+            if ( pcard < 2 ) {
                 DelayMs(2000);
-            } else if ( total < 22 ) {
+            } else if ( total < 21 ) { // wont hit on 21!
 
                 int hitStand = 0;
                 if ( genericMenu( displayBuffer, &printHitStand, &increment, &decrement, 2, &hitStand ) == MODE_KEYMODE )
@@ -314,24 +323,21 @@ int twenty1( int p )
         }
 
         if ( total > 21 ) {
-            //UpdateLCDline1( displayBuffer + strlen(displayBuffer) - 16 );
             UpdateLCDline2( "Bust!" );
         }
         else {
-
             char *dout = displayBuffer + strlen(displayBuffer) + 20;
-    
             int dealertotal = 0;
             cardn = 0;
-            while ( dealertotal < 17 ) {
+            while ( dealertotal < total ) {  // dealer hits until better
         
-                dealer[cardn++] = deck[card++];
-        
+                dealer[cardn++] = deck[card];
+                if (++card == 52) { shuffling(deck); card = 0; }
+                
                 dealertotal = drawHand( "D: ", dout, dealer, cardn  );
                 UpdateLCDline2( dout );
-        
                 DelayMs(2500);
-                    }
+            }
 
             char *result = "Dealer Wins!";
             if ( dealertotal > 21 ) {
