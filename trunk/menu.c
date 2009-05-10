@@ -65,13 +65,8 @@ int genericMenu2( const packedMenu2 *menu, int *selection )
     mask = 0;
 
     const menuItem *pmenu = menu->menu;
-
-
     do {
-
         if ( menu->print ) {
-
-
             if ( !menu->title ) {
 
                 // we're drawing a FUNCTION KEY MENU -- aka calculator menu
@@ -84,7 +79,6 @@ int genericMenu2( const packedMenu2 *menu, int *selection )
                 UpdateLCDline2( out );
 
             } else {
-
                 char out2[17];
                 sprintf( out2, "%-15s\010", ( *( menu->print ) )( &sel, pmenu ) );
                 UpdateLCDline2( out2 );

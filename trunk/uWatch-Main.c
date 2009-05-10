@@ -592,9 +592,7 @@ int ReturnNumber( int key )
         if ( kmap[s] == key )
             return s;
 
-    IFEXIT( key );
-
-    return MODE_EXIT; // not a number
+    return -1;
 }
 
 
@@ -609,8 +607,6 @@ unsigned int KeyScan2()
 {
     unsigned int k;
 
-    k = KeystrokeReplay();      //check for keystroke programming
-    if ( k > 0 ) return( k );   //return the keystroke from memory
 
     ClearRow1;      //set all rows to inputs
     ClearRow2;
@@ -670,16 +666,9 @@ unsigned int KeyScan2()
     if ( !Col4 ) k = KeyEnter;
     ClearRow7;
 
-    if ( k  ) {
-
+    if ( k  ) 
         ResetSleepTimer();  //reset the sleep timer every time a key is pressed
-
-        if ( ProgRec ) {
-            KeystrokeRecord( k );   //record the keystroke
-//            if ( k == KeyMode ) return( 0 ); //don't return to main menu on MODE key
-        }
-
-    }
+    
     return( k );
 }
 
@@ -729,7 +718,10 @@ void backlightControl()
 
 unsigned int GetDebouncedKey()
 {
-    unsigned int Key = 0;
+    unsigned int Key;
+
+    Key = KeystrokeReplay();      //check for keystroke programming
+    if ( Key > 0 ) return( Key );   //return the keystroke from memory
 
     while ( !Key ) {
         while ( KeyScan2() );     // debounce PREVIOUS
@@ -761,13 +753,14 @@ unsigned int GetDebouncedKey()
             }
     
         } else
-    
             if ( WatchMode == WATCH_MODE_CALC )
                 backlightAvailable = FALSE;
     }    
     
     // TODO: turn off this if mode == calculator
 
+    // record debounced keys
+    if ( ProgRec ) KeystrokeRecord( Key );
     return Key;
 }
 
@@ -818,30 +811,18 @@ void dayHasChanged()
     DayOfWeek = DAYOFWEEK( MJD ) + 1;
 }
 
-
-
-
-
-
-
 // get a 2 digit BCD, < 0 if fail
-// returns MODE_KEYCLEAR or MODE_KEYMODE or -1
-// OR the 2-digit BCD number
-
 int GetNumBCD()
 {
     int h = ReturnNumber( GetDebouncedKey() );
     if ( h >= 0 ) {
-
         int h2 = ReturnNumber( GetDebouncedKey() );
         if ( h2 >= 0 )
             h = ( h << 4 ) | h2;
         else h = h2;
     }
-
     return h;
 }
-
 
 
 //***********************************
@@ -1428,23 +1409,10 @@ void ProgramInit( void )
 
     backlightAvailable = FALSE;
 
-
-
     // greenwich, UK
     Longitude = 0;
     Latitude = 51.5;
 }
-
-
-#if 0
-//************************************************
-void OpenTimer1( unsigned int config, unsigned int period )
-{
-    TMR1  = 0;          /* Reset Timer1 to 0x0000 */
-    PR1   = period;     /* assigning Period to Timer period register */
-    T1CON = config;     /* Configure timer control reg */
-}
-#endif
 
 int setupTime( int p )
 {
@@ -1467,8 +1435,6 @@ int setupTime( int p )
 
     return genericMenu2( &sampleMenu, 0 );
 }
-
-
 
 void doTimeMode()
 {
