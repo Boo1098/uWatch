@@ -50,7 +50,6 @@ int HexEntry();
 
 extern void UpdateXregDisplay(void);
 extern void UpdateYregDisplay(void);
-//extern void UpdateDisplayRegs(void);
 extern void CompleteXreg(void);
 extern void ResetFlags(void);
 extern void StoreRecall(void);
@@ -796,14 +795,13 @@ void StoreRecall(void)
     //this operation discards any value currently in the display register
     UpdateLCDline1("RECALL REG 0-9 ?");     //ask for a register number
 
-	KeyPress2 = GetDebouncedKey();
+    KeyPress2 = GetDebouncedKey();
 
     if (KeyPress2==KeyRCL) //check for 2nd press of RCl key to enter STO mode
     {                                       // do the STO function
         UpdateLCDline1(" STORE REG 0-9 ?");     //ask for a register number
 
-		KeyPress2 = GetDebouncedKey();
-        num = ReturnNumber(KeyPress2);
+        num = ReturnNumber(GetDebouncedKey());
         if(num >= 0 && num <= 9)
         {
             //store the Xreg value in the appropriate Sreg
@@ -921,7 +919,7 @@ void KeyRecord(void)
     if (num < 0) return; // escape
 
     num = BCDtoDEC(num);
-    if (num>59) num=59;
+    if (num>59) return; // escape
     
     //set the memory pointer to after the header info
     MemPointer=(num*1024)+16;
@@ -947,7 +945,7 @@ void KeyReplay(void)
     if (num < 0) return; // escape
     
     num = BCDtoDEC(num);
-    if (num>59) num=59;
+    if (num>59) return; // escape
 
     //set the memory pointer to after the header info
     MemPointer=(num*1024)+16;

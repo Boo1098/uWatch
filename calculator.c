@@ -205,8 +205,8 @@ const packedMenu2 mathTimeDate = {
 
 const menuItem menuKeystrokeMenu[] = {
     { "record",  OperatePrecedence,  CALC_OP_RECORD          },
-    { "", OperatePrecedence, CALC_OP_NULL },
     { "  play",  OperatePrecedence,  CALC_OP_PLAY            },
+    { "", OperatePrecedence, CALC_OP_NULL },
     { "", OperatePrecedence, CALC_OP_NULL },
     { "", OperatePrecedence, CALC_OP_NULL },
     { "", OperatePrecedence, CALC_OP_NULL },
