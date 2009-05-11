@@ -921,6 +921,8 @@ void KeyRecord(void)
     num = BCDtoDEC(num);
     if (num>59) return; // escape
     
+    CurrentMenu = 0;
+
     //set the memory pointer to after the header info
     MemPointer=(num*1024)+16;
 
@@ -946,6 +948,10 @@ void KeyReplay(void)
     
     num = BCDtoDEC(num);
     if (num>59) return; // escape
+
+    // when we go into record, reset the menu to the first page
+    // so that we get consistent results on replay.
+    CurrentMenu = 0;
 
     //set the memory pointer to after the header info
     MemPointer=(num*1024)+16;
