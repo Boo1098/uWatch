@@ -139,9 +139,9 @@ int OneLineNumberEntry()
 
 char *printNumber( int *number, int max ) {
     // decimal to string is VERY slow -- hence the turbo
-    //Clock4MHz();
+    Clock4MHz();
     sprintf( out, "%d", *number );
-    //Clock250KHz();
+    Clock250KHz();
     return out;
 }
 

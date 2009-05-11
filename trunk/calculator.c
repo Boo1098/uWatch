@@ -138,12 +138,12 @@ const charSet mathConstantCharset[] = {
 };
 
 const menuItem mathConstantMenu[] = {
-    { "    \4", OperatePrecedence, CALC_OP_PI       },
-    { "  c ",   OperatePrecedence, CALC_OP_LIGHT    },
-    { " Avo ",  OperatePrecedence, CALC_OP_AVOGADRO },
-    { "    e",  OperatePrecedence, CALC_OP_E        },
-    { " Pla ",  OperatePrecedence, CALC_OP_PLANCK   },
-    { "", OperatePrecedence, CALC_OP_NULL },
+    { "   \4 ", OperatePrecedence, CALC_OP_PI       },
+    { "  c  ",   OperatePrecedence, CALC_OP_LIGHT    },
+    { "Avogad",  OperatePrecedence, CALC_OP_AVOGADRO },
+    { "   e ",  OperatePrecedence, CALC_OP_E        },
+    { "     ", OperatePrecedence, CALC_OP_NULL },
+    { "Planck",  OperatePrecedence, CALC_OP_PLANCK   },
 };
 
 const packedMenu2 mathConstant = {

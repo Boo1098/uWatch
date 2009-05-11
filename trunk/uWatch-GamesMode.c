@@ -268,8 +268,13 @@ char *printHitStand(int *n, int max ) {
 static void shuffling(int* deck)
 {
     shuffle( deck );
-    UpdateLCDline2( "shuffling..." );
+    UpdateLCDline2( "Shuffling..." );
     DelayMs(1000);
+}
+
+void blackjack() {
+    UpdateLCDline2( "Blackjack!" );
+    DelayMs( 3000 );
 }
 
 int twenty1( int p )
@@ -282,62 +287,98 @@ int twenty1( int p )
     custom_character( 5, character_club );
 
     int deck[52];
-    int card;
     int player[20];
     int dealer[20];
     
+    int card;
     for ( card = 0; card < 52; card++ ) deck[card] = card;
-    shuffling(deck);
-    card = 0;
 
     int key;
     while ( TRUE ) {
 
         key = 0;
 
+        // Shuffling is done here for two reasons...
+        // 1) this will do an initial shuffle
+        // 2) this will do a mid-game shuffle, but NEVER shuffle while hands are in play
+        // 3) note we don't let the deck 'run out' before shuffling.  important!!
+
+        if ( card > 40 ) {            // it WILL be on 1st time through!
+            shuffling( deck );
+            card = 0;
+        }    
+
         UpdateLCDline2( "" );
 
         int cardn = 0;
-        int pcard = 0;
         int total = 0;
-        while ( total < 22 ) {
-    
-            player[cardn++] = deck[card];
-            ++pcard;
-            if (++card == 52) { shuffling(deck); card = 0; }
-    
+        int hitStand = 0;
+
+        while ( total < 21 && !hitStand ) {
+
+            player[cardn++] = deck[card++];
+
             total = drawHand( "", displayBuffer, player, cardn );
             UpdateLCDline1( displayBuffer );
 
-            if ( pcard < 2 ) {
+            if ( cardn < 2 ) {
                 DelayMs(2000);
             } else if ( total < 21 ) { // wont hit on 21!
 
-                int hitStand = 0;
                 if ( genericMenu( displayBuffer, &printHitStand, &increment, &decrement, 2, &hitStand ) == MODE_KEYMODE )
                     return MODE_KEYMODE;
-    
-                if ( hitStand == 1 )     // stand
-                    break;
             }
         }
 
+        
         if ( total > 21 ) {
             UpdateLCDline2( "Bust!" );
         }
         else {
+
+            if ( total == 21 && cardn == 2 )
+                blackjack();
+
             char *dout = displayBuffer + strlen(displayBuffer) + 20;
             int dealertotal = 0;
             cardn = 0;
-            while ( dealertotal < total ) {  // dealer hits until better
+
+
+/*
+
+The dealer must play his hand in a specific way, with no choices allowed. There are two popular rule variations that
+determine what totals the dealer must draw to. In any given casino, you can tell which rule is in effect by looking
+at the blackjack tabletop. It should be clearly labeled with one of these rules: 
+
+"Dealer stands on all 17s": This is the most common rule. In this case, the dealer must continue to take cards ("hit")
+until his total is 17 or greater. An Ace in the dealer's hand is always counted as 11 if possible without the dealer
+going over 21. For example, (Ace,8) would be 19 and the dealer would stop drawing cards ("stand"). Also, (Ace,6) is 17
+and again the dealer will stand. (Ace,5) is only 16, so the dealer would hit. He will continue to draw cards until the
+hand's value is 17 or more. For example, (Ace,5,7) is only 13 so he hits again. (Ace,5,7,5) makes 18 so he would stop
+("stand") at that point.
+
+"Dealer hits soft 17": Some casinos use this rule variation instead. This rule is identical except for what happens
+when the dealer has a soft total of 17. Hands such as (Ace,6), (Ace,5,Ace), and (Ace, 2, 4) are all examples of soft
+17. The dealer hits these hands, and stands on soft 18 or higher, or hard 17 or higher. When this rule is used, the
+house advantage against the players is slightly increased. 
+
+Again, the dealer has no choices to make in the play of his hand. He cannot split pairs, but must instead simply hit
+until he reaches at least 17 or busts by going over 21. 
+
+*/
+
+            while ( dealertotal < 17 ) {  // dealer hits while under 17.  DO NOT CHANGE THIS WITHOUT DISCUSSION!!!!
         
-                dealer[cardn++] = deck[card];
-                if (++card == 52) { shuffling(deck); card = 0; }
+                dealer[cardn++] = deck[card++];
                 
                 dealertotal = drawHand( "D: ", dout, dealer, cardn  );
                 UpdateLCDline2( dout );
                 DelayMs(2500);
             }
+
+            if ( dealertotal == 21 && cardn == 2 )
+                blackjack();
+
 
             char *result = "Dealer Wins!";
             if ( dealertotal > 21 ) {
