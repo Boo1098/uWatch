@@ -606,7 +606,7 @@ int appSelfTest()
             s = "-";
             break;
         case KeyMult:
-            s = "X";
+            s = "*";
             break;
         case KeyDiv:
             s = "/";
@@ -699,7 +699,7 @@ int SetupMode( int p )
     };
 
     const packedMenu2 setupMenu = {
-        "Configure",
+        "Setup",
         printMenu,
         0, 0, 5, setupMenuMenu
     };

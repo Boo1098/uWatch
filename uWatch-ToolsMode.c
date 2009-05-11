@@ -40,7 +40,7 @@ This program is free software: you can redistribute it and/or modify
 
 int quadratic( int p ) {
 
-    //quadratic (Solve ax^2 + bx + c = 0 
+    //quadratic (Solve ax^2 + bx + c = 0)
 
     double a,b,c;
     double d;

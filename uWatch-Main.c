@@ -1544,7 +1544,7 @@ extern int SetupMode();
         const menuItem appMenu[] = {
             { "\4Tools",     ToolsMode, 0 },
             { "\4Games",     GamesMode, 0 },
-            { "\4Configure", SetupMode, 0 },
+            { "\4Setup",     SetupMode, 0 },
         };
 
         const packedMenu2 appsMenu = {
