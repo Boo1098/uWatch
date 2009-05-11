@@ -61,7 +61,7 @@ int lunarLander( int p )        // COST: 1434 bytes
 
     while ( height > 0 ) {
         if ( fuelRemaining > 0 ) {
-lunar:
+            lunar:
             UpdateLCDline1( "ENT - burn fuel" );
             UpdateLCDline2( "MENU - stats" );
             KeyPress2 = GetDebouncedKey();

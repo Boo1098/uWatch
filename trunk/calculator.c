@@ -142,7 +142,7 @@ const menuItem mathConstantMenu[] = {
     { "  c ",   OperatePrecedence, CALC_OP_LIGHT    },
     { " Avo ",  OperatePrecedence, CALC_OP_AVOGADRO },
     { "    e",  OperatePrecedence, CALC_OP_E        },
-    { "", OperatePrecedence, CALC_OP_NULL },
+    { " Pla ",  OperatePrecedence, CALC_OP_PLANCK   },
     { "", OperatePrecedence, CALC_OP_NULL },
 };
 

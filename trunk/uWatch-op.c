@@ -626,6 +626,12 @@ void Operation( int op )
             *rp = exp(1.0);
             *irp = 0;
             break;
+            
+        case CALC_OP_PLANCK:
+            Push();
+            *rp = 6.626068e-34;
+            *irp = 0;
+            break;
 
         case CALC_OP_HMS:
             *rp = hms( *rp );
