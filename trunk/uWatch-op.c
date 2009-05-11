@@ -695,17 +695,10 @@ void Operation( int op )
             break;
 
         case CALC_OP_RECORD:
-
-            // when we go into record, reset the menu to the first page
-            // so that we get consistent results on replay.
-            CurrentMenu = 0;
             KeyRecord();
             break;
 
         case CALC_OP_PLAY:
-
-            // for playback put the menu onto the same page as for record.
-            CurrentMenu = 0;
             KeyReplay();
             break;
 
