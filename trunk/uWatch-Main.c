@@ -1269,7 +1269,9 @@ void __attribute__(( __interrupt__, auto_psv ) ) _T1Interrupt( void )
     i2c_high_sda();
 
 
-    //ResetSleepTimer();
+    ResetSleepTimer();              //1.6.1 sleep timer resets on powerup
+
+
     //StartSleepTimer();            //switch the SLEEP timer back on
 
     //restore the previous display contents, except time mode

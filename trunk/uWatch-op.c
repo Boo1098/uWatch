@@ -968,6 +968,14 @@ void Operation( int op )
                 stat_sum += *rp;
             }
             break;
+
+        case CALC_OP_MODULUS:
+            //a - (int(a/b * b)            
+            *rp = rp[1] - (((int)(rp[1] / rp[0])) * rp[0]);
+            //Drop();
+            break;
+
     }
+
 }
 

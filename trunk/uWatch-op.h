@@ -137,4 +137,6 @@ extern void SwapXY();
 #define CALC_OP_STAT_MEAN       74
 #define CALC_OP_STAT_ADD        75
 
+#define CALC_OP_MODULUS         76
+
 #endif // __uwatch_op_h__

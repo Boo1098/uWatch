@@ -21,7 +21,7 @@ const menuItem mathLogMenu[] = {
     { "log ",       OperatePrecedence,  CALC_OP_LN10    },
     { "  10\4 ",    OperatePrecedence,  CALC_OP_10X     },
     { "\4\5y ",     OperatePrecedence,  CALC_OP_NROOT   },
-    { " y\4  ",     OperatePrecedence,  CALC_OP_NPOW    },
+    { "mod",       OperatePrecedence,  CALC_OP_MODULUS },
 };
 
 
@@ -231,7 +231,7 @@ const menuItem mathOtherMenu[] = {
     { "  x\4",   OperatePrecedence, CALC_OP_SQUARE         },
     { " sqrt",   OperatePrecedence, CALC_OP_SQRT           },
     { " abs ",   OperatePrecedence, CALC_OP_ABS            },
-    { " y\5  ",  OperatePrecedence, CALC_OP_NPOW           },  // DUPLICATE!
+    { " y\5  ",  OperatePrecedence, CALC_OP_NPOW           },
 };
 
 const packedMenu2 mathOther = {
