@@ -56,4 +56,6 @@ extern const unsigned char character_arrow_down[];
 extern const unsigned char character_arrow_up[];
 extern const unsigned char character_arrow_updown[];
 
+extern const unsigned char character_y[];
+
 #endif

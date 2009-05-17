@@ -231,21 +231,22 @@ const charSet mathOtherCharset[] = {
     character_squaring,             //4
     character_powerx,        
     character_squareRoot1,
+    character_y,
 };
 
 const menuItem mathOtherMenu[] = {
     { "  1/x ",  OperatePrecedence, CALC_OP_RECIPROCAL     },
     { " x!",     OperatePrecedence, CALC_OP_FACTORIAL      },
     { "  x\4",   OperatePrecedence, CALC_OP_SQUARE         },
-    { "   \6x ",   OperatePrecedence, CALC_OP_SQRT           },
+    { "   \6\370 ",   OperatePrecedence, CALC_OP_SQRT           },
     { "\174x\174 ",   OperatePrecedence, CALC_OP_ABS            },
-    { " y\5  ",  OperatePrecedence, CALC_OP_NPOW           },
+    { " \7\5  ",  OperatePrecedence, CALC_OP_NPOW           },
 };
 
 const packedMenu2 mathOther = {
     0, //CALC-STYLE
     printMenu,
-    3, mathOtherCharset, 6, mathOtherMenu
+    4, mathOtherCharset, 6, mathOtherMenu
 };
 
 
