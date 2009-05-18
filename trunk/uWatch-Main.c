@@ -231,19 +231,35 @@ char TimeZone_amount[] = {
 
 
 const char *monthName[12] = {
-    "January",
-    "February",
+    "Januar\5",
+    "Februar\5",
     "March",
-    "April",
-    "May",
+    "A\5ril",
+    "Ma\5",
     "June",
-    "July",
-    "August",
-    "September",
+    "Jul\5",
+    "Au\5ust",
+    "Se\5tember",
     "October",
     "November",
     "December"
 };
+
+const unsigned char *mChar[12] = {
+    character_y,
+    character_y,
+    0,
+    character_p,
+    character_y,
+    0,
+    character_y,
+    character_g,
+    character_p,
+    0,
+    0,
+    0,
+};
+
 
 
 //***********************************
@@ -1173,7 +1189,7 @@ void TimeDateDisplay( void )
         { 0x18, 0x1E, 0x1F, 0x1F, 0x01, 0x01, 0x06, 0x18 },
     };
 */
-    /*
+
     static const unsigned char moons[][8] = {
 
         // new
@@ -1210,8 +1226,8 @@ void TimeDateDisplay( void )
         { 0x1C, 0x02, 0x01, 0x01, 0x01, 0x01, 0x02, 0x1C },
     };
     
-    */
 
+/*
     static const unsigned char moons[][8] = {
 
         // new
@@ -1247,7 +1263,7 @@ void TimeDateDisplay( void )
     { 0x07, 0x0E, 0x1D, 0x1E, 0x1E, 0x1D, 0x0E, 0x07 },  // (-^)
     { 0x14, 0x0A, 0x15, 0x0A, 0x0A, 0x15, 0x0A, 0x18 },
 };    
-
+*/
     
 
     
@@ -1297,6 +1313,11 @@ void TimeDateDisplay( void )
 
     s[7] = custom_character( 6, &( left[ cindex*8 ] ) );
     s[8] = custom_character( 7, &( right[ cindex*8 ] ) );
+
+
+    if ( mChar[Month-1])
+        custom_character( 5, mChar[Month-1] );      // descender if needed
+
 
     s[10] = monthName[Month-1][0];
     s[11] = monthName[Month-1][1];
@@ -1547,19 +1568,20 @@ void doTimeMode()
             extern int doCal( int modify );
 
             const menuItem tMenu2[] = {
-                { "Stopwatch",  StopWatch,  0 },
+                { "Sto\4watch",  StopWatch,  0 },
                 { "Calendar",   doCal, FALSE },
-                { "\4Setup",    setupTime,  0 },
+                { "\3Setu\4",    setupTime,  0 },
             };
 
             const charSet tCharset2[] = {
                 character_right_menu,
+                character_p,
             };
 
             const packedMenu2 TimeMenu = {
                 "Clock",
                 printMenu,
-                1, tCharset2, 3, tMenu2
+                2, tCharset2, 3, tMenu2
             };
 
 
@@ -1572,6 +1594,11 @@ void doTimeMode()
 
 
 }
+
+const charSet appCharset[] = {
+    character_right_menu,
+    character_p,
+};
 
 
 //***********************************
@@ -1621,20 +1648,16 @@ extern int GamesMode();
 extern int ToolsMode();
 extern int SetupMode();
 
-        const charSet appCharset[] = {
-            character_right_menu,
-        };
-
         const menuItem appMenu[] = {
-            { "\4Tools",     ToolsMode, 0 },
-            { "\4Games",     GamesMode, 0 },
-            { "\4Setup",     SetupMode, 0 },
+            { "\3Tools",     ToolsMode, 0 },
+            { "\3Games",     GamesMode, 0 },
+            { "\3Setu\4",     SetupMode, 0 },
         };
 
         const packedMenu2 appsMenu = {
-            "Application",
+            "A\4\4lication",
             printMenu,
-            1, appCharset, 3, appMenu
+            2, appCharset, 3, appMenu
         };
 
         genericMenu2( &appsMenu, 0 );

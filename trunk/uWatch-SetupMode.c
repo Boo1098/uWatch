@@ -200,6 +200,8 @@ int changeTime( int p )
 
 
 char *printMonth( int *month, int max ) {
+    if ( mChar[*month] )
+        custom_character(5,mChar[*month]);
     return strcpy( out, monthName[ *month ] );         // make a COPY so we don't have ROM limitation
 }
 
@@ -264,6 +266,8 @@ char *processCalendar( int *pDay, int max )
 
 void fixTitle( int year, int month ) {
 
+    if ( mChar[month-1])
+        custom_character(5,mChar[month-1]);
     sprintf( out, "%d, %s", year, monthName[ month - 1 ] );
     UpdateLCDline1( out );
 
@@ -335,6 +339,8 @@ int doCal( BOOL modify ) {
     gYear = year;
     gMonth = month + 1;         // 1-based
 
+    if ( mChar[month-1])
+        custom_character(5,mChar[month-1]);
     sprintf( out, "%d, %s", year, monthName[ month ] );
     dim = daysInMonth( gYear, gMonth );
     //if ( day > dim )
@@ -677,9 +683,9 @@ int appLCDTimeout()
 
 int appAbout()
 {
-
+    custom_character(3, character_g );
     sprintf( out, "\xE4Watch %s", RevString );
-    viewString( out, "(c)David L. Jones, zowki, hugh, Andrew Davie", 0, 2 );
+    viewString( out, "(c)David L. Jones, zowki, Hu\3h Steers, Andrew Davie", 0, 2 );
     return MODE_EXIT;
 }
 
@@ -690,6 +696,8 @@ int appAbout()
 int SetupMode( int p )
 {
 
+    extern const charSet appCharset[];
+
     const menuItem setupMenuMenu[] = {
         { "Calculator", &appCalculatorMode, 0 },
         { "Clear EEPROM", &appClearEEPROM, 0 },
@@ -699,9 +707,9 @@ int SetupMode( int p )
     };
 
     const packedMenu2 setupMenu = {
-        "Setup",
+        "Setu\4",
         printMenu,
-        0, 0, 5, setupMenuMenu
+        2, appCharset, 5, setupMenuMenu
     };
 
     return genericMenu2( &setupMenu, 0 );
