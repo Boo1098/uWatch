@@ -57,5 +57,11 @@ extern const unsigned char character_arrow_up[];
 extern const unsigned char character_arrow_updown[];
 
 extern const unsigned char character_y[];
+extern const unsigned char character_g[];
+extern const unsigned char character_p[];
+extern const unsigned char character_j[];
+extern const unsigned char character_ybar[];
+
+extern const unsigned char *mChar[];
 
 #endif

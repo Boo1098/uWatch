@@ -2,7 +2,6 @@
 #ifndef __MENU_H
 #define __MENU_H
 
-#define MENU_CUSTOM_CHAR_COUNT 2
 #define MENU_ITEM_MAX 6
 
 typedef struct {

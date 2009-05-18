@@ -13,22 +13,25 @@
 const charSet mathLogCharset[] = {
     character_powerx,
     character_squareRoot1,
+    character_y,
+    character_ybar,
+    character_g,
 };
 
 const menuItem mathLogMenu[] = {
-    { "   e\4 ",     OperatePrecedence,  CALC_OP_EXP     },
+    { "   e\3 ",     OperatePrecedence,  CALC_OP_EXP     },
     { " ln  ",      OperatePrecedence,  CALC_OP_LN      },
-    { "\4\5y ",     OperatePrecedence,  CALC_OP_NROOT   },
-    { "  10\4 ",    OperatePrecedence,  CALC_OP_10X     },
-    { "log ",       OperatePrecedence,  CALC_OP_LN10    },
-    { " x%y",       OperatePrecedence,  CALC_OP_MODULUS },
+    { "\3\4\6 ",     OperatePrecedence,  CALC_OP_NROOT   },
+    { "  10\3 ",    OperatePrecedence,  CALC_OP_10X     },
+    { "lo\7 ",       OperatePrecedence,  CALC_OP_LN10    },
+    { " x%\5",       OperatePrecedence,  CALC_OP_MODULUS },
 };
 
 
 const packedMenu2 mathLogarithmic = {
     0, //CALC-STYLE
     printMenu,
-    2, mathLogCharset, 6, mathLogMenu
+    5, mathLogCharset, 6, mathLogMenu
 };
 
 const charSet mathBaseCharset[] = {
@@ -38,12 +41,12 @@ const charSet mathBaseCharset[] = {
 };
 
 const menuItem mathBaseMenu[] = {
-    { " RAD\337", OperatePrecedence,  CALC_OP_MODERAD     },
-    { " DEG\337",   OperatePrecedence,  CALC_OP_MODEDEG     },
-    { " Bin\4",    OperatePrecedence,  CALC_OP_BASE2       },
-    { " Oct\5",  OperatePrecedence,  CALC_OP_BASE8       },
+    { " RAD ", OperatePrecedence,  CALC_OP_MODERAD     },
+    { " DEG ",   OperatePrecedence,  CALC_OP_MODEDEG     },
+    { " Bin\3",    OperatePrecedence,  CALC_OP_BASE2       },
+    { " Oct\4",  OperatePrecedence,  CALC_OP_BASE8       },
     { " Dec ",  OperatePrecedence,  CALC_OP_BASE10      },
-    { " Hex\6",    OperatePrecedence,  CALC_OP_BASE16      },
+    { " Hex\5",    OperatePrecedence,  CALC_OP_BASE16      },
 };
 
 const packedMenu2 mathModeBase = {
@@ -53,17 +56,16 @@ const packedMenu2 mathModeBase = {
 };
 
 const menuItem mathHyperMenu[] = {
-    { " sin\5",      OperatePrecedence,  CALC_OP_HYP_SIN     },
-    { " cos\5",      OperatePrecedence,  CALC_OP_HYP_COS     },
-    { " tan\5",      OperatePrecedence,  CALC_OP_HYP_TAN     },
-    { " sin\5\4",    OperatePrecedence,  CALC_OP_HYP_ASIN    },
-    { "cos\5\4",     OperatePrecedence,  CALC_OP_HYP_ACOS    },
-    { "tan\5\4",     OperatePrecedence,  CALC_OP_HYP_ATAN    },
+    { " sin\3",      OperatePrecedence,  CALC_OP_HYP_SIN     },
+    { " cos\3",      OperatePrecedence,  CALC_OP_HYP_COS     },
+    { " tan\3",      OperatePrecedence,  CALC_OP_HYP_TAN     },
+    { " sin\3\351",    OperatePrecedence,  CALC_OP_HYP_ASIN    },
+    { "cos\3\351",     OperatePrecedence,  CALC_OP_HYP_ACOS    },
+    { "tan\3\351",     OperatePrecedence,  CALC_OP_HYP_ATAN    },
 };
 
 
 const charSet mathTrigCharset[] = {
-    character_minus1,
     character_h,
 };
 
@@ -71,21 +73,21 @@ const menuItem mathTrigMenu[] = {
     { " sin ",  OperatePrecedence,  CALC_OP_SIN    },
     { " cos ",  OperatePrecedence,  CALC_OP_COS    },
     { " tan ",  OperatePrecedence,  CALC_OP_TAN    },
-    { " sin\4", OperatePrecedence,  CALC_OP_ASIN   },
-    { " cos\4", OperatePrecedence,  CALC_OP_ACOS   },
-    { " tan\4", OperatePrecedence,  CALC_OP_ATAN   },
+    { " sin\351", OperatePrecedence,  CALC_OP_ASIN   },
+    { " cos\351", OperatePrecedence,  CALC_OP_ACOS   },
+    { " tan\351", OperatePrecedence,  CALC_OP_ATAN   },
 };
 
 const packedMenu2 mathHyperbolic = {
     0,  //CALC-STYLE
     printMenu,
-    2, mathTrigCharset, 6, mathHyperMenu
+    1, mathTrigCharset, 6, mathHyperMenu
 };
 
 const packedMenu2 mathTrigonometry = {
     0,  //CALC-STYLE
     printMenu,
-    2, mathTrigCharset, 6, mathTrigMenu
+    0, 0, 6, mathTrigMenu
 };
 
 
@@ -141,13 +143,13 @@ const packedMenu2 mathStats = {
      
 
 const charSet mathConstantCharset[] = {
-    character_pi,character_minus1
+    character_pi,character_minus1,character_g,character_j,
 };
 
 const menuItem mathConstantMenu[] = {
-    { "   \4 ", OperatePrecedence, CALC_OP_PI       },
+    { "   \3 ", OperatePrecedence, CALC_OP_PI       },
     { "  c  ",   OperatePrecedence, CALC_OP_LIGHT    },
-    { "Avogad",  OperatePrecedence, CALC_OP_AVOGADRO },
+    { "Avo\5ad",  OperatePrecedence, CALC_OP_AVOGADRO },
     { "   e ",  OperatePrecedence, CALC_OP_E        },
     { "     ", OperatePrecedence, CALC_OP_NULL },
     { "Planck",  OperatePrecedence, CALC_OP_PLANCK   },
@@ -156,7 +158,7 @@ const menuItem mathConstantMenu[] = {
 const packedMenu2 mathConstant = {
     0, //CALC-STYLE
     printMenu,
-    2, mathConstantCharset, 6, mathConstantMenu
+    3, mathConstantCharset, 6, mathConstantMenu
 };
 
 const menuItem mathConversion1Menu[] = {
@@ -173,9 +175,9 @@ const menuItem mathConversion1Menu[] = {
 //};
 
 const menuItem mathConversion2Menu[] = {
-    { " kg\176lb",    OperatePrecedence,  CALC_OP_CONV_KG_LB  },
+    { " k\5\176lb",    OperatePrecedence,  CALC_OP_CONV_KG_LB  },
     { "   ", OperatePrecedence, CALC_OP_NULL },
-    { " lb\176kg",    OperatePrecedence,  CALC_OP_CONV_LB_KG  },
+    { " lb\176k\5",    OperatePrecedence,  CALC_OP_CONV_LB_KG  },
     { "  R\176P  ",   OperatePrecedence,  CALC_OP_R2P         },
     { "", OperatePrecedence, CALC_OP_NULL },
     { "    P\176R", OperatePrecedence,  CALC_OP_P2R         },
@@ -184,7 +186,7 @@ const menuItem mathConversion2Menu[] = {
 const packedMenu2 mathConversion1 = {
     0, //CALC-STYLE
     printMenu,
-    0,0, 6, mathConversion1Menu
+    3,mathConstantCharset, 6, mathConversion1Menu
 };
 
 const packedMenu2 mathConversion2 = {
@@ -194,9 +196,17 @@ const packedMenu2 mathConversion2 = {
 };
 
 
+const charSet mathOtherCharset[] = {
+    character_squaring,             //4
+    character_powerx,        
+    character_squareRoot1,
+    character_y,
+    character_g,
+};
+
 const menuItem mathTimeDateMenu[] = {
     { "  DMY",  OperatePrecedence,  CALC_OP_DMY             },
-    { " days ", OperatePrecedence,  CALC_OP_DAYS            },
+    { " da\6s ", OperatePrecedence,  CALC_OP_DAYS            },
     { "sunst",  OperatePrecedence,  CALC_OP_SUNSET          },
     { "  HMS ", OperatePrecedence,  CALC_OP_HMS             },
     { "hour",   OperatePrecedence,  CALC_OP_HOURS           },
@@ -206,14 +216,14 @@ const menuItem mathTimeDateMenu[] = {
 const packedMenu2 mathTimeDate = {
     0, //CALC-STYLE
     printMenu,
-    0, 0, 6, mathTimeDateMenu
+    5, mathOtherCharset, 6, mathTimeDateMenu
 };
 
 
 const menuItem menuKeystrokeMenu[] = {
     { " Record",  OperatePrecedence,  CALC_OP_RECORD          },
     { "  ", OperatePrecedence, CALC_OP_PLAY },
-    { " Play",  OperatePrecedence,  CALC_OP_PLAY            },
+    { " Pla\6",  OperatePrecedence,  CALC_OP_PLAY            },
     { "", OperatePrecedence, CALC_OP_NULL },
     { "", OperatePrecedence, CALC_OP_NULL },
     { "", OperatePrecedence, CALC_OP_NULL },
@@ -222,48 +232,41 @@ const menuItem menuKeystrokeMenu[] = {
 const packedMenu2 menuKeystroke = {
     0, //CALC-STYLE,
     printMenu,
-    0, 0, 6, menuKeystrokeMenu 
+    5, mathOtherCharset, 6, menuKeystrokeMenu 
 };
 
 
-
-const charSet mathOtherCharset[] = {
-    character_squaring,             //4
-    character_powerx,        
-    character_squareRoot1,
-    character_y,
-};
 
 const menuItem mathOtherMenu[] = {
     { "  1/x ",  OperatePrecedence, CALC_OP_RECIPROCAL     },
     { " x!",     OperatePrecedence, CALC_OP_FACTORIAL      },
-    { "  x\4",   OperatePrecedence, CALC_OP_SQUARE         },
-    { "   \6\370 ",   OperatePrecedence, CALC_OP_SQRT           },
+    { "  x\3",   OperatePrecedence, CALC_OP_SQUARE         },
+    { "   \5\370 ",   OperatePrecedence, CALC_OP_SQRT           },
     { "\174x\174 ",   OperatePrecedence, CALC_OP_ABS            },
-    { " \7\5  ",  OperatePrecedence, CALC_OP_NPOW           },
+    { " \6\4  ",  OperatePrecedence, CALC_OP_NPOW           },
 };
 
 const packedMenu2 mathOther = {
     0, //CALC-STYLE
     printMenu,
-    4, mathOtherCharset, 6, mathOtherMenu
+    5, mathOtherCharset, 6, mathOtherMenu
 };
 
 
 
 const menuItem mathComplexMenu[] = {
-    { " Imag",  OperatePrecedence, CALC_OP_IMAGINARY_PART  },  
+    { " Ima\5",  OperatePrecedence, CALC_OP_IMAGINARY_PART  },  
     { "  // ",  OperatePrecedence, CALC_OP_PARALLEL        },  // 1/(1/X+1/y)
     { " C\176R", OperatePrecedence, CALC_OP_COMPLEX_SPLIT   },
     { " Real",  OperatePrecedence, CALC_OP_REAL_PART       },
-    { " Conj",  OperatePrecedence, CALC_OP_CONJUGATE       },
+    { " Con\6",  OperatePrecedence, CALC_OP_CONJUGATE       },
     { " R\176C",  OperatePrecedence, CALC_OP_COMPLEX_JOIN    },
 };
 
 const packedMenu2 mathComplex = {
     0,  //CALC-STYLE
     printMenu,
-    0, 0, 6, mathComplexMenu
+    4, mathConstantCharset, 6, mathComplexMenu
 };
 
 

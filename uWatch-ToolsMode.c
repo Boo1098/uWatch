@@ -104,15 +104,17 @@ int quadratic( int p ) {
 
 int ToolsMode( int p )
 {
+    extern const charSet appCharset[];
+
     const menuItem toolsMenuMenu[] = {
         { "Quadratic",  quadratic, 0 },
         { "Factorise", factor, 0 },
     };
 
     const packedMenu2 toolsMenu = {
-        "Apps",
+        "A\4\4s",
         printMenu,
-        0, 0, 2, toolsMenuMenu
+        2, appCharset, 2, toolsMenuMenu
     };
 
     return genericMenu2( &toolsMenu, 0 );
