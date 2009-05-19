@@ -341,7 +341,7 @@ int twenty1( int p )
 
             char *dout = displayBuffer + strlen(displayBuffer) + 20;
             int dealertotal = 0;
-            cardn = 0;
+            int dcardn = 0;
 
 
 /*
@@ -369,15 +369,22 @@ until he reaches at least 17 or busts by going over 21.
 
             while ( dealertotal < 17 ) {  // dealer hits while under 17.  DO NOT CHANGE THIS WITHOUT DISCUSSION!!!!
         
-                dealer[cardn++] = deck[card++];
+                dealer[dcardn++] = deck[card++];
                 
-                dealertotal = drawHand( "D: ", dout, dealer, cardn  );
+                dealertotal = drawHand( "D: ", dout, dealer, dcardn  );
                 UpdateLCDline2( dout );
                 DelayMs(2500);
             }
 
-            if ( dealertotal == 21 && cardn == 2 )
-                blackjack();
+            if ( dealertotal == 21 )
+                if ( dcardn == 2 ) {
+                    blackjack();
+                    if ( total == 21 && cardn > 2 )
+                        total--;                        // dealer wins with 21 blackjack vs 21 without
+                } else {
+                    if ( total == 21 && cardn == 2 )   // player blackjack
+                        dealertotal--;                 // player wins if 21 with blackjack vs 21 without
+                }
 
 
             char *result = "Dealer Wins!";

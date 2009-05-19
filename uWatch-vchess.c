@@ -324,28 +324,31 @@ int levelChoose( int p ) {
     return MODE_EXIT;
 }
 
+const charSet charLevel[] = {
+    character_y,
+};
+
 const menuItem levelMenuMenu[] = {
-    { "Easy",   levelChoose, 2 },
+    { "Eas\3",   levelChoose, 2 },
     { "Medium", levelChoose, 3 },
     { "Hard",   levelChoose, 4 },
 };
 
 
 const packedMenu2 levelMenu = {
-    "Difficulty?",
+    "Difficult\3?",
     printMenu,
-    0, 0, 3, levelMenuMenu
+    1, charLevel, 3, levelMenuMenu
 };
 
 
 void initDisplay() {
     int line;
 
-    strcpy( dispBoard[0], "    12345678    " );
+    strcpy( dispBoard[0], "    ABCDEFGH    " );
     strcpy( dispBoard[10], dispBoard[0] );
-
-    strcpy( dispBoard[9], "    abcdefgh    " );
-    strcpy( dispBoard[19], dispBoard[9] );
+    strcpy( dispBoard[9], dispBoard[0] );
+    strcpy( dispBoard[19], dispBoard[0] );
     
     for ( line = 1; line <= 8; line++ ) {
         sprintf( dispBoard[ line ], "  %d|        |   ", line );
@@ -402,7 +405,18 @@ int line = 0;
 
 int showBoard() {
 
-    unsigned int flickerPattern[] = {
+    // Odd ordering of character #s is so we can use the chess engine's piece #s without
+    // requiring translation.
+
+    custom_character( 0, character_blacksquare );
+    custom_character( 1, character_pawn );
+    custom_character( 2, character_knight );
+    custom_character( 3, character_king );
+    custom_character( 5, character_bishop );
+    custom_character( 6, character_rook );
+    custom_character( 7, character_queen );
+
+    const unsigned int flickerPattern[] = {
         0xFFFF,     // 1111 1111 1111 1111 0
         0xFEFE,     // 1111 1110 1111 1110 2
         0xEEEE,     // 1110 1110 1110 1110 4
@@ -527,6 +541,27 @@ int BoardKeyboard() {
 }
 */
 
+Move *printer;
+
+char *printChessMove(int *n, int max ) {
+
+    char *vis = displayBuffer;
+
+    int mv = *n;
+    Move *p = printer;
+    while ( mv-- )
+        p++;
+
+    int pos = Board[ p->from ];
+    *vis++ = Board[ pos + POSMAT ];         // type = custom char# too
+    *vis++ = ' ';
+
+    strcpy( vis, moveToStr( *p, 1 ));
+    return displayBuffer;
+}
+
+
+
 int chessGame( int p )
 {
     int moveok;
@@ -557,16 +592,6 @@ int chessGame( int p )
 
     initDisplay();
 
-    // Odd ordering of character #s is so we can use the chess engine's piece #s without
-    // requiring translation.
-
-    custom_character( 0, character_blacksquare );
-    custom_character( 1, character_pawn );
-    custom_character( 2, character_knight );
-    custom_character( 3, character_king );
-    custom_character( 5, character_bishop );
-    custom_character( 6, character_rook );
-    custom_character( 7, character_queen );
 
     runOnce = TRUE;
 
@@ -595,59 +620,28 @@ int chessGame( int p )
             // get move
             strcpy(displayBuffer, lastMove);
             if (*displayBuffer) strcat(displayBuffer, ", ");
-            strcat(displayBuffer, "move?");
+            strcat(displayBuffer, "Move?");
             UpdateLCDline1(displayBuffer);
+            UpdateLCDline2("");
 
 
+            int mc = 0;
+            for ( mv = first; mv != moveStackPtr; ++mv )
+               mc++;
 
-//            BoardKeyboard();
+            int sel = 0;
+            printer = first;
+            int key = genericMenu( "Your move?", &printChessMove, &increment, &decrement, mc, &sel );
 
-            int temp = CalcDisplayBase;
-            CalcDisplayBase = 10;
-            int n = OneLineNumberEntry();
-            CalcDisplayBase = temp;
+            if ( key == MODE_KEYMODE )
+                return MODE_KEYMODE;
 
-/*            if ( DisplayXreg < 0 ) {
-                UpdateLCDline2( "Switched sides" );
-                chosen( computer );
-                break;
-            }
-*/
+            mv = first;
+            while ( sel-- )
+                ++mv; 
 
-            switch ( n ) {
-                case MODE_KEYMODE:
-                    return MODE_KEYMODE;
-                case MODE_KEY_NEXT:
-                    continue;
-            }                
+            moveok = 1;
 
-            // parse move
-            from = moveToBoard( DisplayXreg );
-            to =  moveToBoard( DisplayXreg + 2 );
-            promote = 0;
-            switch (DisplayXreg[4])
-            {
-            case '1': promote = knight; break;
-            case '2': promote = bishop; break;
-            case '3': promote = rook; break;
-            case '4': promote = queen; break;
-            }
-
-            if ( from >= 0 && to >= 0 ) {
-                // check legal
-                for ( mv = first; mv != moveStackPtr; ++mv ) {
-                    if ( mv->from == from && mv->to == to 
-                         && (!promote || promote == mv->promote))
-                    {
-                        moveok = 1;
-                        break;
-                    }
-                }
-            }
-            if ( !moveok ) {
-                UpdateLCDline1( "Illegal move!" );
-                GetDebouncedKey();
-            }    
         } while ( !moveok );
 
         if ( moveok )
@@ -669,7 +663,8 @@ static int computerMoves()
     /* bump the CPU whilst we think... */
 //    StopSleepTimer();
 
-    UpdateLCDline1( "thinking..." );
+    custom_character(4,character_g);
+    UpdateLCDline1( "Thinkin\4..." );
 
     // boost one level when in check
     if ( chk ) ++dmax;
@@ -692,18 +687,24 @@ static int computerMoves()
     if ( MainPV.n ) {
         Move* m = MainPV.m;
         playMove(*m);
-        strcpy(lastMove, moveToStr(*m,1));
+        printer = m;
+        int sel = 0;
+        strcpy(lastMove, printChessMove( &sel, 0 ));
 
         // focus board display on the last move's line
-        line = lastMove[4]-'0'-1; 
+        line = lastMove[6]-'0'-1; 
 
-        if (InCheck) lastMove[5]='+';
-        UpdateLCDline1(lastMove);
+        if (InCheck) strcat( lastMove, "+" );
+        UpdateLCDline1("I move:");
+        UpdateLCDline2(lastMove);
+        GetDebouncedKey();
     }
 
     if (v <= -WIN_SCORE || v >= WIN_SCORE)
     {
         UpdateLCDline2((computer == (v>0)) ?  "I Win!" : "You Win!");
+        GetDebouncedKey();
+        showBoard();
         return 1;
     }
     return 0;
@@ -1288,7 +1289,7 @@ void playMove(Move m)
     makeMove(m, &ep);
 }
 
-#define MS(_p, _m) { *(_p)++ = ((_m)&7)+'a';  *(_p)++ = ((_m)>>4)+'1'; }
+#define MS(_p, _m) { *(_p)++ = ((_m)&7)+'A';  *(_p)++ = ((_m)>>4)+'1'; }
 
 const char* moveToStr(Move m, int fancy)
 {

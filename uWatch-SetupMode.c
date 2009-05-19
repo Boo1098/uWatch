@@ -513,11 +513,12 @@ int changeLocation()
 char *printCalc( int *type, int max )
 {
     if ( *type ) return "RPN";
-    else return "Algebraic";
+    else return "Al\5ebraic";
 }
 
 int appCalculatorMode()
 {
+    custom_character( 5, character_g );
     return genericMenu( "Calculator", &printCalc, &increment, &decrement, 2, &RPNmode );
 }
 
@@ -531,7 +532,9 @@ int appClearEEPROM()
     if ( ENTER( GetDebouncedKey())) {
         unsigned int c;
         int c2;
-        UpdateLCDline1( "Erasing" );
+
+        custom_character(5,character_g);
+        UpdateLCDline1( "Erasin\5" );
         c2 = 0;
         for ( c = 0;c < 65534;c++ ) { //don't overwrite the last byte, it's used for the calibration value
             ResetSleepTimer();          //we don't want to timeout while doing this
@@ -571,7 +574,8 @@ int appSelfTest()
     UpdateLCDline1( "EEPROM passed" );
     UpdateLCDline2( "Press ENTER" );
     KeyPress2 = GetDebouncedKey();
-    UpdateLCDline1( "Keyboard Test" );
+    custom_character(5,character_y);
+    UpdateLCDline1( "Ke\5board Test" );
     UpdateLCDline2( "MODE to exit" );
 
     while ( TRUE ) {
