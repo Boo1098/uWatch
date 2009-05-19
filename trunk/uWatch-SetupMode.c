@@ -265,12 +265,20 @@ char *processCalendar( int *pDay, int max )
 }
 
 void fixTitle( int year, int month ) {
-
-    if ( mChar[month-1])
-        custom_character(5,mChar[month-1]);
     sprintf( out, "%d, %s", year, monthName[ month - 1 ] );
     UpdateLCDline1( out );
 
+    // Note: it is IMPORTANT that the character flip comes AFTER
+    // the screen update, even though logically wrong.  The problem is
+    // the timing of UpdateLCDline is slow, so we see what WAS on the screen
+    // for a fair while before it changes.  If we've already changed the character
+    // then we see stuff like "Segtember" when switching August/September.
+    // However, the character custom draw is FAST, so we can do this pretty
+    // damn quick after the screen draw returns.  So even though it's wrong
+    // the eye doesn't notice it.  In short, this code is well thought out... don't change
+
+    if ( mChar[month-1])
+        custom_character(5,mChar[month-1]);
 }
 
 
@@ -339,8 +347,6 @@ int doCal( BOOL modify ) {
     gYear = year;
     gMonth = month + 1;         // 1-based
 
-    if ( mChar[month-1])
-        custom_character(5,mChar[month-1]);
     sprintf( out, "%d, %s", year, monthName[ month ] );
     dim = daysInMonth( gYear, gMonth );
     //if ( day > dim )
@@ -348,6 +354,9 @@ int doCal( BOOL modify ) {
 
     if ( !modify && ( oldMonth != month || oldYear != year ))
         day = 1;
+
+    if ( mChar[month])
+        custom_character(5,mChar[month]);
 
     if ( genericMenu( out, processCalendar, decrementDay, incrementDay, dim, &day ) == MODE_KEYMODE )
         return MODE_KEYMODE;
