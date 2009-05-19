@@ -345,12 +345,11 @@ const packedMenu2 levelMenu = {
 void initDisplay() {
     int line;
 
-    strcpy( dispBoard[0], "    12345678    " );
+    strcpy( dispBoard[0], "    ABCDEFGH    " );
     strcpy( dispBoard[10], dispBoard[0] );
+    strcpy( dispBoard[9], dispBoard[0] );
+    strcpy( dispBoard[19], dispBoard[0] );
 
-    strcpy( dispBoard[9], "    ABCDEFGH    " );
-    strcpy( dispBoard[19], dispBoard[9] );
-    
     for ( line = 1; line <= 8; line++ ) {
         sprintf( dispBoard[ line ], "  %d|        |   ", line );
         strcpy( dispBoard[ line + 10 ], dispBoard[ line ] );
@@ -545,7 +544,8 @@ int BoardKeyboard() {
 Move *printer;
 
 char *printChessMove(int *n, int max ) {
-    //memset( displayBuffer, 0, 20);
+
+    Clock4MHz();
     char *vis = displayBuffer;
 
     int mv = *n;
@@ -560,6 +560,14 @@ char *printChessMove(int *n, int max ) {
     *vis++ = ' ';
 
     strcpy( vis, moveToStr( *p, 1 ));
+
+    if ( max ) {
+        sprintf( out, "Your Move? %2d/%2d", (*n)+1,max );
+        Clock250KHz();
+        UpdateLCDline1(out );
+    }
+
+    Clock250KHz();
     return displayBuffer;
 }
 
