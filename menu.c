@@ -157,13 +157,14 @@ int genericMenu( char *title,
                  int max, int *selection )
 {
 
+    if ( title )
+        UpdateLCDline1( title );
+
     int sel = selection ? ( *selection ) : 0;
 
     custom_character( 0, character_arrow_updown );
 
 
-    if ( title )
-        UpdateLCDline1( title );
 
     int key = 0;
     do {
