@@ -345,10 +345,11 @@ const packedMenu2 levelMenu = {
 void initDisplay() {
     int line;
 
-    strcpy( dispBoard[0], "    ABCDEFGH    " );
+    strcpy( dispBoard[0], "    12345678    " );
     strcpy( dispBoard[10], dispBoard[0] );
-    strcpy( dispBoard[9], dispBoard[0] );
-    strcpy( dispBoard[19], dispBoard[0] );
+
+    strcpy( dispBoard[9], "    ABCDEFGH    " );
+    strcpy( dispBoard[19], dispBoard[9] );
     
     for ( line = 1; line <= 8; line++ ) {
         sprintf( dispBoard[ line ], "  %d|        |   ", line );
@@ -416,7 +417,7 @@ int showBoard() {
     custom_character( 6, character_rook );
     custom_character( 7, character_queen );
 
-    const unsigned int flickerPattern[] = {
+    unsigned int flickerPattern[] = {
         0xFFFF,     // 1111 1111 1111 1111 0
         0xFEFE,     // 1111 1110 1111 1110 2
         0xEEEE,     // 1110 1110 1110 1110 4
@@ -544,13 +545,15 @@ int BoardKeyboard() {
 Move *printer;
 
 char *printChessMove(int *n, int max ) {
-
+    //memset( displayBuffer, 0, 20);
     char *vis = displayBuffer;
 
     int mv = *n;
     Move *p = printer;
     while ( mv-- )
         p++;
+
+    //*vis++ = Board[ p->from ];
 
     int pos = Board[ p->from ];
     *vis++ = Board[ pos + POSMAT ];         // type = custom char# too
@@ -625,6 +628,39 @@ int chessGame( int p )
             UpdateLCDline2("");
 
 
+//            BoardKeyboard();
+
+//            int temp = CalcDisplayBase;
+//            CalcDisplayBase = 10;
+//            int n = OneLineNumberEntry();
+//            CalcDisplayBase = temp;
+
+/*            if ( DisplayXreg < 0 ) {
+                UpdateLCDline2( "Switched sides" );
+                chosen( computer );
+                break;
+            }
+*/
+
+           // switch ( n ) {
+           //     case MODE_KEYMODE:
+           //         return MODE_KEYMODE;
+           //     case MODE_KEY_NEXT:
+           //         continue;
+           // }                
+
+            // parse move
+           // from = moveToBoard( DisplayXreg );
+           // to =  moveToBoard( DisplayXreg + 2 );
+           // promote = 0;
+           // switch (DisplayXreg[4])
+           // {
+           // case '1': promote = knight; break;
+           // case '2': promote = bishop; break;
+           // case '3': promote = rook; break;
+           // case '4': promote = queen; break;
+           // }
+
             int mc = 0;
             for ( mv = first; mv != moveStackPtr; ++mv )
                mc++;
@@ -636,12 +672,39 @@ int chessGame( int p )
             if ( key == MODE_KEYMODE )
                 return MODE_KEYMODE;
 
+//            if ( key == MODE_EXIT )
+//                continue;                
+
+
             mv = first;
             while ( sel-- )
                 ++mv; 
 
             moveok = 1;
 
+/*
+//            UpdateLCDline1("List...");
+            if ( from >= 0 && to >= 0 ) {
+                // check legal
+                for ( mv = first; mv != moveStackPtr; ++mv ) {
+ 
+//                    UpdateLCDline2( moveToStr(*mv,1) );
+//                    GetDebouncedKey();
+
+                    if ( mv->from == from && mv->to == to 
+                         && (!promote || promote == mv->promote))
+                    {
+                        moveok = 1;
+                        break;
+                    }
+                }
+            }
+            if ( !moveok ) {
+                custom_character(5,character_g);
+                UpdateLCDline1( "Ille\5al move!" );
+                GetDebouncedKey();
+            }    
+*/
         } while ( !moveok );
 
         if ( moveok )
@@ -686,10 +749,10 @@ static int computerMoves()
 
     if ( MainPV.n ) {
         Move* m = MainPV.m;
-        playMove(*m);
         printer = m;
         int sel = 0;
         strcpy(lastMove, printChessMove( &sel, 0 ));
+        playMove(*m);
 
         // focus board display on the last move's line
         line = lastMove[6]-'0'-1; 
