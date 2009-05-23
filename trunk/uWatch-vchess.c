@@ -578,7 +578,7 @@ int chessGame( int p )
     int moveok;
     Move* mv;
     Move* first;
-    int to, from, promote;
+//    int to, from, promote;
 
     contGame = 0;
 

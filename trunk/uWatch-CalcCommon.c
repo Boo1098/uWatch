@@ -57,6 +57,58 @@ extern void SignKey(void);
 extern void UpdateDisplayRegX();
 
 
+
+
+///--------------------
+// engineering notation -- source: http://www.cs.tut.fi/~jkorpela/c/eng.html
+
+
+#define PREFIX_START (-24)
+/* Smallest power of then for which there is a prefix defined.
+   If the set of prefixes will be extended, change this constant
+   and update the table "prefix". */
+#include <math.h>
+
+char *eng(double value, int digits, int numeric)
+{
+  static char *prefix = "yzafpn\344m kMGTPEZY";
+
+#define PREFIX_END (PREFIX_START+((strlen(prefix)-1)*3))
+#define OFFSET 200
+
+    int expof10;
+    char *res = displayBuffer + OFFSET;
+    
+    if (value < 0.) {
+        *res++ = '-';
+        value = -value;
+    }
+    
+    expof10 = (int) log10(value);
+    if ( expof10 > 0 )
+        expof10 = (expof10/3)*3;
+    else
+        expof10 = ((-expof10+3)/3)*(-3); 
+    
+    value *= pow(10,-expof10);
+    
+    if (value >= 1000.) {
+        value /= 1000.0;
+        expof10 += 3;
+    }
+
+    if( numeric || (expof10 < PREFIX_START) || (expof10 > PREFIX_END))
+        sprintf(res, "%.*fe%d", digits, value, expof10); 
+    else
+        sprintf(res, "%f %c", value, prefix[(expof10-PREFIX_START)/3]);
+
+    return displayBuffer + OFFSET;
+}
+
+///-------------------
+
+
+
 void Push()
 {
     Treg=Zreg; iTreg=iZreg;
@@ -429,7 +481,7 @@ void FormatValue(char* dest,
             const char *digit = "0123456789ABCDEFGH";
             double max = 18446744073709551616.0;  // pow( 2, 64 );
             if ( fabs(value) > max )
-                strcpy( dest, "  * OVERFLOW *" );
+                strcpy( displayBuffer, "  * OVERFLOW *" );
             else {
             
                 unsigned long long uval;
@@ -454,107 +506,142 @@ void FormatValue(char* dest,
                 
                 p++;
                 
-                if ( truncate && strlen( p ) > 16 ) {
-                    p = p + strlen( p ) - 16;
-                    *p = '<';
-                }    
-                strcpy( dest, p );
             }
         
         }
         break;
 
         case 10:
-            if ( !ivalue )
-            {
-                // fit into `space's on screen
-                int p = space-1;
-                int l;
-                if (value < 0) --p; // adjust for sign
+
+            switch( displayMode ) {
+            case CALC_OP_ORIGINAL: {
+                if ( !ivalue ) {
+
+                    // fit into `space's on screen
+                    int p = space-1;
+                    int l;
+                    if (value < 0) --p; // adjust for sign
                     
-                for (;;)
-                {
-                    sprintf(dest,"%.*g", p, value);
-                    l = strlen(dest);
+                    for (;;) {
 
-                    if (l <= space) 
-                        break;
-
-                    if (tidy)
-                    {
-                        // try tidying
-                        tidyNumber(dest);
-                        if (strlen(dest) <= space) 
+                        sprintf( displayBuffer, "%.*g", p, value );
+                        l = strlen(displayBuffer);
+    
+                        if (l <= space) 
                             break;
+    
+                        if (tidy) {
+
+                            // try tidying
+                            tidyNumber(displayBuffer);
+                            if (strlen(displayBuffer) <= space) 
+                                break;
+                        }
+    
+                        p -= (l - space);
+                        if (p <= 0) break; // fail safe
                     }
-
-                    p -= (l - space);
-                    if (p <= 0) break; // fail safe
                 }
-            }
-            else
-            {
-                int l;
-                char c = '+';
-                int id = 6;
-                int d = 7;
+                else {
 
-//                if ( space > 16 ) {
-//                    id = space/2;
-//                    d = space/2;
-//                }
-
-                    
-                if (ivalue < 0)
-                {
-                    ivalue = -ivalue;
-                    c = '-';
-                }
-
-            again:
-
-                // textify the real part
-                sprintf(dest,"%.*g", d, value);
-
-                // tidy to save precious chars
-                tidyNumber(dest);
-                    
-                l = strlen(dest);                        
-                dest[l++] = c;
-                dest[l++] = 'i';
-                dest[l] = 0;
-                    
-                if (ivalue != 1)
-                {
-                    int li;
-                    // now fit as much of the ipart as we can
-                    for (;;)
+                    int l;
+                    char c = '+';
+                    int id = 6;
+                    int d = 7;
+    
+    //                if ( space > 16 ) {
+    //                    id = space/2;
+    //                    d = space/2;
+    //                }
+    
+                        
+                    if (ivalue < 0) {
+                        ivalue = -ivalue;
+                        c = '-';
+                    }
+    
+                again:
+    
+                    // textify the real part
+                    sprintf(displayBuffer,"%.*g", d, value);
+    
+                    // tidy to save precious chars
+                    tidyNumber(displayBuffer);
+                        
+                    l = strlen(displayBuffer);                        
+                    displayBuffer[l++] = c;
+                    displayBuffer[l++] = 'i';
+                    displayBuffer[l] = 0;
+                        
+                    if (ivalue != 1)
                     {
-                        sprintf(dest + l,"%.*g", id, ivalue);
-                        tidyNumber(dest+l);
-
-                        li = strlen(dest);
-                        if (li <= space) break; // done
-
-                        id -= (li - space);
-                        if (id <= 0) 
+                        int li;
+                        // now fit as much of the ipart as we can
+                        for (;;)
                         {
-                            // very rarely we cant fit ANY of the ipart
-                            // on display. shorten the real part and
-                            // try again.
-                            d -= 2;
-                            id = d-1;
-                            if (d > 2) goto again;
+                            sprintf(displayBuffer + l,"%.*g", id, ivalue);
+                            tidyNumber(displayBuffer+l);
+    
+                            li = strlen(displayBuffer);
+                            if (li <= space) break; // done
+    
+                            id -= (li - space);
+                            if (id <= 0) 
+                            {
+                                // very rarely we cant fit ANY of the ipart
+                                // on display. shorten the real part and
+                                // try again.
+                                d -= 2;
+                                id = d-1;
+                                if (d > 2) goto again;
+                            }
                         }
                     }
                 }
             }
 
+
             // ensure we dont overrun whatever.
-            dest[space] = 0;
+            displayBuffer[space] = 0;
+
+            break;
+
+            case CALC_OP_MODEFIX: 
+                sprintf( displayBuffer, "%.*f", displayAccuracy, value );
+                if ( ivalue ) {
+                    sprintf( displayBuffer + strlen( displayBuffer ), " i%.*f", displayAccuracy, ivalue );
+                }
+                break;
+
+            case CALC_OP_MODESCI:
+                sprintf( displayBuffer, "%.*e", displayAccuracy, value );
+                if ( ivalue ) {
+                    sprintf( displayBuffer + strlen( displayBuffer ), " i%.*e", displayAccuracy, ivalue );
+                }
+                break;
+
+            case CALC_OP_MODEENG:
+            case CALC_OP_MODEENGN:
+                strcpy( displayBuffer, eng( value, displayAccuracy, displayEngN));
+                if ( ivalue ) {
+                    strcpy( displayBuffer + strlen( displayBuffer ), " i");
+                    strcpy( displayBuffer + strlen( displayBuffer ), eng( ivalue, displayAccuracy, displayEngN ));
+                }
+                break;
+            }
 
             break;
     }
+
+    // place a "<" at beginning of number if we're truncating
+
+    char *p = displayBuffer;
+    if ( truncate && strlen( p ) > 16 ) {
+        p = p + strlen( p ) - 16;
+        *p = '<';
+    }    
+    strcpy( dest, p );
+
 } 
 
 // format and display just X
