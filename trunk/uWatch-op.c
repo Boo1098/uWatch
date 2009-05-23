@@ -44,7 +44,7 @@ int GetNumBCD();
 
 extern int CalcDisplayBase;
 int displayMode = CALC_OP_ORIGINAL;
-int displayAccuracy = 2;
+int displayAccuracy = 4;
 int displayEngN = 0;
 char *printNumber( int *number, int max );
 
