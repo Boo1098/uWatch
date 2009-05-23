@@ -88,16 +88,20 @@ char *eng(double value, int digits, int numeric)
     if ( expof10 > 0 )
         expof10 = (expof10/3)*3;
     else
-        expof10 = ((-expof10+3)/3)*(-3); 
-    
+        expof10 = (-expof10+3)/3*(-3); 
+
     value *= pow(10,-expof10);
+
+//    sprintf( displayBuffer, "%d =EXP", expof10 );
+//    UpdateLCDline1( displayBuffer );
+//    GetDebouncedKey();
     
-    if (value >= 1000.) {
+    if (fabs(value) >= 1000.) {
         value /= 1000.0;
         expof10 += 3;
     }
 
-    if( numeric || (expof10 < PREFIX_START) || (expof10 > PREFIX_END))
+    if( numeric || (expof10 < PREFIX_START) ) //|| (expof10 > PREFIX_END))
         sprintf(res, "%.*fe%d", digits, value, expof10); 
     else
         sprintf(res, "%f %c", value, prefix[(expof10-PREFIX_START)/3]);
