@@ -24,18 +24,35 @@
 
 /* implementation of the main calculator functions */
 
+#include "def.h"
 #include <math.h>
 #include "uWatch-op.h"
-#include "uWatch-astro.h"
+//#include "uWatch-astro.h"
 #include "characterset.h"
 #include "uWatch-LCD.h"
+#include "menu.h"
+
 
 int custom_character( int c, const unsigned char *p );
-int setBase( int base );
-
+//int setBase( int base );
+void UpdateLCDline1( const char* s );
+int OneLineNumberEntry();
+void Push();
+void PopStack();
+unsigned int BCDtoDEC( unsigned int num );
+int GetNumBCD();
 
 extern int CalcDisplayBase;
+int displayMode = CALC_OP_ORIGINAL;
+int displayAccuracy = 2;
+int displayEngN = 0;
+char *printNumber( int *number, int max );
 
+
+char *printPlaces( int *number, int max ) {
+    sprintf( out, "%d places", *number );
+    return out;
+}
 
 #define LN10 2.302585092994045684017991454683
 
@@ -445,6 +462,8 @@ double stat_sum = 0;
 double stat_count = 0;
 double stat_mean;
 double stat_var;
+
+
 
 // helper function for the type
 // op (a + i b) = - i op(-b + ia)
@@ -973,6 +992,47 @@ void Operation( int op )
             //a - (int(a/b * b)            
             *rp = rp[1] - (((int)(rp[1] / rp[0])) * rp[0]);
             //Drop();
+            break;
+
+        case CALC_OP_BITSHIFT_R1:
+            *rp = ((long long)(*rp))>>1;
+            break;
+
+        case CALC_OP_BITSHIFT_RN:
+            *rp = ((long long)(rp[1]))>>((int)rp[0]);
+            Drop();
+            break;
+
+        case CALC_OP_BITSHIFT_L1:
+            *rp = ((long long)(*rp))<<1;
+            break;
+
+        case CALC_OP_BITSHIFT_LN:
+            *rp = ((long long)(rp[1]))<<((int)rp[0]);
+            Drop();
+            break;
+
+        case CALC_OP_MODEENGN:
+            if ( displayMode == CALC_OP_MODEENG )
+                displayEngN = 1 - displayEngN;
+            else
+                displayEngN = 0;
+            displayMode = CALC_OP_MODEENG;
+            break;
+
+        case CALC_OP_ORIGINAL:
+            displayMode = op;
+            break;
+
+
+        case CALC_OP_MODEFIX:
+        case CALC_OP_MODESCI:
+        case CALC_OP_MODEENG: {
+            int prec = displayAccuracy;
+            if ( genericMenu( "Precision", printPlaces, decrement, increment, 24, &prec ) != MODE_KEYMODE )
+                displayAccuracy = prec;
+                displayMode = op;
+            }    
             break;
 
     }

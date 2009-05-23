@@ -40,19 +40,34 @@ const charSet mathBaseCharset[] = {
     character_base16,
 };
 
+const menuItem mathModeModeMenu[] = {
+    { "[fit]",  OperatePrecedence,  CALC_OP_ORIGINAL     },
+    { "    ",   OperatePrecedence,  CALC_OP_NULL    },
+    { "  SI",        OperatePrecedence,  CALC_OP_MODEENGN     },
+    { " fix ",   OperatePrecedence,  CALC_OP_MODEFIX     },
+    { " sci ",   OperatePrecedence,  CALC_OP_MODESCI     },
+    { " en\7",   OperatePrecedence,  CALC_OP_MODEENG     },
+};
+
+const packedMenu2 mathModeMode = {
+    0, //CALC-STYLE
+    printMenu,
+    5, mathLogCharset, 6, mathModeModeMenu
+};
+
 const menuItem mathBaseMenu[] = {
-    { " RAD ", OperatePrecedence,  CALC_OP_MODERAD     },
-    { " DEG ",   OperatePrecedence,  CALC_OP_MODEDEG     },
-    { " Bin\3",    OperatePrecedence,  CALC_OP_BASE2       },
-    { " Oct\4",  OperatePrecedence,  CALC_OP_BASE8       },
-    { " Dec ",  OperatePrecedence,  CALC_OP_BASE10      },
-    { " Hex\5",    OperatePrecedence,  CALC_OP_BASE16      },
+    { " bin\3",  OperatePrecedence,  CALC_OP_BASE2       },
+    { " oct\4",  OperatePrecedence,  CALC_OP_BASE8       },
+    { " hex\5",  OperatePrecedence,  CALC_OP_BASE16      },
+    { " dec ",   OperatePrecedence,  CALC_OP_BASE10      },
+    { " rad ",   OperatePrecedence,  CALC_OP_MODERAD     },
+    { " de\7 ",   OperatePrecedence,  CALC_OP_MODEDEG     },
 };
 
 const packedMenu2 mathModeBase = {
     0, //CALC-STYLE
     printMenu,
-    3, mathBaseCharset, 6, mathBaseMenu
+    3, mathBaseCharset, 4, mathBaseMenu
 };
 
 const menuItem mathHyperMenu[] = {
@@ -92,12 +107,12 @@ const packedMenu2 mathTrigonometry = {
 
 
 const menuItem mathBooleanMenu[] = {
-    { "  AND ", OperatePrecedence, CALC_OP_LOGIC_AND    },
-    { " OR ",   OperatePrecedence, CALC_OP_LOGIC_OR     },
-    { " XOR",   OperatePrecedence, CALC_OP_LOGIC_XOR    }, 
-    { " NAND",  OperatePrecedence, CALC_OP_LOGIC_NAND   },
-    { " NOR",   OperatePrecedence, CALC_OP_LOGIC_NOR    },
-    { "  NOT",  OperatePrecedence, CALC_OP_LOGIC_NOT    },
+    { "  and ", OperatePrecedence, CALC_OP_LOGIC_AND    },
+    { " or ",   OperatePrecedence, CALC_OP_LOGIC_OR     },
+    { " xor",   OperatePrecedence, CALC_OP_LOGIC_XOR    }, 
+    { " nand",  OperatePrecedence, CALC_OP_LOGIC_NAND   },
+    { " nor",   OperatePrecedence, CALC_OP_LOGIC_NOR    },
+    { "  not",  OperatePrecedence, CALC_OP_LOGIC_NOT    },
 };
 
 const packedMenu2 mathBoolean = {
@@ -269,13 +284,28 @@ const packedMenu2 mathComplex = {
     4, mathConstantCharset, 6, mathComplexMenu
 };
 
+const menuItem mathBitOperationsMenu[] = {
+    { " X>>1",  OperatePrecedence, CALC_OP_BITSHIFT_R1  },  
+    { " Y>>X",  OperatePrecedence, CALC_OP_BITSHIFT_RN        },
+    { "", OperatePrecedence, CALC_OP_NULL },
+    { " X<<1", OperatePrecedence, CALC_OP_BITSHIFT_L1   },
+    { " Y<<X",  OperatePrecedence, CALC_OP_BITSHIFT_LN       },
+};
+
+const packedMenu2 mathBitOperations = {
+    0,  //CALC-STYLE
+    printMenu,
+    0,0, 5, mathBitOperationsMenu
+};
 
 const packedMenu2 *calcMenus[CALC_MENU_SIZE] = {
     &mathOther,
     &mathTrigonometry,
     &mathHyperbolic,
     &mathBoolean,
+    &mathModeMode,
     &mathModeBase,
+    &mathBitOperations,
     &mathComb,
     &mathStats,
     &mathLogarithmic,

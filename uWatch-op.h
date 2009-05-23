@@ -139,4 +139,17 @@ extern void SwapXY();
 
 #define CALC_OP_MODULUS         76
 
+#define CALC_OP_BITSHIFT_R1     77
+#define CALC_OP_BITSHIFT_RN     78
+#define CALC_OP_BITSHIFT_L1     79
+#define CALC_OP_BITSHIFT_LN     80
+
+#define CALC_OP_MODEFIX         81
+#define CALC_OP_MODESCI         82
+#define CALC_OP_MODEENG         83
+#define CALC_OP_MODEENGN        84
+
+#define CALC_OP_ORIGINAL        85
+
+
 #endif // __uwatch_op_h__

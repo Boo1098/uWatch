@@ -376,7 +376,7 @@ until he reaches at least 17 or busts by going over 21.
                 DelayMs(2500);
             }
 
-            if ( dealertotal == 21 )
+            if ( dealertotal == 21 ) {
                 if ( dcardn == 2 ) {
                     blackjack();
                     if ( total == 21 && cardn > 2 )
@@ -385,6 +385,7 @@ until he reaches at least 17 or busts by going over 21.
                     if ( total == 21 && cardn == 2 )   // player blackjack
                         dealertotal--;                 // player wins if 21 with blackjack vs 21 without
                 }
+            }
 
 
             char *result = "Dealer Wins!";
