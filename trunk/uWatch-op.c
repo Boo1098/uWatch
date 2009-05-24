@@ -1018,8 +1018,8 @@ void Operation( int op )
                 displayEngN = 1 - displayEngN;
             else
                 displayEngN = 0;
-
-            // deliberate fall-through
+            displayMode = CALC_OP_MODEENG;
+            break;
 
         case CALC_OP_ORIGINAL:
             displayMode = op;
@@ -1030,7 +1030,7 @@ void Operation( int op )
         case CALC_OP_MODESCI:
         case CALC_OP_MODEENG: {
             int prec = displayAccuracy;
-            if ( genericMenu( "Precision?", printPlaces, decrement, increment, 24, &prec ) != MODE_KEYMODE )
+            if ( genericMenu( "Places?", printPlaces, decrement, increment, 24, &prec ) != MODE_KEYMODE )
                 displayAccuracy = prec;
                 displayMode = op;
             }    
