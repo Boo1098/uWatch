@@ -1,5 +1,5 @@
 
-Notation
+Notation and Navigation
 
 [KEY] indicates the keyboard key with the labeling "KEY"
 <KEY> indicates a conceptual key -- just for the purposes of this
@@ -13,17 +13,51 @@ press [ENTER], as clarified in this table...
 
 As you can see, these navigation keys occupy the right column of the keyboard.
 
+For historical reasons, some of these key functions are also available on other
+keys.  These alternate keys can become useful if your uWatch keyboard has a problem
+with commonly used keys.
+
+Here is a list of key alternates...
+
+<OK>    = [ENTER] [(]
+<UP>    = [)] [EXP] [-]
+<DOWN>  = [MENU] [+] [+/-]
+
 Although the keys do different things at different times, generally
-you hit [MENU] to enable a menu and then [MENU] again to scroll down the
-items in the menu.  But it's easier to think of as [MENU] <DOWN>
+you hit [MENU] to enable a menu and then <DOWN> (ie: [MENU] again) to scroll down the
+items in the menu, or <UP> to scroll up the items in the menu.
 
-Navigation
+Some items in the uWatch have a more logical <LEFT> and <RIGHT> meaning (e.g.: scrolling
+to view wide string displays) so in these cases, <UP> = <LEFT> and <DOWN> = <RIGHT>.  In
+these cases, it's more useful to use [EXP] as the <LEFT> key.
 
-Menus are available from:
+Here are some synonyms...
+
+<UP> = <PREVIOUS> <LEFT>
+<DOWN> = <NEXT> <RIGHT>
+
+That is (for example), the [)] key can be used whenever (logically) you want to go to a previous item,
+or move left, or go up.
+
+These synonyms are for convenience, but all navigation can be done with the right column keys only;  that
+is, [C], [)], [MENU] and [ENTER].
+
+The [MODE] key
+
+uWatch has three basic 'modes'...
 
 TIME mode
 CALCULATOR mode
 APPLICATIONS mode
+
+At any point, you can switch between modes using the [MODE] key.
+
+The uWatch starts up in TIME mode. The uWatch is primarily a wristwatch, so the TIME mode is given priority
+when the [MODE] key is pressed.  The first time you press [MODE] from either calculator or an application, the mode
+will return to TIME mode.  Subsequent [MODE] presses will rotate through TIME/CALCULATOR/APPLICATIONS.
+
+Menus
+-----
 
 To bring up a menu, press [MENU].  The menu title is generally shown on the
 top line of the display, and menu options are shown on the bottom line of the
@@ -31,14 +65,257 @@ display.  Whenever mutliple menu options are available, the rightmost lower
 character in the display displays two little arrows, pointing up and down. These
 indicate that you can press <UP> or <DOWN> to display the menu options.
 
-A menu item that begins with an arrow > symbol indicates that that item is
+A menu item that begins with an arrow symbol (similar to '>') indicates that that item is
 itself a menu containing other items.
 
 Press <OK> to select the currently displayed menu item.
 
-Press <C> or [MODE] to exit from the current menu without making a selection.
-<C> will return to the previous mode.
-[MODE] will return to TIME mode. 
+Press <C> to exit from the current menu without making a selection.
+
+
+----
+THE CALCULATOR
+----
+
+The uWatch has both algebraic and RPN (Reverse Polish Notation) calculators. RPN is the default type. The type of calculator may be changed from the Applications/Tools/Calculator menu. In the RPN calculator, functions apply
+directly to the X and Y registers.  In the algebric calculator, functions may operate directly on the X register,
+or require input of a second number after the function has been selected.  For example, when choosing 'nPr' function,
+
+RPN:        [6] [ENTER] [3] [nPr]
+Algebraic:  [6] [nPr] [3] [=]
+
+
+Calculator Menus
+----------------
+
+The calculator menus operate slightly differently than menus in other areas of the UI. The calculator
+uses function-key shortcuts to allow efficient selection of functions from menus.  Calculator menus are
+activated by pressing [MENU], and each menu is shown as (up to) 6 functions on the screen (organised in
+2 rows of 3 functions as shown in the figure). These functions can be selected by pressing a F-key shortcut.
+The F-keys are marked F1 - F6 on the uWatch keyboard overlay.
+
+    +-------------------+      +-------------------+
+    |  sin   cos   tan  |      |   F1    F2    F3  |
+    | sin-1 cos-1 tan-1 |      |   F4    F5    F6  |
+    +-------------------+      +-------------------+
+          display                  function key
+    
+In the trigonometry menu shown above left, 'cos' is selected by pressing F2 (the 8 key) as shown at right.
+
+There are multiple calculator function menus. Each menu contains functions generally of the same
+type (for example, statistics functions are grouped together into a single menu 'page').  You can
+cycle through menu pages by pressing <UP> or <DOWN>.  The last-used menu 'page' is remembered next
+time you press [MENU].
+
+When you select a function (by pressing F1-F6), the corresponding menu function is processed.  If there
+is no function displayed, the key will have no effect.  In the RPN calculator, calculator menu functions are
+performed immediately.  In the algebraic calculator, operation may be immediate or delayed, depending on the
+need for a second parameter (for example, nPr will require an 'r' value to be entered, followed by ENTER).
+
+You can exit (cancel) the calculator menu witout performing any function by pressing <C>.
+
+Bases
+-----
+
+Number bases 2, 8, 10 and 16 are supported.  The base is selected from the calculator menu page, where...
+
+'bin'   is binary, base 2
+'oct'   is octal, base 8
+'dec'   is decimal, base 10 (DEFAULT)
+'hex'   is hexadecimal, base 16
+
+The current base (if not 10) is shown as a small subscript of the number displayed.
+
+Numeric entry is in the currently selected base, so in binary (base 2) the available digits for number entry
+are restricted to 0 and 1.  In octal, digits 0 to 7.  In decimal, digits 0 to 9, and in hexadecimal digits
+0 to 9 and the letters 'A' to 'F'.  These letters are entered by pressing '.' and then using the F-key to
+select the appropriate letter from the on-screen menu as shown below.
+
+    +-------------------+
+    |   A     B     C   |
+    |   D     E     F   |
+    +-------------------+
+
+Viewing Wide Numbers
+--------------------
+
+Bases 2, 8 and 16 do not have fractional capability (that is, they operate on whole numbers only), and have a
+maximum range of 64 bits (signed value). When the number of digits required to display a base-n number exceeds
+16, the value's higher digits are truncated and the leftmost column of the display shows '<'. To view the
+'wide' number, press <LEFT> to scroll/view the whole number.  This engages the 'view string' mode which allows
+<LEFT> and <RIGHT> to scroll and view large strings.  Press <ENTER> or <C> to return to normal calculator
+usage.
+
+    +-------------------+
+    |   A     B     C   |
+    |<1234567890   D     E     F   |
+    +-------------------+
+
+
+
+Complex Numbers
+---------------
+
+There is no complex mode! the uwatch performs complex number operations when a
+complex number is present and does not need to be set into a special mode for
+this. The calculator's internal functions test for the presence of an ipart in
+order to perform the best calculation. importantly, when there is no ipart,
+the calculation is the same as for normal real numbers so it remains
+efficient, fast and in some cases more stable numerically than the complex
+version. So there is no loss of efficiency and precision by not having a mode.
+
+However, the lack of a dedicated mode means that some real number calculations
+can result in a complex answer. for example sqrt(-2) and acos(1.2).
+
+Complex numbers are implemented using a parallel stack, so there are shadow
+ipart registers for X, Y, Z and T (and also the 10 memories). A complex number
+occupies a single line of display just as do the normal reals. Naturally,
+there is less room to display the number on one line, so the number of digits
+is shortened appropriately.
+
+Entry Method
+------------
+
+Enter numbers in the usual way, and initiate the entry of an ipart by pressing
+"." either once or twice. When a decimal dot or exponent is already present,
+pressing "." will initate the ipart entry. the screen will change to, for
+example, "1.2+i" waiting for the ipart entry. 
+
+If there is no decimal place already, two "."s are required, for example, to
+enter 1+i, enter "1..", you can leave it as +i or enter 1 if you like, both
+are acceptable. for example "0.." enters the value "i" (ie 0+i).
+
+The +/- change sign key can be used during the process of number entry to
+affect the signs of number parts. Before EXP or "i" is entered, +/- changes
+the sign of the mantissa, after EXP it changes the sign of exponent, after "i"
+it changes the sign of the ipart and, lastly, after EXP again, changes the
+sign of the ipart exponent (NOTE: a backspace key in RPN mode is planned to
+help make corrections when entering long numbers).
+
+Since the entry of a complex number can be longer than the 16 digits
+displayed, the number will scroll left on entry accommodating the rightmost
+digits (NOTE: you cannot currently scroll back before entry).
+
+Full Mantissa Display Trick
+---------------------------
+
+You can display the full mantissa for both the real and iparts of a complex
+number by pressing MENU then exit with MODE. The complex number is displayed
+using both lines with the top line the real part and the bottom line the
+ipart.
+
+Note: this does not change anything on the stack and is just a display trick.
+
+
+
+
+APPENDIX A
+==========
+
+CALCULATOR
+----------
+
+Functions supporting complex numbers
+------------------------------------
+
+* basic 4 ops (+ - * /)
+* stack ops; ROLL, X<>Y, ENTER
+* memory ops: RCL, STO
+* 1/X, X^2, SQRT, ABS (modulus), Y^X, Y^(1/X)
+* LN, EXP
+* LN10, 10^X
+* SIN, COS, TAN
+* ASIN, ACOS, ATAN
+* complex specific;
+
+  C>R = split complex into X, Y registers
+  R>C = combine X+iY into complex
+  CONJ = complex conjugate.
+  REAL = real part.
+
+Functions not operating on complex numbers
+------------------------------------------
+
+* R->P, P->R  (always set ipart to 0) useful with C>R and R>C
+* Factorial (gamma)
+* complex BASE mode (!)
+* // (parallel), should this do something clever with power etc?
+
+Trig functions of complex numbers only makes sense in radians, but since there
+is no complex mode, the angular mode cannot be ignored. consequently, a trig
+function in DEG mode will apply to a complex number by converting it to
+radians.
+
+Since we are modeless, R>P and P>R cannot perform special case operations for
+complex numbers (eg working with polar complex), so instead there are C>R
+and R>C split and combine operations which separate a complex number into
+two stack levels x & y and the reverse. like this, the complex number can be
+operated as polar by performing; C>R R>P R>C
+
+Also, the split is a useful way to see a complex number at full precision
+(then use combine to put it back).
+
+Philosophy behind the complex number support
+--------------------------------------------
+
+Some of the way in which the uWatch complex numbers work is different from
+that on HP calculators. The calculators tend to have a complex number mode in
+which some operations (eg P->R and R->P) work differently.
+
+For the uWatch, i didnt want the complex number implementation to any way
+interfere with the normal numeric operations. This is because complex numbers
+are an advanced feature which many users will be unaware of, especially at
+first.
+
+The amount of time i read users posting on forums saying their 15c has a little
+"c" on the screen and has gone into a mode where things work differently,
+means that modes are confusing. It's really, really annoying when your
+calculator/pda/phone etc. goes into a funny mode which works in a differnt way
+and you're out in the field and dont have the manual and you dont know how to
+get it back to normal. You wind up resetting the unit as a last resort!
+
+There is also an argument that DEG/RAD should not be a mode. being in the
+wrong angle mode has had me over in the past and i would guess it has been the
+same for everyone else. However, the DEG/RAD mode is so ingrained and expected
+that it would be wrong not to support it.
+
+not having a complex mode creates a few problems. The uWatch cannot simply
+look at the number to see if it has an ipart because the ipart may just happen
+to be zero and it would be a mistake to operate with the number in different
+way.
+
+For example, the 15c R->P function converts a complex number into its angular
+form when in complex mode, but operates on X & Y stack registers
+otherwise. The uWatch cannot mimic this, so instead it offers functions to
+split a complex into the X & Y registers (and another to combine them). In
+this way P->R and R->P can always perform the same operation. To this effect,
+they reset any residual ipart on X & Y.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 TIME MENU:
 
@@ -58,20 +335,6 @@ CLOCK
 
 In the above example, Setup is a sub-menu containing 6 items.
 
-CALCULATOR MENU:
-
-The calculator has a slightly different menu system, as it uses F-keys
-to allow quick selection of functions.  When you press [MENU] in calculator
-mode, you will see up to 6 functions displayed on the screen.  These are 
-arranged in two lines of three, or two lines of two.
-
-The F1 to F6 keys will select the function displayed in the similar relative
-position of the F-key on the keyboard.
-
-As with other menus, <UP> and <DOWN> will cycle through the available menus
-and <C> or <OK> will quit with no action.
-
-[MODE] will also return to the calculator.
 
 APPLICATION MENU:
 
@@ -109,7 +372,7 @@ In move entry, the last computer move (if any) is displayed on the top line.
 Moves are entered using column number row number format.  For example,
 5254 is E2-E4 equivalent.
 
-Illegal moves return to the board display.  Legal moves trigger the 
+Illegal moves return to the board display.  Legal moves trigger the
 computer player to search for a reply.
 
 When the computer moves, the board is displayed with the computer move
