@@ -85,7 +85,7 @@ char *eng(double value, int digits, int numeric)
     }
     
     expof10 = (int) log10(value);
-    if ( expof10 > 0 )
+    if ( expof10 >= 0 )
         expof10 = (expof10/3)*3;
     else
         expof10 = (-expof10+3)/3*(-3); 
@@ -104,7 +104,7 @@ char *eng(double value, int digits, int numeric)
     if( numeric || (expof10 < PREFIX_START) ) //|| (expof10 > PREFIX_END))
         sprintf(res, "%.*fe%d", digits, value, expof10); 
     else
-        sprintf(res, "%f %c", value, prefix[(expof10-PREFIX_START)/3]);
+        sprintf(res, "%.*f %c", digits, value, prefix[(expof10-PREFIX_START)/3]);
 
     return displayBuffer + OFFSET;
 }
