@@ -412,7 +412,7 @@ int change1224()
     }
 
     int mode1224 = TwelveHour ? 1 : 0;
-    if ( genericMenu( "Time Format", print1224, sel1224, sel1224, 0, &mode1224 ) == MODE_KEYMODE )
+    if ( genericMenu( "Format", print1224, sel1224, sel1224, 0, &mode1224 ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     TwelveHour = mode1224; // ? TRUE : FALSE;
     return MODE_EXIT;
@@ -457,7 +457,7 @@ int changeLocation()
 
     BOOL ok = FALSE;
     do {
-        UpdateLCDline1( "Longitude (E<0)?" );
+        UpdateLCDline1( "Long. (E<0)?" );
 
         // Display old Long and enter new value
         Xreg = hms( Longitude );
@@ -467,7 +467,7 @@ int changeLocation()
 
         // validate longitude -180 <= long <= +180
         if ( Xreg < -180 || Xreg > 180 ) {
-            UpdateLCDline1( "Longitude range" );
+            UpdateLCDline1( "Range" );
             UpdateLCDline2( "-180\xDF - +180\xDF   \010" );
             GetDebouncedKey();
         } else {
@@ -482,7 +482,7 @@ int changeLocation()
     ok = FALSE;
     do {
         // display old lat and enter new value
-        UpdateLCDline1( "Latitude?" );
+        UpdateLCDline1( "Lat?" );
 
         Xreg = hms( Latitude );
 
@@ -495,7 +495,7 @@ int changeLocation()
         // validate lat -90 <= lat <= +90
 
         if ( Xreg < -90 || Xreg > 90 ) {
-            UpdateLCDline1( "Latitude range" );
+            UpdateLCDline1( "Range" );
             UpdateLCDline2( "-90\xDF - +90\xDF     \010" );
             GetDebouncedKey();
         } else {
@@ -512,8 +512,9 @@ int changeLocation()
 
 char *printCalc( int *type, int max )
 {
-    if ( *type ) return "RPN";
-    else return "Al\5ebraic";
+    return ( *type ) ? "RPN" : "Al\5ebraic";
+//    if ( *type ) return "RPN";
+//    else return "Al\5ebraic";
 }
 
 int appCalculatorMode()
@@ -522,152 +523,70 @@ int appCalculatorMode()
     return genericMenu( "Calculator", &printCalc, &increment, &decrement, 2, &RPNmode );
 }
 
-
+char *printErase( int *n, int max ) {
+    return (*n) ? "Yes":"No";
+}
 
 int appClearEEPROM()
 {
+    int erase = 0;
+    genericMenu( "Erase?", printErase, increment, decrement, 2, &erase );
+    if ( erase ) {
 
-    UpdateLCDline1( "Erase EEPROM ?" );
-    UpdateLCDline2( "ENTER or Cancel" );
-    if ( ENTER( GetDebouncedKey())) {
-        unsigned int c;
-        int c2;
+//        custom_character(5,character_g);
+        UpdateLCDline1( "Erasing" );
 
-        custom_character(5,character_g);
-        UpdateLCDline1( "Erasin\5" );
-        c2 = 0;
-        for ( c = 0;c < 65534;c++ ) { //don't overwrite the last byte, it's used for the calibration value
+        unsigned int c2 = 0;
+        while ( c2 < 65535 ) {
+
             ResetSleepTimer();          //we don't want to timeout while doing this
-
             if ( KeyScan2( FALSE ) == KeyClear ) break;
 
-            I2CmemoryWRITE( c, 0 );
-            c2++;
-            if ( c2 >= 100 ) {
-                sprintf( out, "%5u of 65535", c );
+            I2CmemoryWRITE( c2, 0 );
+
+            if ( !( c2 & 63 )) {
+                sprintf( out, "%5u of 65535", c2 );
                 UpdateLCDline2( out );
-                c2 = 0;
             }
+
+            c2++;
         }
     }
     return MODE_EXIT;
-
 }
+
+
+static const char *k2c[] = { 0, "/", "+-", "7", "8", "9", "XY", "C", "*", ".",
+    "4", "5", "6", "(", ")", "-", "0", "1", "2", "3", "E", "M", "+", "", "STO", "ENT" 
+};
 
 
 
 int appSelfTest()
 {
-    int c, c2;
-    int KeyPress2;
 
-    I2CmemoryWRITE( 65530, 0xAA );
-    c = I2CmemoryREAD( 65530 );
-    I2CmemoryWRITE( 65530, 0 );
-    c2 = I2CmemoryREAD( 65530 );
+
+    I2CmemoryWRITE( 65534, 0xAA );
+    int c = I2CmemoryREAD( 65534 );
+    I2CmemoryWRITE( 65534, 0 );
+    int c2 = I2CmemoryREAD( 65534 );
     if (( c != 0xAA ) || ( c2 != 0 ) ) {
-        UpdateLCDline1( "EEPROM failed!" );
-        UpdateLCDline2( "Press ENTER" );
+        UpdateLCDline2( "EEPROM fail" );
+    }
+
+    //custom_character(5,character_y);
+    UpdateLCDline2( "Keyboard Test" );
+    //UpdateLCDline2( "MODE to exit" );
+
+    int KeyPress2;
+    do {
         KeyPress2 = GetDebouncedKey();
-        return MODE_EXIT;
-    }
-    UpdateLCDline1( "EEPROM passed" );
-    UpdateLCDline2( "Press ENTER" );
-    KeyPress2 = GetDebouncedKey();
-    custom_character(5,character_y);
-    UpdateLCDline1( "Ke\5board Test" );
-    UpdateLCDline2( "MODE to exit" );
+        //UpdateLCDline2( k2c[ KeyPress2 ] );
+    } while ( KeyPress2 != KeyMode );
 
-    while ( TRUE ) {
-
-        char *s = 0;
-
-        int KeyPress2 = GetDebouncedKey();
-        switch ( KeyPress2 ) {
-
-        case Key1:
-            s = "1";
-            break;
-        case Key2:
-            s = "2";
-            break;
-        case Key3:
-            s = "3";
-            break;
-        case Key4:
-            s = "4";
-            break;
-        case Key5:
-            s = "5";
-            break;
-        case Key6:
-            s = "6";
-            break;
-        case Key7:
-            s = "7";
-            break;
-        case Key8:
-            s = "8";
-            break;
-        case Key9:
-            s = "9";
-            break;
-        case Key0:
-            s = "0";
-            break;
-        case KeyPoint:
-            s = ".";
-            break;
-        case KeyPlus:
-            s = "+";
-            break;
-        case KeyMinus:
-            s = "-";
-            break;
-        case KeyMult:
-            s = "*";
-            break;
-        case KeyDiv:
-            s = "/";
-            break;
-        case KeyMenu:
-            s = "Menu";
-            break;
-        case KeyEnter:
-            s = "Enter";
-            break;
-        case KeyClear:
-            s = "C";
-            break;
-        case KeySign:
-            s = "+/-";
-            break;
-        case KeyEXP:
-            s = "EXP";
-            break;
-        case KeyRCL:
-            s = "STO";
-            break;
-        case KeyLP:
-            s = "(";
-            break;
-        case KeyRP:
-            s = ")";
-            break;
-        case KeyXY:
-            s = "X-Y";
-            break;
-        case KeyMode:
-            return MODE_KEYMODE;
-        }
-
-        if ( s )
-            UpdateLCDline2( s );
-
-
-    }
     return MODE_EXIT;
 }
+
 
 
 char *printTimeout( int *timeout, int max )
@@ -714,7 +633,7 @@ int SetupMode( int p )
     const menuItem setupMenuMenu[] = {
         { "Calculator", &appCalculatorMode, 0 },
         { "Clear EEPROM", &appClearEEPROM, 0 },
-        { "Self Test", &appSelfTest, 0 },
+        { "Test", &appSelfTest, 0 },
         { "LCD timeout", &appLCDTimeout, 0 },
         { "About", &appAbout, 0 },
     };

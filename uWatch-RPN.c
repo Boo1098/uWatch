@@ -60,18 +60,13 @@ void RPNcalculator(void)
     {
 		Key = GetDebouncedKey();
 
-
         //start to process the keypress
         // mode key was pressed, exit calc mode
         if (Key==KeyMode)
-        {
-            //DelayMs(KeyDelay);
             return;
-        }
 
         //user pressed some key other than MODE, so ensure that when exit we go back to the time/date display
         NextMode=FALSE;		
-
 
         if ( Key == KeyMenu ) {
             WatchMode = WATCH_MODE_CALC_MENU;

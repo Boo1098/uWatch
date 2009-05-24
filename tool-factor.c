@@ -34,7 +34,7 @@ int factor( int p )
     unsigned long int idleEnd;
     int factors=0;
 
-    UpdateLCDline1("Factor this");
+    UpdateLCDline1("Factor?");
     //Xreg = 0; allow number to be carried in from calculator.
     OneLineNumberEntry();
     Xreg = fabs(Xreg);
@@ -42,7 +42,7 @@ int factor( int p )
     const char *nb = "Result";
 
     if (Xreg > 4294967296.0) {
-        sprintf( displayBuffer, "too large");
+        sprintf( displayBuffer, "too big");
     }
     else {
 
