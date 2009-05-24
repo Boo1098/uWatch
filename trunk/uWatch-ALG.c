@@ -50,6 +50,17 @@ static void pressEnter() {
             reduce(9); // ALL
 }
 
+void pmtd( int red, int op ) {
+
+    CompleteXreg();
+    ResetFlags();
+    reduce(red);
+    Push();
+    PushOp( op );
+    Clx();
+    EnableXregOverwrite = TRUE;
+    
+}
 
 //***********************************
 // The main Algebraic calculator routine
@@ -132,40 +143,16 @@ void ALGcalculator(void)
             pressEnter();
             break;
         case KeyPlus:           //user has pressed the PLUS key
-            CompleteXreg();
-            ResetFlags();
-            reduce(3);
-            Push();
-            PushOp(CALC_OP_PLUS);
-            Clx();
-            EnableXregOverwrite = TRUE;
+            pmtd( 3, CALC_OP_PLUS );
             break;
         case KeyMinus:          //user has pressed the MINUS key
-            CompleteXreg();
-            ResetFlags();
-            reduce(3);
-            PushOp(CALC_OP_MINUS);
-            Push();
-            Clx();
-            EnableXregOverwrite = TRUE;
+            pmtd( 3, CALC_OP_MINUS );
             break;
         case KeyMult:               //user has pressed the MULTIPLY key
-            CompleteXreg();
-            ResetFlags();
-            reduce(2);
-            PushOp(CALC_OP_MULT);
-            Push();
-            Clx();
-            EnableXregOverwrite = TRUE;
+            pmtd( 2, CALC_OP_MULT );
             break;
         case KeyDiv:                //user has pressed the DIVIDE key
-            CompleteXreg();
-            ResetFlags();
-            reduce(2);
-            PushOp(CALC_OP_DIVIDE);
-            Push();
-            Clx();
-            EnableXregOverwrite = TRUE;
+            pmtd( 2, CALC_OP_DIVIDE );
             break;
         case KeyClear:
             //user has pressed the CLEAR key

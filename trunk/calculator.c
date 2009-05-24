@@ -21,7 +21,7 @@ const charSet mathLogCharset[] = {
 const menuItem mathLogMenu[] = {
     { "   e\3 ",     OperatePrecedence,  CALC_OP_EXP     },
     { " ln  ",      OperatePrecedence,  CALC_OP_LN      },
-    { "\3\4\6 ",     OperatePrecedence,  CALC_OP_NROOT   },
+    { "\3\4\6",     OperatePrecedence,  CALC_OP_NROOT   },
     { "  10\3 ",    OperatePrecedence,  CALC_OP_10X     },
     { "lo\7 ",       OperatePrecedence,  CALC_OP_LN10    },
     { " x%\5",       OperatePrecedence,  CALC_OP_MODULUS },
@@ -61,7 +61,7 @@ const menuItem mathBaseMenu[] = {
     { " hex\5",  OperatePrecedence,  CALC_OP_BASE16      },
     { " dec ",   OperatePrecedence,  CALC_OP_BASE10      },
     { " rad ",   OperatePrecedence,  CALC_OP_MODERAD     },
-    { " de\7 ",   OperatePrecedence,  CALC_OP_MODEDEG     },
+    { " de\7",   OperatePrecedence,  CALC_OP_MODEDEG     },
 };
 
 const packedMenu2 mathModeBase = {
@@ -87,7 +87,7 @@ const charSet mathTrigCharset[] = {
 const menuItem mathTrigMenu[] = {
     { " sin ",  OperatePrecedence,  CALC_OP_SIN    },
     { " cos ",  OperatePrecedence,  CALC_OP_COS    },
-    { " tan ",  OperatePrecedence,  CALC_OP_TAN    },
+    { " tan",  OperatePrecedence,  CALC_OP_TAN    },
     { " sin\351", OperatePrecedence,  CALC_OP_ASIN   },
     { " cos\351", OperatePrecedence,  CALC_OP_ACOS   },
     { " tan\351", OperatePrecedence,  CALC_OP_ATAN   },
@@ -123,7 +123,7 @@ const packedMenu2 mathBoolean = {
 
 const menuItem mathCombMenu[] = {
     { "  nPr ",  OperatePrecedence, CALC_OP_PERMUTATION  },
-    { " nCr ",  OperatePrecedence, CALC_OP_COMBINATION  },
+    { " nCr",  OperatePrecedence, CALC_OP_COMBINATION  },
     { "", OperatePrecedence, CALC_OP_NULL },
     { "", OperatePrecedence, CALC_OP_NULL },
     { "", OperatePrecedence, CALC_OP_NULL },
@@ -143,10 +143,10 @@ const charSet mathStatsCharset[] = {
 const menuItem mathStatsMenu[] = {
     { "  clx ",      OperatePrecedence, CALC_OP_STAT_CLX     },
     { " \366x  ",   OperatePrecedence, CALC_OP_STAT_SIGMAX  },
-    { "\366-  ",  OperatePrecedence, CALC_OP_STAT_SUB     },
+    { "\366-",  OperatePrecedence, CALC_OP_STAT_SUB     },
     { "    \345  ",   OperatePrecedence, CALC_OP_STAT_SD      },
     { " \370 ",    OperatePrecedence, CALC_OP_STAT_MEAN    },
-    { " \366+ ",   OperatePrecedence, CALC_OP_STAT_ADD     },
+    { " \366+",   OperatePrecedence, CALC_OP_STAT_ADD     },
 };
 
 const packedMenu2 mathStats = {
@@ -158,7 +158,7 @@ const packedMenu2 mathStats = {
      
 
 const charSet mathConstantCharset[] = {
-    character_pi,character_minus1,character_g,character_j,
+    character_pi,0,character_g,character_j,
 };
 
 const menuItem mathConstantMenu[] = {
@@ -258,7 +258,7 @@ const menuItem mathOtherMenu[] = {
     { "  x\3",   OperatePrecedence, CALC_OP_SQUARE         },
     { "   \5\370 ",   OperatePrecedence, CALC_OP_SQRT           },
     { "\174x\174 ",   OperatePrecedence, CALC_OP_ABS            },
-    { " \6\4  ",  OperatePrecedence, CALC_OP_NPOW           },
+    { " \6\4",  OperatePrecedence, CALC_OP_NPOW           },
 };
 
 const packedMenu2 mathOther = {
@@ -285,17 +285,17 @@ const packedMenu2 mathComplex = {
 };
 
 const menuItem mathBitOperationsMenu[] = {
-    { " X>>1",  OperatePrecedence, CALC_OP_BITSHIFT_R1  },  
-    { " Y>>X",  OperatePrecedence, CALC_OP_BITSHIFT_RN        },
+    { " x>>1",  OperatePrecedence, CALC_OP_BITSHIFT_R1  },  
+    { " \6>>x",  OperatePrecedence, CALC_OP_BITSHIFT_RN        },
     { "", OperatePrecedence, CALC_OP_NULL },
-    { " X<<1", OperatePrecedence, CALC_OP_BITSHIFT_L1   },
-    { " Y<<X",  OperatePrecedence, CALC_OP_BITSHIFT_LN       },
+    { " x<<1", OperatePrecedence, CALC_OP_BITSHIFT_L1   },
+    { " \6<<x",  OperatePrecedence, CALC_OP_BITSHIFT_LN       },
 };
 
 const packedMenu2 mathBitOperations = {
     0,  //CALC-STYLE
     printMenu,
-    0,0, 5, mathBitOperationsMenu
+    5, mathOtherCharset, 5, mathBitOperationsMenu
 };
 
 const packedMenu2 *calcMenus[CALC_MENU_SIZE] = {

@@ -14,8 +14,8 @@ extern const unsigned char character_powerx[];
 extern const unsigned char character_pi[];
 extern const unsigned char character_nd1[];
 extern const unsigned char character_nd2[];
-extern const unsigned char character_minus1[];
-extern const unsigned char character_minus1b[];
+//extern const unsigned char character_minus1[];
+//extern const unsigned char character_minus1b[];
 extern const unsigned char character_h[];
 
 //extern const unsigned char character_arrow[];

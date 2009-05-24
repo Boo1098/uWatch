@@ -38,7 +38,31 @@ This program is free software: you can redistribute it and/or modify
 
 #if LUNAR_LANDER
 
-int lunarLander( int p )        // COST: 1434 bytes
+int height;
+int velocity;
+int fuelRemaining;
+int elapsedTime;
+
+char *printStat( int *n, int max ) {
+    switch (*n ) {
+    case 3:
+        sprintf( out, "Time %i s", elapsedTime );
+        break;
+    case 0:
+        sprintf( out, "Height %i m", height );
+        break;
+    case 1:
+        sprintf( out, "Speed %d m/s", velocity );
+        break;
+    case 2:
+        sprintf( out, "Fuel %d l", fuelRemaining );
+        break;
+    }
+    return out;
+}
+
+
+int lunarLander( int p )
 {
 
     int KeyPress2;
@@ -47,70 +71,28 @@ int lunarLander( int p )        // COST: 1434 bytes
     UpdateLCDline2( "    By zowki" );
 
 
-    int elapsedTime   = 0;
-    int height        = 1000;
-    int velocity      = 50;
-    int fuelRemaining = 150;
+    elapsedTime   = 0;
     int c;
+    height        = 1000;
+    velocity      = 50;
+    fuelRemaining = 150;
 
     int burnAmount  = 0;
     int newVelocity = 0;
     int delta = 0;
 
+
     while ( height > 0 ) {
         if ( fuelRemaining > 0 ) {
 
-            do {
+            int sel = 0;
+            if ( genericMenu( "Status", printStat, increment, decrement, 4, &sel ) == MODE_KEYMODE )
+                return MODE_KEYMODE;
 
-                if ( GetDebouncedKey() == MODE_KEYMODE )
-                    return MODE_KEYMODE;
+            if ( burnAmount > fuelRemaining )
+                burnAmount = fuelRemaining;
 
-                UpdateLCDline1( "ENT - burn fuel" );
-                UpdateLCDline2( "MENU - stats" );
-                KeyPress2 = GetDebouncedKey();
-                if ( KeyPress2 == KeyMode ) return MODE_KEYMODE;
-    
-                if ( KeyPress2 == KeyMenu ) { //stats menu
-    
-                    UpdateLCDline1( "1=Time  2=Height" );
-                    UpdateLCDline2( "3=Speed 4=Fuel" );
-    
-                    char *title;
-    
-                    switch ( GetDebouncedKey() ) {
-                    case KeyMode:
-                        return MODE_KEYMODE;
-    
-                    case Key1:
-                        title = "Time (seconds):";
-                        sprintf( out, "%i", elapsedTime );
-                        break;
-    
-                    case Key2:
-                        title = "Height (feet):";
-                        sprintf( out, "%i", height );
-                        break;
-    
-                    case Key3:
-                        title = "Speed (feet/s):";
-                        sprintf( out, "%i", velocity );
-                        break;
-    
-                    case Key4:
-                        title = "Fuel:";
-                        sprintf( out, "%i", fuelRemaining );
-                        break;
-                    }
-    
-    
-                    UpdateLCDline1( title );
-                    UpdateLCDline2( out );
-                }
-
-            } while ( !ENTER( KeyPress2 ) );
-
-
-            if ( genericMenu( "Burn Fuel?", printNumber, increment, decrement, fuelRemaining, &burnAmount ) == MODE_KEYMODE )
+            if ( genericMenu( "Burn fuel?", printNumber, increment, decrement, fuelRemaining+1, &burnAmount ) == MODE_KEYMODE )
                return MODE_KEYMODE;
         }
 
@@ -120,12 +102,15 @@ int lunarLander( int p )        // COST: 1434 bytes
         elapsedTime++;
         velocity      = newVelocity;
 
-        sprintf( out, "%i fuel burnt", burnAmount );
-        UpdateLCDline1( out );
-        sprintf( out, "%i fuel left", fuelRemaining );
-        UpdateLCDline2( out );
+//        if ( burnAmount > 0 ) {
+//            sprintf( out, "%i fuel burnt", burnAmount );
+//            UpdateLCDline1( out );
+//            sprintf( out, "%i fuel left", fuelRemaining );
+//            UpdateLCDline2( out );
+//        }
 
     }
+
 
     /* Touchdown. Calculate landing parameters. */
     elapsedTime = elapsedTime - 1;

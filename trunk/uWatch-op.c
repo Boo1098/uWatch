@@ -33,6 +33,7 @@
 #include "menu.h"
 
 
+void CalcRiseAndSet(double* r, double* s);
 int custom_character( int c, const unsigned char *p );
 //int setBase( int base );
 void UpdateLCDline1( const char* s );

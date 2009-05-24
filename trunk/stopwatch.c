@@ -165,8 +165,8 @@ int StopWatchMode() {
 
 
     const menuItem stopWatchMenuMenu[] = {
-        { "Start/Stop",  stopWatchStartStop, STOPWATCH_START },
-        { "Lap", stopWatchLap, STOPWATCH_LAP },
+        { "",  stopWatchStartStop, STOPWATCH_START },
+        { "", stopWatchLap, STOPWATCH_LAP },
     };
 
     const packedMenu2 stopWatchMenu = {
