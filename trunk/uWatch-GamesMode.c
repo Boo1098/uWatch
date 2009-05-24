@@ -65,7 +65,6 @@ char *printStat( int *n, int max ) {
 int lunarLander( int p )
 {
 
-    int KeyPress2;
 
 //    UpdateLCDline1( "--LUNAR LANDER--" );
 //    UpdateLCDline2( "    By zowki" );
@@ -122,7 +121,7 @@ int lunarLander( int p )
     sprintf( out, "Time %i s", elapsedTime + delta );
     UpdateLCDline2( out );
 
-    GetDebouncedKey();
+    int KeyPress2 = GetDebouncedKey();
     if ( KeyPress2 == KeyMode ) return MODE_KEYMODE;
 
     sprintf( out, "Speed %i m/s", newVelocity );

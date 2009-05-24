@@ -457,7 +457,7 @@ int changeLocation()
 
     BOOL ok = FALSE;
     do {
-        UpdateLCDline1( "Long. (E<0)?" );
+        UpdateLCDline1( "Longitude (E<0)?" );
 
         // Display old Long and enter new value
         Xreg = hms( Longitude );
@@ -482,7 +482,7 @@ int changeLocation()
     ok = FALSE;
     do {
         // display old lat and enter new value
-        UpdateLCDline1( "Lat?" );
+        UpdateLCDline1( "Latitude?" );
 
         Xreg = hms( Latitude );
 
@@ -533,8 +533,8 @@ int appClearEEPROM()
     genericMenu( "Erase?", printErase, increment, decrement, 2, &erase );
     if ( erase ) {
 
-//        custom_character(5,character_g);
-        UpdateLCDline1( "Erasing" );
+        custom_character(5,character_g);
+        UpdateLCDline1( "Erasin\5" );
 
         unsigned int c2 = 0;
         while ( c2 < 65535 ) {
@@ -556,8 +556,8 @@ int appClearEEPROM()
 }
 
 
-static const char *k2c[] = { 0, "/", "+-", "7", "8", "9", "XY", "C", "*", ".",
-    "4", "5", "6", "(", ")", "-", "0", "1", "2", "3", "E", "M", "+", "", "STO", "ENT" 
+static const char *k2c[] = { 0, "/", "+-", "7", "8", "9", "X<>Y", "Clear", "*", ".",
+    "4", "5", "6", "(", ")", "-", "0", "1", "2", "3", "EXP", "Menu", "+", "", "STO", "ENT" 
 };
 
 
@@ -572,10 +572,11 @@ int appSelfTest()
     int c2 = I2CmemoryREAD( 65534 );
     if (( c != 0xAA ) || ( c2 != 0 ) ) {
         UpdateLCDline2( "EEPROM fail" );
+        GetDebouncedKey();
     }
 
-    //custom_character(5,character_y);
-    UpdateLCDline2( "Keyboard Test" );
+    custom_character(5,character_y);
+    UpdateLCDline2( "Ke\5board Test" );
     //UpdateLCDline2( "MODE to exit" );
 
     int KeyPress2;
