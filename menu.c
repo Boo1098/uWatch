@@ -6,15 +6,13 @@
 #include "def.h"
 
 
-void increment( int *selection, int max )
-{
+void increment( int *selection, int max ) {
     ( *selection )++;
     if (( *selection ) >= max )
         ( *selection ) = 0;
 }
 
-void decrement( int *selection, int max )
-{
+void decrement( int *selection, int max ) {
     ( *selection )--;
     if (( *selection ) < 0 )
         ( *selection ) = max - 1;
@@ -53,9 +51,9 @@ int genericMenu2( const packedMenu2 *menu, int *selection )
 
     // Menu may itself define custom characters it requires.  Character #s are from 4-7
 
-        int i;
-        for ( i = 0; i < menu->csetsize; i++ )
-            custom_character( i + 3, (menu->charset)[i] );
+    int i;
+    for ( i = 0; i < menu->csetsize; i++ )
+        custom_character( i + 3, (menu->charset)[i] );
 
     if ( menu->title && *menu->title )
         UpdateLCDline1( menu->title );

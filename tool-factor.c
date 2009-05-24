@@ -6,7 +6,7 @@
 #include "menu.h"
 #include "characterset.h"
 
-char displayBuffer[400];
+char displayBuffer[512];
 
 
 int check( unsigned long* nx, unsigned long int in, int* factors ) 
