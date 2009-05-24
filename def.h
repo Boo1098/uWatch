@@ -328,4 +328,6 @@ extern int displayMode;
 extern int displayAccuracy;
 extern int displayEngN;
 
+char *printNumber( int *number, int max );
+
 #endif

@@ -575,6 +575,7 @@ char *printChessMove(int *n, int max ) {
 
 int chessGame( int p )
 {
+#if 1
     int moveok;
     Move* mv;
     Move* first;
@@ -718,6 +719,7 @@ int chessGame( int p )
         if ( moveok )
             playMove( *mv );
     }
+#endif
     return MODE_EXIT;
 }
 
