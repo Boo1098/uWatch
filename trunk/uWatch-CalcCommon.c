@@ -74,7 +74,7 @@ char *eng(double value, int digits, int numeric)
   static char *prefix = "yzafpn\344m kMGTPEZY";
 
 #define PREFIX_END (PREFIX_START+((strlen(prefix)-1)*3))
-#define OFFSET 200
+#define OFFSET 400
 
     int expof10;
     char *res = displayBuffer + OFFSET;
@@ -468,12 +468,12 @@ void FormatValue(char* dest,
                  double value, double ivalue,
                  int space, BOOL tidy, BOOL truncate )
 {
-    char base = (WatchMode == WATCH_MODE_CALC || WatchMode == WATCH_MODE_CALC_MENU ) ? CalcDisplayBase : 10;
+    int base = (WatchMode == WATCH_MODE_CALC || WatchMode == WATCH_MODE_CALC_MENU ) ? CalcDisplayBase : 10;
 
+    char *p = displayBuffer;
 
     int shift = 1;
-    switch ( base )
-    {
+    switch ( base ) {
 
         case 16:
             shift++;
@@ -485,7 +485,7 @@ void FormatValue(char* dest,
             const char *digit = "0123456789ABCDEFGH";
             double max = 18446744073709551616.0;  // pow( 2, 64 );
             if ( fabs(value) > max )
-                strcpy( displayBuffer, "  * OVERFLOW *" );
+                strcpy( p, "  * OVERFLOW *" );
             else {
             
                 unsigned long long uval;
@@ -498,8 +498,9 @@ void FormatValue(char* dest,
                     uval = value;
         
                 // Kind of clever -- builds the number 'backwards' into a string buffer
+
+                p += 256;                       // enough room for a "big" number
             
-                char *p = displayBuffer + 70;       //arbitrary, just long enough is all
                 *p-- = 0;
                 *p-- = NUMBER_BASE;           // 'base' character
                 
@@ -522,14 +523,14 @@ void FormatValue(char* dest,
                 if ( !ivalue ) {
 
                     // fit into `space's on screen
-                    int p = space-1;
+                    int p2 = space-1;
                     int l;
-                    if (value < 0) --p; // adjust for sign
+                    if (value < 0) --p2; // adjust for sign
                     
                     for (;;) {
 
-                        sprintf( displayBuffer, "%.*g", p, value );
-                        l = strlen(displayBuffer);
+                        sprintf( p, "%.*g", p2, value );
+                        l = strlen(p);
     
                         if (l <= space) 
                             break;
@@ -537,13 +538,13 @@ void FormatValue(char* dest,
                         if (tidy) {
 
                             // try tidying
-                            tidyNumber(displayBuffer);
-                            if (strlen(displayBuffer) <= space) 
+                            tidyNumber(p);
+                            if (strlen(p) <= space) 
                                 break;
                         }
     
-                        p -= (l - space);
-                        if (p <= 0) break; // fail safe
+                        p2 -= (l - space);
+                        if (p2 <= 0) break; // fail safe
                     }
                 }
                 else {
@@ -567,15 +568,15 @@ void FormatValue(char* dest,
                 again:
     
                     // textify the real part
-                    sprintf(displayBuffer,"%.*g", d, value);
+                    sprintf(p,"%.*g", d, value);
     
                     // tidy to save precious chars
-                    tidyNumber(displayBuffer);
+                    tidyNumber(p);
                         
-                    l = strlen(displayBuffer);                        
-                    displayBuffer[l++] = c;
-                    displayBuffer[l++] = 'i';
-                    displayBuffer[l] = 0;
+                    l = strlen(p);                        
+                    p[l++] = c;
+                    p[l++] = 'i';
+                    p[l] = 0;
                         
                     if (ivalue != 1)
                     {
@@ -583,10 +584,10 @@ void FormatValue(char* dest,
                         // now fit as much of the ipart as we can
                         for (;;)
                         {
-                            sprintf(displayBuffer + l,"%.*g", id, ivalue);
-                            tidyNumber(displayBuffer+l);
+                            sprintf(p + l,"%.*g", id, ivalue);
+                            tidyNumber(p+l);
     
-                            li = strlen(displayBuffer);
+                            li = strlen(p);
                             if (li <= space) break; // done
     
                             id -= (li - space);
@@ -606,30 +607,30 @@ void FormatValue(char* dest,
 
 
             // ensure we dont overrun whatever.
-            displayBuffer[space] = 0;
+            p[space] = 0;
 
             break;
 
             case CALC_OP_MODEFIX: 
-                sprintf( displayBuffer, "%.*f", displayAccuracy, value );
+                sprintf( p, "%.*f", displayAccuracy, value );
                 if ( ivalue ) {
-                    sprintf( displayBuffer + strlen( displayBuffer ), " i%.*f", displayAccuracy, ivalue );
+                    sprintf( p + strlen( p ), " i%.*f", displayAccuracy, ivalue );
                 }
                 break;
 
             case CALC_OP_MODESCI:
-                sprintf( displayBuffer, "%.*e", displayAccuracy, value );
+                sprintf( p, "%.*e", displayAccuracy, value );
                 if ( ivalue ) {
-                    sprintf( displayBuffer + strlen( displayBuffer ), " i%.*e", displayAccuracy, ivalue );
+                    sprintf( p + strlen( p ), " i%.*e", displayAccuracy, ivalue );
                 }
                 break;
 
             case CALC_OP_MODEENG:
             case CALC_OP_MODEENGN:
-                strcpy( displayBuffer, eng( value, displayAccuracy, displayEngN));
+                strcpy( p, eng( value, displayAccuracy, displayEngN));
                 if ( ivalue ) {
-                    strcpy( displayBuffer + strlen( displayBuffer ), " i");
-                    strcpy( displayBuffer + strlen( displayBuffer ), eng( ivalue, displayAccuracy, displayEngN ));
+                    strcat( p, " i");
+                    strcat( p, eng( ivalue, displayAccuracy, displayEngN ));
                 }
                 break;
             }
@@ -639,7 +640,6 @@ void FormatValue(char* dest,
 
     // place a "<" at beginning of number if we're truncating
 
-    char *p = displayBuffer;
     if ( truncate && strlen( p ) > 16 ) {
         p = p + strlen( p ) - 16;
         *p = '<';
