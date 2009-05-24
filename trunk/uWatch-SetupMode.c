@@ -581,7 +581,7 @@ int appSelfTest()
     int KeyPress2;
     do {
         KeyPress2 = GetDebouncedKey();
-        //UpdateLCDline2( k2c[ KeyPress2 ] );
+        UpdateLCDline2( k2c[ KeyPress2 ] );
     } while ( KeyPress2 != KeyMode );
 
     return MODE_EXIT;

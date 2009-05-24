@@ -55,7 +55,7 @@ char *printStat( int *n, int max ) {
         sprintf( out, "Speed %d m/s", velocity );
         break;
     case 2:
-        sprintf( out, "Fuel %d l", fuelRemaining );
+        sprintf( out, "Fuel %d", fuelRemaining );
         break;
     }
     return out;
@@ -67,12 +67,12 @@ int lunarLander( int p )
 
     int KeyPress2;
 
-    UpdateLCDline1( "--LUNAR LANDER--" );
-    UpdateLCDline2( "    By zowki" );
+//    UpdateLCDline1( "--LUNAR LANDER--" );
+//    UpdateLCDline2( "    By zowki" );
+//    GetDebouncedKey();
 
 
     elapsedTime   = 0;
-    int c;
     height        = 1000;
     velocity      = 50;
     fuelRemaining = 150;
@@ -83,14 +83,16 @@ int lunarLander( int p )
 
 
     while ( height > 0 ) {
+
+        if ( burnAmount > fuelRemaining )
+            burnAmount = fuelRemaining;
+
         if ( fuelRemaining > 0 ) {
 
             int sel = 0;
             if ( genericMenu( "Status", printStat, increment, decrement, 4, &sel ) == MODE_KEYMODE )
                 return MODE_KEYMODE;
 
-            if ( burnAmount > fuelRemaining )
-                burnAmount = fuelRemaining;
 
             if ( genericMenu( "Burn fuel?", printNumber, increment, decrement, fuelRemaining+1, &burnAmount ) == MODE_KEYMODE )
                return MODE_KEYMODE;
@@ -101,13 +103,6 @@ int lunarLander( int p )
         height        = height - ( velocity + newVelocity ) * 0.5;
         elapsedTime++;
         velocity      = newVelocity;
-
-//        if ( burnAmount > 0 ) {
-//            sprintf( out, "%i fuel burnt", burnAmount );
-//            UpdateLCDline1( out );
-//            sprintf( out, "%i fuel left", fuelRemaining );
-//            UpdateLCDline2( out );
-//        }
 
     }
 
@@ -124,30 +119,31 @@ int lunarLander( int p )
     newVelocity = velocity + ( 5 - burnAmount ) * delta;
 
     UpdateLCDline1( "Touchdown!" );
-    sprintf( out, "Time: %i s", elapsedTime + delta );
+    sprintf( out, "Time %i s", elapsedTime + delta );
     UpdateLCDline2( out );
 
-    KeyPress2 = GetDebouncedKey();
+    GetDebouncedKey();
     if ( KeyPress2 == KeyMode ) return MODE_KEYMODE;
 
-    sprintf( out, "Speed: %i f/s", newVelocity );
+    sprintf( out, "Speed %i m/s", newVelocity );
     UpdateLCDline1( out );
-    sprintf( out, "Fuel left: %i", fuelRemaining );
+    sprintf( out, "Fuel %i", fuelRemaining );
     UpdateLCDline2( out );
 
     KeyPress2 = GetDebouncedKey();
     if ( KeyPress2 == KeyMode ) return MODE_KEYMODE;
 
+    UpdateLCDline1( "Result:" );
     if ( newVelocity <= 0 ) {
-        UpdateLCDline1( "Perfect landing!" );
+        UpdateLCDline2( "Perfect!" );
     } else if ( newVelocity < 2 ) {
-        UpdateLCDline1( "Bumpy landing." );
+        UpdateLCDline2( "Bumpy!" );
     } else {
         UpdateLCDline1( "You crashed!" );
     }
 
-    UpdateLCDline2( "ENT to cont." );
-    Xreg = 0;
+//    UpdateLCDline2( "ENT to cont." );
+//    Xreg = 0;
     GetDebouncedKey();
 
     return MODE_EXIT;
