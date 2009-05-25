@@ -585,18 +585,18 @@ int chessGame( int p )
 
     if ( runOnce ) {
         // have previously run... so continue, or new game?    
-        if ( genericMenu2( &contMenu, 0 ) == MODE_KEYMODE )
+        if ( genericMenu2( &contMenu ) == MODE_KEYMODE )
             return MODE_KEYMODE;
     }
 
     if ( !contGame ) {
         
         // choose colour    
-        if ( genericMenu2( &colourMenu, 0 ) == MODE_KEYMODE )
+        if ( genericMenu2( &colourMenu ) == MODE_KEYMODE )
             return MODE_KEYMODE;
 
         // get level
-        if ( genericMenu2( &levelMenu, 0 ) == MODE_KEYMODE )
+        if ( genericMenu2( &levelMenu ) == MODE_KEYMODE )
             return MODE_KEYMODE;
 
         initBoard();
@@ -676,7 +676,7 @@ int chessGame( int p )
 
             int sel = 0;
             printer = first;
-            int key = genericMenu( "Your move?", &printChessMove, &increment, &decrement, mc, &sel );
+            int key = genericMenu( "Your move?", &printChessMove, &increment, &decrement, -mc, &sel );
 
             if ( key == MODE_KEYMODE )
                 return MODE_KEYMODE;

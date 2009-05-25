@@ -278,11 +278,11 @@ int EnterNumber(int Key)
     // handle numbers
     int l;
     int c = ReturnNumber(Key);
-    if (c >= 0 && c <= 9)
+    if (c >= 0 && c < CalcDisplayBase )
     {
-        if (( CalcDisplayBase == 2 && c > 1 )        // limit binary entry
-            || ( CalcDisplayBase == 8 && c > 7 ))        // limit octal entry
-            return 0;
+//        if (( CalcDisplayBase == 2 && c > 1 )        // limit binary entry
+//            || ( CalcDisplayBase == 8 && c > 7 ))        // limit octal entry
+//            return 0;
         
         // key is 0 to 9
         ProcessNumberKey('0' + c);
@@ -482,7 +482,7 @@ void FormatValue(char* dest,
         case 2:
 
          {
-            const char *digit = "0123456789ABCDEFGH";
+            const char *digit = "0123456789ABCDEF";
             double max = 18446744073709551616.0;  // pow( 2, 64 );
             if ( fabs(value) > max )
                 strcpy( p, "  * OVERFLOW *" );
@@ -824,7 +824,7 @@ void CompleteXreg(void)
     EnableXregOverwrite=FALSE;
 }
 
-void UpdateMANTDisplay()
+/*void UpdateMANTDisplay()
 {
     char* p = DisplayYreg;
     
@@ -843,6 +843,7 @@ void UpdateMANTDisplay()
     UpdateLCDline1(DisplayYreg);
     UpdateLCDline2(DisplayXreg);
 }
+*/
 
 extern BOOL squash;
 //***********************************
@@ -1055,8 +1056,7 @@ void KeyReplay(void)
 }
 
 int hexSelect( int sel ) {
-    char hex[] = { 'D', 'E', 'F', 'A', 'B', 'C' };
-    ProcessNumberKey( hex[sel-4] );
+    ProcessNumberKey( sel );
     UpdateLCDline1(DisplayYreg);
     UpdateLCDline2(DisplayXreg);
     return MODE_EXIT;
@@ -1067,12 +1067,12 @@ int hexSelect( int sel ) {
 int HexEntry(void)
 {
     const menuItem hexMenuMenu[] = {
-        { "   A ", hexSelect, 7 },
-        { "  B  ", hexSelect, 8 },
-        { " C", hexSelect, 9 },
-        { "   D ", hexSelect, 4 },
-        { "  E  ", hexSelect, 5 },
-        { " F", hexSelect, 6 },
+        { "   A ",  hexSelect, 'A' },
+        { "  B  ",  hexSelect, 'B' },
+        { " C",     hexSelect, 'C' },
+        { "   D ",  hexSelect, 'D' },
+        { "  E  ",  hexSelect, 'E' },
+        { " F",     hexSelect, 'F' },
     };
 
     const packedMenu2 hexMenu = {
@@ -1081,7 +1081,7 @@ int HexEntry(void)
         0, 0, 6, hexMenuMenu
     };
 
-    return genericMenu2( &hexMenu, 0 );
+    return genericMenu2( &hexMenu );
 }   
 
 void setBase( int base ) {

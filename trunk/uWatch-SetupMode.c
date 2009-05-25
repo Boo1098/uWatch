@@ -139,9 +139,9 @@ int OneLineNumberEntry()
 
 char *printNumber( int *number, int max ) {
     // decimal to string is VERY slow -- hence the turbo
-    Clock4MHz();
+    //Clock4MHz();
     sprintf( out, "%d", *number );
-    Clock250KHz();
+    //Clock250KHz();
     return out;
 }
 
@@ -158,7 +158,7 @@ char *printHour( int *hour, int max )
         int h = ( *hour ) % 12;
         if ( !h ) h = 12;
 
-        sprintf( out, "%2d%c\4", h, cbase );
+        sprintf( out, "%d%c\4", h, cbase );
 
     } else
         sprintf( out, "%02d", ( *hour ) );
@@ -234,6 +234,7 @@ static BOOL gModify;
 
 char *processCalendar( int *pDay, int max )
 {
+
     int dayOfWeek = DAYOFWEEK( mjd( gYear, gMonth, *pDay ) );
     
     char cc = 2;                     // custom char #
@@ -337,11 +338,11 @@ int doCal( BOOL modify ) {
     int oldYear = year;
     int oldMonth = month;
 
-    if ( genericMenu( "Year", &printNumber, &decrement, &increment, 9999, &year ) == MODE_KEYMODE )
+    if ( genericMenu( "Year", &printNumber, &decrement, &increment, -9999, &year ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     sprintf( out, "%d", year );
-    if ( genericMenu( out, &printMonth, &decrement, &increment, 12, &month ) == MODE_KEYMODE )
+    if ( genericMenu( out, &printMonth, &decrement, &increment, -12, &month ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     gYear = year;
@@ -358,7 +359,7 @@ int doCal( BOOL modify ) {
     if ( mChar[month])
         custom_character(5,mChar[month]);
 
-    if ( genericMenu( out, processCalendar, decrementDay, incrementDay, dim, &day ) == MODE_KEYMODE )
+    if ( genericMenu( out, processCalendar, decrementDay, incrementDay, -dim, &day ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     //TODO: year should be absolute, not limited from 2000...
@@ -412,7 +413,7 @@ int change1224()
     }
 
     int mode1224 = TwelveHour ? 1 : 0;
-    if ( genericMenu( "Format", print1224, sel1224, sel1224, 0, &mode1224 ) == MODE_KEYMODE )
+    if ( genericMenu( "Format", print1224, sel1224, sel1224, -2, &mode1224 ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     TwelveHour = mode1224; // ? TRUE : FALSE;
     return MODE_EXIT;
@@ -426,7 +427,7 @@ int changeDST()
     }
 
     int region = dstRegion;
-    if ( genericMenu( "DST Zone", printDST, increment, decrement, 5, &region ) == MODE_KEYMODE )
+    if ( genericMenu( "DST Zone", printDST, increment, decrement, -5, &region ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     dstRegion = region;
@@ -520,7 +521,7 @@ char *printCalc( int *type, int max )
 int appCalculatorMode()
 {
     custom_character( 5, character_g );
-    return genericMenu( "Calculator", &printCalc, &increment, &decrement, 2, &RPNmode );
+    return genericMenu( "Calculator", &printCalc, &increment, &decrement, -2, &RPNmode );
 }
 
 char *printErase( int *n, int max ) {
@@ -530,7 +531,7 @@ char *printErase( int *n, int max ) {
 int appClearEEPROM()
 {
     int erase = 0;
-    genericMenu( "Erase?", printErase, increment, decrement, 2, &erase );
+    genericMenu( "Erase?", printErase, increment, decrement, -2, &erase );
     if ( erase ) {
 
         custom_character(5,character_g);
@@ -610,7 +611,7 @@ void decTimeout( int *timeout, int max ) {
 
 int appLCDTimeout()
 {
-    return genericMenu( "LCD Timeout", &printTimeout, &decTimeout, &incTimeout, 2, (int*)&PR1 );
+    return genericMenu( "LCD Timeout", &printTimeout, &decTimeout, &incTimeout, (53760>>7), (int*)&PR1 );
 }
 
 
@@ -645,7 +646,7 @@ int SetupMode( int p )
         2, appCharset, 5, setupMenuMenu
     };
 
-    return genericMenu2( &setupMenu, 0 );
+    return genericMenu2( &setupMenu );
 }
 
 

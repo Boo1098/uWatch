@@ -3,7 +3,7 @@
 #define __UWATCH_SETUPMODE_H
 
 int changeTime( int p );
-int changeDate();
+//int changeDate();
 int changeCalibration();
 int change1224();
 int changeDST();

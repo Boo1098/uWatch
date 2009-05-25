@@ -28,7 +28,7 @@ char *printMenu( int *item, const menuItem *menu );
 void increment( int *selection, int max );
 void decrement( int *selection, int max );
 
-int genericMenu2( const packedMenu2 *menu, int *selection );
+int genericMenu2( const packedMenu2 *menu );
 
 int genericMenu( char *title,
                  char *( *printFunc )( int *num, int max ),
