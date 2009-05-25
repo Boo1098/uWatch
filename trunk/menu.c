@@ -146,6 +146,10 @@ int genericMenu2( const packedMenu2 *menu )
 }
 
 
+void showEntry( char *title, char *qkey, char c ) {
+    sprintf( out, "%s %s%c", title, qkey, c );
+    UpdateLCDline1( out );
+}
 
 int genericMenu( char *title,
                  char *( *printFunc )( int *num, int max ),
@@ -155,13 +159,14 @@ int genericMenu( char *title,
                  int *selection )
 {
 
-    if ( title )
-        UpdateLCDline1( title );
+//    if ( title )
+//        UpdateLCDline1( title );
 
     int sel = selection ? ( *selection ) : 0;
 
     custom_character( 0, character_arrow_updown );
 
+    char uc = '_';
     char *qkey = displayBuffer + 300;
     int numptr = 0;
     *qkey = 0;
@@ -169,7 +174,11 @@ int genericMenu( char *title,
     if ( max < 0 ) {
         qkey = 0;
         max = -max;
+        uc = ' ';
     }
+
+    if ( title )
+        showEntry( title, qkey, uc );
 
 
     int key = 0;
@@ -195,26 +204,23 @@ int genericMenu( char *title,
             int num = ReturnNumber( key );
             if ( num >= 0 ) {
 
-                if ( printFunc && numptr < 4 ) {
+                if ( printFunc && numptr < 3 ) {
     
                     qkey[ numptr++ ] = '0' + num;
                     qkey[ numptr ] = 0;
     
-                    sprintf( out, "%s %s", title, qkey );
-                    UpdateLCDline1( out );
+                    showEntry( title, qkey, uc );
     
                     // Search all possible selections for a match...
 
                     Clock4MHz();
                     int sel2 = 0;
                     do {
-            
-                        char *menuStr = ( *( printFunc ) )( &sel2, max );
-                        if ( strstr( menuStr, qkey ) == menuStr ) {
+                        if ( !memcmp( ( *( printFunc ) )( &sel2, max ), qkey, numptr )) {
                             sel = sel2;
                             break;
                         }
-                        (*decrementFunc)( &sel2, max );
+                        (*decrementFunc)( &sel2, max );     // actual usage, INCREMENT :)
                     } while ( sel2 );
                     Clock250KHz();
                 }

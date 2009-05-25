@@ -177,7 +177,7 @@ void UpdateLCDline1 ( const char* s );
 void UpdateLCDline2 ( const char* s );
 int OneLineNumberEntry();
 
-#define ENTER(key) ( ((key) == KeyEnter) || ((key)==KeyLP) )
+#define ENTER(key) ( ((key) == KeyEnter) ) /*|| ((key)==KeyLP) )*/
 
 unsigned int GetDebouncedKey();
 void backlightControl();
