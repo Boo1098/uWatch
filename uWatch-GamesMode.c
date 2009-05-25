@@ -93,7 +93,7 @@ int lunarLander( int p )
                 return MODE_KEYMODE;
 
 
-            if ( genericMenu( "Burn fuel?", printNumber, increment, decrement, fuelRemaining+1, &burnAmount ) == MODE_KEYMODE )
+            if ( genericMenu( "Burn fuel?", printNumber, decrement, increment, fuelRemaining+1, &burnAmount ) == MODE_KEYMODE )
                return MODE_KEYMODE;
         }
 
