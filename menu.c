@@ -25,7 +25,7 @@ int calculatorMenu( const packedMenu2 *menu[], int size ) {
 
     while ( mode != MODE_EXIT && mode != MODE_KEYMODE ) {
 
-        mode = genericMenu2( menu[ CurrentMenu ], 0 );   // last param "anywhere"
+        mode = genericMenu2( menu[ CurrentMenu ] );   // last param "anywhere"
 
         switch ( mode ) {
             case MODE_KEY_NEXT:
@@ -40,11 +40,11 @@ int calculatorMenu( const packedMenu2 *menu[], int size ) {
 }
 
 
-int genericMenu2( const packedMenu2 *menu, int *selection )
+int genericMenu2( const packedMenu2 *menu )
 {
     int mode = MODE_EXIT;
 
-    int sel = selection ? ( *selection ) : 0;
+    int sel = 0;
 
     // Draw the menu indicators
     custom_character( 0, character_arrow_updown );
@@ -120,8 +120,7 @@ int genericMenu2( const packedMenu2 *menu, int *selection )
                         } 
                     }
                 }
-            }    
-    
+            }
 
             if ( NEXT( key ) ) {
                 increment( &sel, menu->menusize );
@@ -137,8 +136,8 @@ int genericMenu2( const packedMenu2 *menu, int *selection )
     } while ( !ENTER(key) );
 
 
-    if ( selection )
-        ( *selection ) = sel;
+//    if ( selection )
+//        ( *selection ) = sel;
 
     if ( pmenu[sel].run )
         mode = ( pmenu[sel].run )( pmenu[sel].op );
@@ -152,7 +151,8 @@ int genericMenu( char *title,
                  char *( *printFunc )( int *num, int max ),
                  void ( *incrementFunc )( int *num, int max ),
                  void ( *decrementFunc )( int *num, int max ),
-                 int max, int *selection )
+                 int max,               // if max is negative, indicate we CANNOT use quick-number-entry
+                 int *selection )
 {
 
     if ( title )
@@ -162,6 +162,14 @@ int genericMenu( char *title,
 
     custom_character( 0, character_arrow_updown );
 
+    char *qkey = displayBuffer + 300;
+    int numptr = 0;
+    *qkey = 0;
+
+    if ( max < 0 ) {
+        qkey = 0;
+        max = -max;
+    }
 
 
     int key = 0;
@@ -174,6 +182,49 @@ int genericMenu( char *title,
 
         key = GetDebouncedKey();
         IFEXIT( key );
+
+
+        // Neato turbo-menu keyboard enhancement!
+
+        if ( qkey ) {
+
+            // Allow numbers to be input from keyboard -- jumps to first compatible
+            // menu option starting with the same number substring.  The substring is
+            // appended to the title
+
+            int num = ReturnNumber( key );
+            if ( num >= 0 ) {
+
+                if ( printFunc && numptr < 4 ) {
+    
+                    qkey[ numptr++ ] = '0' + num;
+                    qkey[ numptr ] = 0;
+    
+                    sprintf( out, "%s %s", title, qkey );
+                    UpdateLCDline1( out );
+    
+                    // Search all possible selections for a match...
+
+                    Clock4MHz();
+                    int sel2 = 0;
+                    do {
+            
+                        char *menuStr = ( *( printFunc ) )( &sel2, max );
+                        if ( strstr( menuStr, qkey ) == menuStr ) {
+                            sel = sel2;
+                            break;
+                        }
+                        (*decrementFunc)( &sel2, max );
+                    } while ( sel2 );
+                    Clock250KHz();
+                }
+            } else {
+                UpdateLCDline1( title );        // clear any numeric input so far
+                numptr = 0;
+                *qkey = 0;
+            }
+        }
+
 
         if ( incrementFunc && NEXT( key ) )
             ( *incrementFunc )( &sel, max );

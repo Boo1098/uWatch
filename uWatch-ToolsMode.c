@@ -117,7 +117,7 @@ int ToolsMode( int p )
         2, appCharset, 2, toolsMenuMenu
     };
 
-    return genericMenu2( &toolsMenu, 0 );
+    return genericMenu2( &toolsMenu );
 }
 
 

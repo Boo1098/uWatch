@@ -1538,7 +1538,7 @@ int setupTime( int p )
         0, 0, 6, timeMenu
     };
 
-    return genericMenu2( &sampleMenu, 0 );
+    return genericMenu2( &sampleMenu );
 }
 
 void doTimeMode()
@@ -1585,7 +1585,7 @@ void doTimeMode()
             };
 
 
-            genericMenu2( &TimeMenu, 0 );
+            genericMenu2( &TimeMenu );
             while ( KeyScan2( FALSE ));
 
         }
@@ -1660,7 +1660,7 @@ extern int SetupMode();
             2, appCharset, 3, appMenu
         };
 
-        genericMenu2( &appsMenu, 0 );
+        genericMenu2( &appsMenu );
     }
 }
 

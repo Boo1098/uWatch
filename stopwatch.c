@@ -177,10 +177,10 @@ int StopWatchMode() {
 
 
     int mode;
-    int sel = 0;
+    //int sel = 0;
     do {
 
-        mode = genericMenu2( &stopWatchMenu, &sel );
+        mode = genericMenu2( &stopWatchMenu );
     } while ( mode != MODE_KEYMODE );
 
     return mode;
