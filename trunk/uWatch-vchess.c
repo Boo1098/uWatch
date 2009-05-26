@@ -507,11 +507,6 @@ char *printChessMove(int *n, int max ) {
 
 int chessGame( int p )
 {
-#if 1
-    int moveok;
-    Move* mv;
-    Move* first;
-//    int to, from, promote;
 
     contGame = 0;
 
@@ -547,7 +542,6 @@ int chessGame( int p )
         if ( genericMenu2( &levelMenu ) == MODE_KEYMODE )
             return MODE_KEYMODE;
 
-//        UpdateLCDline1("");
         UpdateLCDline2("");         //so we don't see glitch in "easy"
 
     }
@@ -567,52 +561,36 @@ int chessGame( int p )
     for ( ;; ) {
         if ( computer == Side ) {
             if ( computerMoves() ) {
-                //GetDebouncedKey();
                 runOnce = FALSE; // new game next time
                 break; // game over
             }
         }
 
         moveStackPtr = MoveStack;
-        first = moveStackPtr;
+        Move *first = moveStackPtr;
 
         // generate legal moves
         moveGen( CASE_ALL, Side );
 
+        int sel = 0;
+        int key;
         do {
 
-            moveok = 0;
+            if ( showBoard() == MODE_KEYMODE )
+                return MODE_KEYMODE;
 
-            int sel = 0;
-            int key;
-            do {
+            printer = first;
 
-                if ( showBoard() == MODE_KEYMODE )
-                    return MODE_KEYMODE;
+            key = genericMenu( 0, &printChessMove, &increment, &decrement, first - moveStackPtr, &sel );
 
-                int mc = 0;
-                for ( mv = first; mv != moveStackPtr; ++mv )
-                   mc--;
-    
-                printer = first;
-    
-    
-                key = genericMenu( "", &printChessMove, &increment, &decrement, mc, &sel );
-
-            } while ( key == MODE_KEYMODE );
+        } while ( key == MODE_KEYMODE );
 
 
-            moveNumber++;
+        moveNumber++;
 
-            mv = first + sel;
-            moveok = 1;
-
-        } while ( !moveok );
-
-        if ( moveok )
-            playMove( *mv );
+        playMove( *(first + sel) );
     }
-#endif
+
     return MODE_EXIT;
 }
 
