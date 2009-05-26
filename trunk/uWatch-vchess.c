@@ -170,7 +170,7 @@ int moveToBoard(const char* p);
 void playMove(Move m);
 int search(int alpha, int beta, int depth, int nullDepth, int tryPV, PVLine* ppv);
 const char* moveToStr(Move m, int fancy);
-
+int moveNumber;
 
 
 // board offset of king position
@@ -286,8 +286,9 @@ int chosen( int computerColour ) {
 }
 
 /* data for the board display */
+
 static char dispBoard[20][17];
-static char lastMove[7];
+static char lastMove[17];
 static int contGame;
 
 int cont( int p ) {
@@ -342,20 +343,6 @@ const packedMenu2 levelMenu = {
 };
 
 
-void initDisplay() {
-    int line;
-
-    strcpy( dispBoard[0], "    ABCDEFGH    " );
-    strcpy( dispBoard[10], dispBoard[0] );
-    strcpy( dispBoard[9], dispBoard[0] );
-    strcpy( dispBoard[19], dispBoard[0] );
-
-    for ( line = 1; line <= 8; line++ ) {
-        sprintf( dispBoard[ line ], "  %d|        |   ", line );
-        strcpy( dispBoard[ line + 10 ], dispBoard[ line ] );
-    }    
-}
-
 void updateLine( char *destW, char *destB, int line ) {
 
     int col;
@@ -379,13 +366,14 @@ void updateLine( char *destW, char *destB, int line ) {
     }
 }
 
-
+/*
 void clearArrow( int line ) {
     dispBoard[line][15]=0x20;
     dispBoard[line+10][15]=0x20;
 }
+*/
 
-void fixArrow( int line ) {
+/*void fixArrow( int line ) {
 
     const unsigned char *newArrow = character_arrow_updown;
     if ( line == 8 )
@@ -398,7 +386,7 @@ void fixArrow( int line ) {
     dispBoard[ line+10 ][15] = 4;
 
 }
-
+*/
 
 int contrast = 4;       // RANGE 0 - 7 INCLUSIVE
 int line = 0;
@@ -409,12 +397,13 @@ int showBoard() {
     // requiring translation.
 
     custom_character( 0, character_blacksquare );
-    custom_character( 1, character_pawn );
+/*    custom_character( 1, character_pawn );
     custom_character( 2, character_knight );
     custom_character( 3, character_king );
     custom_character( 5, character_bishop );
     custom_character( 6, character_rook );
     custom_character( 7, character_queen );
+*/
 
     unsigned int flickerPattern[] = {
         0xFFFF,     // 1111 1111 1111 1111 0
@@ -433,10 +422,12 @@ int showBoard() {
     for ( row = 0; row < 8; row ++ )
         updateLine( dispBoard[ row + 11 ] + 4, dispBoard[ row + 1 ] + 4, row );
     
+
+
     extern unsigned int mask;
     mask = 0;
-
-    fixArrow( line );
+    
+//    fixArrow( line );
 //    ResetSleepTimer();
 //    EnableSleepTimer();
     
@@ -471,16 +462,16 @@ int showBoard() {
             backlightControl();
 
         if ( PREVIOUS( key ) && line < 8 ) {
-            clearArrow( line );
+            //clearArrow( line );
             line++;
-            fixArrow( line );
+            //fixArrow( line );
             mask = 0;
         }
 
         else if ( NEXT( key ) && line > 0 ) {
-            clearArrow( line );
+            //clearArrow( line );
             line--;
-            fixArrow( line );
+            //fixArrow( line );
             mask = 0;
         }
     }
@@ -488,78 +479,19 @@ int showBoard() {
 //    DisableSleepTimer();
     return MODE_EXIT;
 }
-/*
 
-int BoardKeyboard() {
-
-    int number = 0;
-    int position = 0;
-    int pressed[5];
-
-    int key;
-    do {
-        pressed[ position ] = 0;
-
-        key = ReturnNumber( GetDebouncedKey());
-        IFEXIT( key );
-
-        if ( position < 5 ) {
-            char c = 0;
-            switch( position ) {
-                case 0:
-                case 2:
-                    if ( key >0 && key <9 )
-                       c = key + 'A' - 1;
-                    break;
-                case 1:
-                case 3:
-                    if ( key > 0 && key < 9 )
-                    c = key + '0';
-                    break;
-                case 4:
-                    if ( key > 0 && key < 5 )
-                    c = key;
-                    break;
-            }
-    
-            if ( c ) {
-                pressed[ position ] = c;
-                pressed[ position+1] = 0;
-                position++;
-            }
-        }
-
-        *displayBuffer = 0;
-        int i;
-        for ( i = 0; i < position; i++ )
-            sprintf( displayBuffer + strlen( displayBuffer ), "%c", pressed[ i ] );
-        UpdateLCDline2( displayBuffer );
-
-    } while ( !ENTER( key ));
-
-    return number;
-}
-*/
 
 Move *printer;
+char vis[100];
 
 char *printChessMove(int *n, int max ) {
 
     Clock4MHz();
-    char *vis = displayBuffer;
 
-    int mv = *n;
-    Move *p = printer;
-    while ( mv-- )
-        p++;
-
-    //*vis++ = Board[ p->from ];
-
+    Move *p = printer + *n;
     int pos = Board[ p->from ];
-    *vis++ = Board[ pos + POSMAT ];         // type = custom char# too
-    *vis++ = ' ';
-
-    strcpy( vis, moveToStr( *p, 1 ));
+#define OFFSET_OF_DESTINATION_ROW 10
+    sprintf( vis, "%3d.%c %s", (moveNumber+1)/2, Board[ pos + POSMAT ], moveToStr( *p, 1 ));
 
     if ( max ) {
         sprintf( out, "Your Move? %2d/%2d", (*n)+1,max );
@@ -568,7 +500,7 @@ char *printChessMove(int *n, int max ) {
     }
 
     Clock250KHz();
-    return displayBuffer;
+    return vis;
 }
 
 
@@ -589,8 +521,24 @@ int chessGame( int p )
             return MODE_KEYMODE;
     }
 
+
+    strcpy( dispBoard[0], "    ABCDEFGH" );
+    strcpy( dispBoard[10], dispBoard[0] );
+    strcpy( dispBoard[9], dispBoard[0] );
+    strcpy( dispBoard[19], dispBoard[0] );
+
+    int line;
+    for ( line = 1; line <= 8; line++ ) {
+        sprintf( dispBoard[ line ], "  %d|        |   ", line );
+        strcpy( dispBoard[ line + 10 ], dispBoard[ line ] );
+    }    
+
+
+
     if ( !contGame ) {
         
+        initBoard();
+
         // choose colour    
         if ( genericMenu2( &colourMenu ) == MODE_KEYMODE )
             return MODE_KEYMODE;
@@ -599,18 +547,27 @@ int chessGame( int p )
         if ( genericMenu2( &levelMenu ) == MODE_KEYMODE )
             return MODE_KEYMODE;
 
-        initBoard();
+//        UpdateLCDline1("");
+        UpdateLCDline2("");         //so we don't see glitch in "easy"
+
     }
 
-    initDisplay();
+    custom_character( 1, character_pawn );
+    custom_character( 2, character_knight );
+    custom_character( 3, character_king );
+    custom_character( 5, character_bishop );
+    custom_character( 6, character_rook );
+    custom_character( 7, character_queen );
 
 
     runOnce = TRUE;
 
+
+
     for ( ;; ) {
         if ( computer == Side ) {
             if ( computerMoves() ) {
-                GetDebouncedKey();
+                //GetDebouncedKey();
                 runOnce = FALSE; // new game next time
                 break; // game over
             }
@@ -623,97 +580,33 @@ int chessGame( int p )
         moveGen( CASE_ALL, Side );
 
         do {
+
             moveok = 0;
 
-            if ( showBoard() == MODE_KEYMODE )
-                return MODE_KEYMODE;
-
-
-            // get move
-            strcpy(displayBuffer, lastMove);
-            if (*displayBuffer) strcat(displayBuffer, ", ");
-            strcat(displayBuffer, "Move?");
-            UpdateLCDline1(displayBuffer);
-            UpdateLCDline2("");
-
-
-//            BoardKeyboard();
-
-//            int temp = CalcDisplayBase;
-//            CalcDisplayBase = 10;
-//            int n = OneLineNumberEntry();
-//            CalcDisplayBase = temp;
-
-/*            if ( DisplayXreg < 0 ) {
-                UpdateLCDline2( "Switched sides" );
-                chosen( computer );
-                break;
-            }
-*/
-
-           // switch ( n ) {
-           //     case MODE_KEYMODE:
-           //         return MODE_KEYMODE;
-           //     case MODE_KEY_NEXT:
-           //         continue;
-           // }                
-
-            // parse move
-           // from = moveToBoard( DisplayXreg );
-           // to =  moveToBoard( DisplayXreg + 2 );
-           // promote = 0;
-           // switch (DisplayXreg[4])
-           // {
-           // case '1': promote = knight; break;
-           // case '2': promote = bishop; break;
-           // case '3': promote = rook; break;
-           // case '4': promote = queen; break;
-           // }
-
-            int mc = 0;
-            for ( mv = first; mv != moveStackPtr; ++mv )
-               mc++;
-
             int sel = 0;
-            printer = first;
-            int key = genericMenu( "Your move?", &printChessMove, &increment, &decrement, -mc, &sel );
+            int key;
+            do {
 
-            if ( key == MODE_KEYMODE )
-                return MODE_KEYMODE;
+                if ( showBoard() == MODE_KEYMODE )
+                    return MODE_KEYMODE;
 
-//            if ( key == MODE_EXIT )
-//                continue;                
+                int mc = 0;
+                for ( mv = first; mv != moveStackPtr; ++mv )
+                   mc--;
+    
+                printer = first;
+    
+    
+                key = genericMenu( "", &printChessMove, &increment, &decrement, mc, &sel );
+
+            } while ( key == MODE_KEYMODE );
 
 
-            mv = first;
-            while ( sel-- )
-                ++mv; 
+            moveNumber++;
 
+            mv = first + sel;
             moveok = 1;
 
-/*
-//            UpdateLCDline1("List...");
-            if ( from >= 0 && to >= 0 ) {
-                // check legal
-                for ( mv = first; mv != moveStackPtr; ++mv ) {
- 
-//                    UpdateLCDline2( moveToStr(*mv,1) );
-//                    GetDebouncedKey();
-
-                    if ( mv->from == from && mv->to == to 
-                         && (!promote || promote == mv->promote))
-                    {
-                        moveok = 1;
-                        break;
-                    }
-                }
-            }
-            if ( !moveok ) {
-                custom_character(5,character_g);
-                UpdateLCDline1( "Ille\5al move!" );
-                GetDebouncedKey();
-            }    
-*/
         } while ( !moveok );
 
         if ( moveok )
@@ -734,7 +627,7 @@ static int computerMoves()
     Nodes = 0;
 
     /* bump the CPU whilst we think... */
-//    StopSleepTimer();
+    StopSleepTimer();
 
     custom_character(4,character_g);
     UpdateLCDline1( "Thinkin\4..." );
@@ -755,9 +648,10 @@ static int computerMoves()
     /* and back again to slow.. */
     Clock250KHz();
 //    ResetSleepTimer();
-//    StartSleepTimer();
+    StartSleepTimer();
 
     if ( MainPV.n ) {
+
         Move* m = MainPV.m;
         printer = m;
         int sel = 0;
@@ -765,17 +659,30 @@ static int computerMoves()
         playMove(*m);
 
         // focus board display on the last move's line
-        line = lastMove[6]-'0'-1; 
+        //clearArrow( line );
+        line = lastMove[OFFSET_OF_DESTINATION_ROW]-'0'-1; 
 
         if (InCheck) strcat( lastMove, "+" );
+
+        moveNumber++;
+
         UpdateLCDline1("I move:");
         UpdateLCDline2(lastMove);
         GetDebouncedKey();
     }
 
-    if (v <= -WIN_SCORE || v >= WIN_SCORE)
-    {
-        UpdateLCDline2((computer == (v>0)) ?  "I Win!" : "You Win!");
+    if ( fabs(v) >= WIN_SCORE ) {
+
+//        sprintf( out, "c=%d win=%d", computer, v );
+//        UpdateLCDline1(out);
+//        GetDebouncedKey();
+
+
+        if (( computer && v >= WIN_SCORE ) || ( !computer && v <= -WIN_SCORE ))
+            UpdateLCDline1( "I Win!" );
+        else
+            UpdateLCDline1( "You Win!" );
+
         GetDebouncedKey();
         showBoard();
         return 1;
@@ -843,6 +750,8 @@ void initBoard()
     EP = 0;
     Castle = 0x0f; // both sides can castle
     lastMove[0] = 0;
+
+    moveNumber = 1;
 }
 
 int attackTest(int cases, int side, int pos)

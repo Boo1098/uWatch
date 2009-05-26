@@ -167,12 +167,11 @@ int genericMenu( char *title,
     custom_character( 0, character_arrow_updown );
 
     char uc = '_';
-    char *qkey = displayBuffer + 300;
+    char qkey[6];
     int numptr = 0;
     *qkey = 0;
 
     if ( max < 0 ) {
-        qkey = 0;
         max = -max;
         uc = ' ';
     }
@@ -185,8 +184,9 @@ int genericMenu( char *title,
     do {
 
         if ( printFunc ) {
-            sprintf( displayBuffer, "%-15s\010", ( *printFunc )( &sel, max ));
-            UpdateLCDline2( displayBuffer );
+            char out[17];
+            sprintf( out, "%-15s\010", ( *printFunc )( &sel, max ));
+            UpdateLCDline2( out );
         }
 
         key = GetDebouncedKey();
@@ -195,7 +195,7 @@ int genericMenu( char *title,
 
         // Neato turbo-menu keyboard enhancement!
 
-        if ( qkey ) {
+        if ( uc == '_' ) {
 
             // Allow numbers to be input from keyboard -- jumps to first compatible
             // menu option starting with the same number substring.  The substring is
