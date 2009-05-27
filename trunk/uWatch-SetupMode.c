@@ -185,13 +185,13 @@ int changeTime( int p )
     custom_character( 3, &( AMPM[ 1 ][0] ) );
     custom_character( 4, &( AMPM[ 2 ][0] ) );
 
-    if ( genericMenu( "Hour", &printHour, &decrement, &increment, 24, &h ) == MODE_KEYMODE )
+    if ( genericMenu( "Hour", &printHour, &decrement, &increment, chooseExact, 24, &h ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
-    if ( genericMenu( "Minute", &printMinSec, &decrement, &increment, 60, &m ) == MODE_KEYMODE )
+    if ( genericMenu( "Minute", &printMinSec, &decrement, &increment, chooseExact, 60, &m ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
-    if ( genericMenu( "Second", &printMinSec, &decrement, &increment, 60, &s ) == MODE_KEYMODE )
+    if ( genericMenu( "Second", &printMinSec, &decrement, &increment, chooseExact, 60, &s ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     SetTimeBCD( DECtoBCD( h ), DECtoBCD( m ), DECtoBCD( s ) );
@@ -202,7 +202,7 @@ int changeTime( int p )
 char *printMonth( int *month, int max ) {
     if ( mChar[*month] )
         custom_character(5,mChar[*month]);
-    return strcpy( out, monthName[ *month ] );         // make a COPY so we don't have ROM limitation
+    return (char *) monthName[ *month ];
 }
 
 const unsigned char *qday[] = {
@@ -326,6 +326,20 @@ void incrementDay( int *day, int max )
 }
 
 
+char *choosePlusOne( int *sel, int kpv, int max ) {
+    if ( kpv < max + 1 )
+        *sel = kpv + 1;
+    return 0;
+}
+
+char *chooseMinusOne( int *sel, int kpv, int max ) {
+    if ( kpv > 0 && kpv <= max )
+        *sel = kpv - 1;
+    return 0;
+}
+
+
+
 
 int doCal( BOOL modify ) {
 
@@ -338,11 +352,11 @@ int doCal( BOOL modify ) {
     int oldYear = year;
     int oldMonth = month;
 
-    if ( genericMenu( "Year", &printNumber, &decrement, &increment, -9999, &year ) == MODE_KEYMODE )
+    if ( genericMenu( "Year", &printNumber, &decrement, &increment, chooseExact, 9999, &year ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     sprintf( out, "%d", year );
-    if ( genericMenu( out, &printMonth, &decrement, &increment, -12, &month ) == MODE_KEYMODE )
+    if ( genericMenu( out, &printMonth, &decrement, &increment, chooseMinusOne, 12, &month ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     gYear = year;
@@ -359,7 +373,7 @@ int doCal( BOOL modify ) {
     if ( mChar[month])
         custom_character(5,mChar[month]);
 
-    if ( genericMenu( out, processCalendar, decrementDay, incrementDay, -dim, &day ) == MODE_KEYMODE )
+    if ( genericMenu( out, processCalendar, decrementDay, incrementDay, chooseExact, dim, &day ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     //TODO: year should be absolute, not limited from 2000...
@@ -371,19 +385,16 @@ int doCal( BOOL modify ) {
 }
 
 
+char *chooseExact( int *sel, int kp, int max ) {
+    if ( kp < max )
+        *sel = kp;
+    return 0;
+}
 
-int changeCalibration()
-{
 
-    //char *printCal( int *cal, int max ) {
-        //Clock4MHz();
-    //    sprintf( out, "CAL=%d", *cal );
-        //Clock250KHz();
-    //    return out;
-    //}
-
+int changeCalibration() {
     int cal = RCFGCALbits.CAL;
-    if ( genericMenu( "Calibration", printNumber, decrement, increment, 256, &cal ) == MODE_KEYMODE )
+    if ( genericMenu( "Calibration", printNumber, decrement, increment, chooseExact, 256, &cal ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     RCFGCALbits.CAL = ( char ) cal;
     I2CmemoryWRITE( 63535, RCFGCALbits.CAL );     //store value in last byte
@@ -413,7 +424,7 @@ int change1224()
     }
 
     int mode1224 = TwelveHour ? 1 : 0;
-    if ( genericMenu( "Format", print1224, sel1224, sel1224, -2, &mode1224 ) == MODE_KEYMODE )
+    if ( genericMenu( "Format", print1224, sel1224, sel1224, 0, -2, &mode1224 ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     TwelveHour = mode1224; // ? TRUE : FALSE;
     return MODE_EXIT;
@@ -427,7 +438,7 @@ int changeDST()
     }
 
     int region = dstRegion;
-    if ( genericMenu( "DST Zone", printDST, increment, decrement, -5, &region ) == MODE_KEYMODE )
+    if ( genericMenu( "DST Zone", printDST, increment, decrement, 0, -5, &region ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     dstRegion = region;
@@ -521,7 +532,7 @@ char *printCalc( int *type, int max )
 int appCalculatorMode()
 {
     custom_character( 5, character_g );
-    return genericMenu( "Calculator", &printCalc, &increment, &decrement, -2, &RPNmode );
+    return genericMenu( "Calculator", &printCalc, &increment, &decrement, 0, -2, &RPNmode );
 }
 
 char *printErase( int *n, int max ) {
@@ -531,7 +542,7 @@ char *printErase( int *n, int max ) {
 int appClearEEPROM()
 {
     int erase = 0;
-    genericMenu( "Erase?", printErase, increment, decrement, -2, &erase );
+    genericMenu( "Erase?", printErase, increment, decrement, 0, -2, &erase );
     if ( erase ) {
 
         custom_character(5,character_g);
@@ -593,25 +604,16 @@ int appSelfTest()
 
 char *printTimeout( int *timeout, int max )
 {
-    sprintf( out, "%3d seconds", (*timeout) >> 7 );
+    sprintf( out, "%3d seconds", (*timeout) );
     return out;
-}
-
-#define FIVESEC (128*5)
-
-void incTimeout( int *timeout, int max ) {
-    if ( ((unsigned int)*timeout) < 53760 )
-        *timeout += FIVESEC;
-}
-
-void decTimeout( int *timeout, int max ) {
-    if ( ((unsigned int)*timeout) > FIVESEC )
-        *timeout -= FIVESEC;
 }
 
 int appLCDTimeout()
 {
-    return genericMenu( "LCD Timeout", &printTimeout, &decTimeout, &incTimeout, (53760>>7), (int*)&PR1 );
+    int sel = PR1 >> 7;
+    if ( genericMenu( "LCD Timeout", &printTimeout, &decrement, &increment, chooseExact, 420, &sel ) != MODE_KEYMODE )
+        PR1 = sel << 7;
+    return MODE_EXIT;
 }
 
 

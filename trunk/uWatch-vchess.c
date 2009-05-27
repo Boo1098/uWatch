@@ -581,7 +581,7 @@ int chessGame( int p )
 
             printer = first;
 
-            key = genericMenu( 0, &printChessMove, &increment, &decrement, first - moveStackPtr, &sel );
+            key = genericMenu( 0, &printChessMove, &increment, &decrement, 0, first - moveStackPtr, &sel );
 
         } while ( key == MODE_KEYMODE );
 
