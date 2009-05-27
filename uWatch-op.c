@@ -1030,7 +1030,7 @@ void Operation( int op )
         case CALC_OP_MODESCI:
         case CALC_OP_MODEENG: {
             int prec = displayAccuracy;
-            if ( genericMenu( "Precision?", printPlaces, decrement, increment, 24, &prec ) != MODE_KEYMODE )
+            if ( genericMenu( "Precision?", printPlaces, decrement, increment, chooseExact, 24, &prec ) != MODE_KEYMODE )
                 displayAccuracy = prec;
                 displayMode = op;
             }    

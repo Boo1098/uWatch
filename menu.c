@@ -155,9 +155,13 @@ int genericMenu( char *title,
                  char *( *printFunc )( int *num, int max ),
                  void ( *incrementFunc )( int *num, int max ),
                  void ( *decrementFunc )( int *num, int max ),
+                 char *( *quickKeyFunc ) ( int *sel, int kpv, int max ),
                  int max,               // if max is negative, indicate we CANNOT use quick-number-entry
                  int *selection )
 {
+    char t2[30];
+    strcpy( t2, title );
+    title = t2;
 
 //    if ( title )
 //        UpdateLCDline1( title );
@@ -170,6 +174,7 @@ int genericMenu( char *title,
     char qkey[6];
     int numptr = 0;
     *qkey = 0;
+    int qkv = 0;
 
     if ( max < 0 ) {
         max = -max;
@@ -184,7 +189,7 @@ int genericMenu( char *title,
     do {
 
         if ( printFunc ) {
-            char out[17];
+            char out[32];
             sprintf( out, "%-15s\010", ( *printFunc )( &sel, max ));
             UpdateLCDline2( out );
         }
@@ -204,30 +209,31 @@ int genericMenu( char *title,
             int num = ReturnNumber( key );
             if ( num >= 0 ) {
 
-                if ( printFunc && numptr < 3 ) {
+                if ( printFunc && numptr < 4 ) {
     
+                    qkv = 10 * qkv + num;
                     qkey[ numptr++ ] = '0' + num;
                     qkey[ numptr ] = 0;
     
                     showEntry( title, qkey, uc );
-    
-                    // Search all possible selections for a match...
 
-                    Clock4MHz();
-                    int sel2 = 0;
-                    do {
-                        if ( !memcmp( ( *( printFunc ) )( &sel2, max ), qkey, numptr )) {
-                            sel = sel2;
-                            break;
-                        }
-                        (*decrementFunc)( &sel2, max );     // actual usage, INCREMENT :)
-                    } while ( sel2 );
-                    Clock250KHz();
+                    // Try and map the quick keypresses to a menu option. The passed-in function is responsible
+                    // for this matching, and if it can, it will change "sel" to the correct selection.  This is 
+                    // pretty neat, as it allows you to type in "10" and have "October" selected in the menu, for
+                    // example.
+
+                    if ( quickKeyFunc ) {
+                        char *newt = (*quickKeyFunc)(&sel,qkv, max);
+                        if ( newt )
+                            title = newt;
+                    }    
                 }
+
             } else {
                 UpdateLCDline1( title );        // clear any numeric input so far
                 numptr = 0;
                 *qkey = 0;
+                qkv=0;
             }
         }
 

@@ -329,5 +329,6 @@ extern int displayAccuracy;
 extern int displayEngN;
 
 char *printNumber( int *number, int max );
+char *chooseExact( int *sel, int kp, int max );
 
 #endif

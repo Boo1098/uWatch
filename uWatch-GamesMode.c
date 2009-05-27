@@ -89,11 +89,11 @@ int lunarLander( int p )
         if ( fuelRemaining > 0 ) {
 
             int sel = 0;
-            if ( genericMenu( "Status", printStat, increment, decrement, -4, &sel ) == MODE_KEYMODE )
+            if ( genericMenu( "Status", printStat, increment, decrement, 0, -4, &sel ) == MODE_KEYMODE )
                 return MODE_KEYMODE;
 
 
-            if ( genericMenu( "Burn fuel?", printNumber, decrement, increment, fuelRemaining+1, &burnAmount ) == MODE_KEYMODE )
+            if ( genericMenu( "Burn fuel?", printNumber, decrement, increment, chooseExact, fuelRemaining+1, &burnAmount ) == MODE_KEYMODE )
                return MODE_KEYMODE;
         }
 
@@ -288,7 +288,7 @@ int twenty1( int p )
                 DelayMs(2000);
             } else if ( total < 21 ) { // wont hit on 21!
 
-                if ( genericMenu( displayBuffer, &printHitStand, &increment, &decrement, -2, &hitStand ) == MODE_KEYMODE )
+                if ( genericMenu( displayBuffer, &printHitStand, &increment, &decrement, 0, -2, &hitStand ) == MODE_KEYMODE )
                     return MODE_KEYMODE;
             }
         }

@@ -35,6 +35,7 @@ int genericMenu( char *title,
 //                 int ( *idleFunc )( int *halt ),
                  void ( *incrementFunc )( int *num, int max ),
                  void ( *decrementFunc )( int *num, int max ),
+                 char *( *quickKeyFunc ) ( int *sel, int kp, int max ),
                  int max, int *selection );
 
 #define VIEW_ONESHOT 1
