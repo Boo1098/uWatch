@@ -63,17 +63,12 @@ extern void UpdateDisplayRegX();
 // engineering notation -- source: http://www.cs.tut.fi/~jkorpela/c/eng.html
 
 
-#define PREFIX_START (-24)
-/* Smallest power of then for which there is a prefix defined.
-   If the set of prefixes will be extended, change this constant
-   and update the table "prefix". */
-#include <math.h>
+//#include <math.h>
 
 char *eng(double value, int digits, int numeric)
 {
-  static char *prefix = "yzafpn\344m kMGTPEZY";
+  static const char *prefix = "yzafpn\344m kMGTPEZY";
 
-#define PREFIX_END (PREFIX_START+((strlen(prefix)-1)*3))
 #define OFFSET 400
 
     int expof10;
@@ -92,25 +87,19 @@ char *eng(double value, int digits, int numeric)
 
     value *= pow(10,-expof10);
 
-//    sprintf( displayBuffer, "%d =EXP", expof10 );
-//    UpdateLCDline1( displayBuffer );
-//    GetDebouncedKey();
     
-    if (fabs(value) >= 1000.) {
+    while (fabs(value) >= 1000.) {
         value /= 1000.0;
         expof10 += 3;
     }
 
-    if( numeric || (expof10 < PREFIX_START) ) //|| (expof10 > PREFIX_END))
+    if( numeric || ( expof10 < -24 ) || ( expof10 > 24 ))
         sprintf(res, "%.*fe%d", digits, value, expof10); 
     else
-        sprintf(res, "%.*f %c", digits, value, prefix[(expof10-PREFIX_START)/3]);
+        sprintf(res, "%.*f%c", digits, value, prefix[(expof10+24)/3]);
 
     return displayBuffer + OFFSET;
 }
-
-///-------------------
-
 
 
 void Push()
@@ -379,7 +368,7 @@ int EnterNumber(int Key)
 
         // IF the number displayed is too big (indicated by a < indicator at left side)
         // then the EXP key is a trigger to display the extended number with scrolling viewer
-        // Note, this is only operational in base 2,8,16 at the moment
+        // Note: in [fit] view (original mode) we never see a "<"
 
         Key = 0;
 
@@ -395,24 +384,20 @@ int EnterNumber(int Key)
 
         if (l < XBufSize-1) // space for 2
         {
-//            if ( CalcDisplayBase == 16 )
-//                HexEntry();
-//            else
-//            {
-                if (!ExponentIncluded)  //can't add exponent twice
-                {
-                    ExponentIncluded=TRUE;
+            if (!ExponentIncluded)  //can't add exponent twice
+            {
+                ExponentIncluded=TRUE;
+            
+                // EXP is first key pressed, so add a 1 to the front
+                if ( !l || !isdigit(DisplayXreg[l-1]) || ValueEntered )
+                    ProcessNumberKey('1');
                 
-                    // EXP is first key pressed, so add a 1 to the front
-                    if ( !l || !isdigit(DisplayXreg[l-1]) || ValueEntered )
-                        ProcessNumberKey('1');
-                    
-                    ProcessNumberKey('e');
-                    UpdateLCDline2(DisplayXreg);
-                }
-//            }
+                ProcessNumberKey('e');
+                UpdateLCDline2(DisplayXreg);
+            }
         }
         break;
+
     case KeySign: 
         //changes the sign of the mantissa or exponent
         Key = 0;
@@ -424,6 +409,7 @@ int EnterNumber(int Key)
         else
             SignKey();
         break;
+
     case KeyClear: 
         // only handle one level of clear. ie Clear Entry
         if (!ValueEntered)
@@ -491,7 +477,7 @@ void FormatValue(char* dest,
                 unsigned long long uval;
                 if ( value < 0 )
                 {
-                    uval  = (unsigned long long)(-1 * value);
+                    uval  = (unsigned long long)-value;
                     uval  = ~uval + 1;
                 }
                 else 
@@ -614,14 +600,14 @@ void FormatValue(char* dest,
             case CALC_OP_MODEFIX: 
                 sprintf( p, "%.*f", displayAccuracy, value );
                 if ( ivalue ) {
-                    sprintf( p + strlen( p ), " i%.*f", displayAccuracy, ivalue );
+                    sprintf( p + strlen( p ), "i%.*f", displayAccuracy, ivalue );
                 }
                 break;
 
             case CALC_OP_MODESCI:
                 sprintf( p, "%.*e", displayAccuracy, value );
                 if ( ivalue ) {
-                    sprintf( p + strlen( p ), " i%.*e", displayAccuracy, ivalue );
+                    sprintf( p + strlen( p ), "i%.*e", displayAccuracy, ivalue );
                 }
                 break;
 
@@ -629,7 +615,7 @@ void FormatValue(char* dest,
             case CALC_OP_MODEENGN:
                 strcpy( p, eng( value, displayAccuracy, displayEngN));
                 if ( ivalue ) {
-                    strcat( p, " i");
+                    strcat( p, "i");
                     strcat( p, eng( ivalue, displayAccuracy, displayEngN ));
                 }
                 break;

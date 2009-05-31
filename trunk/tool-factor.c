@@ -18,8 +18,8 @@ int check( unsigned long* nx, unsigned long int in, int* factors )
         if ( *factors )
             strcat( displayBuffer, "," );
     
-        sprintf( out, "%lu", in );
-        strcat( displayBuffer, out );
+        sprintf( displayBuffer+strlen(displayBuffer), "%lu", in );
+//        strcat( displayBuffer, out );
         *nx = fact;
         ++*factors;
         return 1;

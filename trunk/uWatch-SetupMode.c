@@ -216,7 +216,7 @@ const unsigned char *qday[] = {
 };
 
 
-inline int leap( int year ) {
+int leap( int year ) {
     return ( !( year % 4 ) ) && ( ( year % 100 ) || ( !( year % 400 )));
 }
 
@@ -424,7 +424,7 @@ int change1224()
     }
 
     int mode1224 = TwelveHour ? 1 : 0;
-    if ( genericMenu( "Format", print1224, sel1224, sel1224, 0, -2, &mode1224 ) == MODE_KEYMODE )
+    if ( genericMenu( "Format", print1224, sel1224, sel1224, 0, 2, &mode1224 ) == MODE_KEYMODE )
         return MODE_KEYMODE;
     TwelveHour = mode1224; // ? TRUE : FALSE;
     return MODE_EXIT;
@@ -438,7 +438,7 @@ int changeDST()
     }
 
     int region = dstRegion;
-    if ( genericMenu( "DST Zone", printDST, increment, decrement, 0, -5, &region ) == MODE_KEYMODE )
+    if ( genericMenu( "DST Zone", printDST, increment, decrement, 0, 5, &region ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     dstRegion = region;
@@ -532,7 +532,7 @@ char *printCalc( int *type, int max )
 int appCalculatorMode()
 {
     custom_character( 5, character_g );
-    return genericMenu( "Calculator", &printCalc, &increment, &decrement, 0, -2, &RPNmode );
+    return genericMenu( "Calculator", &printCalc, &increment, &decrement, 0, 2, &RPNmode );
 }
 
 char *printErase( int *n, int max ) {
@@ -615,6 +615,40 @@ int appLCDTimeout()
         PR1 = sel << 7;
     return MODE_EXIT;
 }
+
+/*
+double GMTOffset[] = { 0,0,0,0,0,0 };
+int partGMT;
+
+char *printGMT( int *sel, int max ) {
+    sprintf( out, "GMT %+d:00", *sel - 17 );
+    return out;
+}
+
+char *printGMT2( int *sel, int max ) {
+    sprintf( out, "GMT %+d:%02d", partGMT, *sel * 15 );
+    return out;
+}
+
+
+extern int activeTimezone;
+int clockGMT( int n ) {
+
+    int sel = (int)GMTOffset[activeTimezone]+17;
+    if ( genericMenu( "Hour?", &printGMT, &decrement, &increment, 0, 35, &sel ) != MODE_KEYMODE ) {
+        partGMT = sel - 17;
+
+        sel = 0;
+        if ( genericMenu( "Minute?", &printGMT2, &decrement, &increment, 0, 4, &sel ) != MODE_KEYMODE ) {
+            int quart = sel * 0.25;
+            if ( partGMT < 0 )
+                quart = -quart;
+            GMTOffset[activeTimezone] = partGMT + quart;
+        }
+    }
+    return MODE_EXIT;
+}
+*/
 
 
 int appAbout()

@@ -102,7 +102,7 @@ typedef union
 {
     struct
     {
-        BYTE    wday;       // BCD codification for day of the week, 00-06   
+            BYTE    wday;       // BCD codification for day of the week, 00-06   
         BYTE    mday;       // BCD codification for day of the month, 01-31
         BYTE    mon;        // BCD codification for month, 01-12
         BYTE    year;       // BCD codification for years, 00-99

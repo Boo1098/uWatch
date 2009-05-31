@@ -88,8 +88,7 @@ int lunarLander( int p )
 
         if ( fuelRemaining > 0 ) {
 
-            int sel = 0;
-            if ( genericMenu( "Status", printStat, increment, decrement, 0, -4, &sel ) == MODE_KEYMODE )
+            if ( genericMenu( "Status", printStat, increment, decrement, 0, 4, 0 ) == MODE_KEYMODE )
                 return MODE_KEYMODE;
 
 
@@ -254,7 +253,8 @@ int twenty1( int p )
     int dealer[20];
     
     int card;
-    for ( card = 0; card < 52; card++ ) deck[card] = card;
+    for ( card = 0; card < 52; card++ )
+        deck[card] = card;
 
     int key;
     while ( TRUE ) {
@@ -288,7 +288,7 @@ int twenty1( int p )
                 DelayMs(2000);
             } else if ( total < 21 ) { // wont hit on 21!
 
-                if ( genericMenu( displayBuffer, &printHitStand, &increment, &decrement, 0, -2, &hitStand ) == MODE_KEYMODE )
+                if ( genericMenu( displayBuffer, &printHitStand, &increment, &decrement, 0, 2, &hitStand ) == MODE_KEYMODE )
                     return MODE_KEYMODE;
             }
         }
