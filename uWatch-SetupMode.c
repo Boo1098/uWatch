@@ -265,10 +265,11 @@ char *processCalendar( int *pDay, int max )
     return out;
 }
 
-void fixTitle( int year, int month ) {
-    sprintf( out, "%d, %s", year, monthName[ month - 1 ] );
-    UpdateLCDline1( out );
+char gTitle[32];
 
+void fixTitle( int year, int month ) {
+    sprintf( gTitle, "%d, %s", year, monthName[ month - 1 ] );
+ 
     // Note: it is IMPORTANT that the character flip comes AFTER
     // the screen update, even though logically wrong.  The problem is
     // the timing of UpdateLCDline is slow, so we see what WAS on the screen
@@ -278,8 +279,8 @@ void fixTitle( int year, int month ) {
     // damn quick after the screen draw returns.  So even though it's wrong
     // the eye doesn't notice it.  In short, this code is well thought out... don't change
 
-    if ( mChar[month-1])
-        custom_character(5,mChar[month-1]);
+    if ( mChar[ month - 1 ])
+        custom_character( 5 ,mChar[ month - 1 ]);
 }
 
 
@@ -338,6 +339,11 @@ char *chooseMinusOne( int *sel, int kpv, int max ) {
     return 0;
 }
 
+char *chooseNotZero( int *sel, int kpv, int max ) {
+    if ( kpv > 0 && kpv <= dim )                    // non-optimal -- global usage of DIM but this saves space
+        *sel = kpv;
+    return 0;
+}
 
 
 
@@ -364,8 +370,8 @@ int doCal( BOOL modify ) {
 
     sprintf( out, "%d, %s", year, monthName[ month ] );
     dim = daysInMonth( gYear, gMonth );
-    //if ( day > dim )
-    //    day = 1;
+    if ( day > dim )
+        day = dim;            // needed, like when we change on the 31st, many months don't have this :)
 
     if ( !modify && ( oldMonth != month || oldYear != year ))
         day = 1;
@@ -373,7 +379,7 @@ int doCal( BOOL modify ) {
     if ( mChar[month])
         custom_character(5,mChar[month]);
 
-    if ( genericMenu( out, processCalendar, decrementDay, incrementDay, chooseExact, dim, &day ) == MODE_KEYMODE )
+    if ( genericMenu( out, processCalendar, decrementDay, incrementDay, chooseNotZero, dim, &day ) == MODE_KEYMODE )
         return MODE_KEYMODE;
 
     //TODO: year should be absolute, not limited from 2000...

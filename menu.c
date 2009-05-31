@@ -149,6 +149,9 @@ void showEntry( char *title, char *qkey, char c ) {
     UpdateLCDline1( out );
 }
 
+extern char gTitle[];
+extern int gDim;
+
 int genericMenu( char *title,
                  char *( *printFunc )( int *num, int max ),
                  void ( *incrementFunc )( int *num, int max ),
@@ -157,10 +160,7 @@ int genericMenu( char *title,
                  int max,               // if max is negative, indicate we CANNOT use quick-number-entry
                  int *selection )
 {
-    char t2[30];
-    strcpy( t2, title );
-    title = t2;
-
+    strcpy( gTitle, title );
 
     int sel = selection ? ( *selection ) : 0;
 
@@ -177,7 +177,7 @@ int genericMenu( char *title,
     int key = 0;
     do {
 
-        showEntry( title, qkeyBuffer, quickKeyFunc ? '_' : ' ' );
+        showEntry( gTitle, qkeyBuffer, quickKeyFunc ? '_' : ' ' );
 
         char out[32];
         sprintf( out, "%-15s\010", ( *printFunc )( &sel, max ));

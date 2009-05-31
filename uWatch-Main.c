@@ -1053,7 +1053,7 @@ int baseYear = 0;           // GMT base year adds to all dates
 int stopCount = 0;
 char *stopStar = " \2";
 
-//extern double GMTOffset[];
+extern double GMTOffset[];
 
 /*
 long long getUberSeconds( rtccDate date, rtccTime time ) {
@@ -1564,22 +1564,41 @@ int setupTime( int p )
 
     const menuItem timeMenu[] = {
         { "Set Time",       &changeTime,         0      },
-        { "Set GMT Offset",        &clockGMT,           0      },
         { "Set Date",       doCal,               TRUE   },
         { "Calibrate",      &changeCalibration,  0      },
         { "Set 12/24h",     &change1224,         0      },
         { "Set DST Zone",   &changeDST,          0      },
+        { "Set GMT Zone",   &clockGMT,           0      },
         { "Set Location",   &changeLocation,     0      },
     };
 
     const packedMenu2 sampleMenu = {
-        "Clock Settings",
+        "Clock Settin\2s",
         printMenu,
         0, 0, 7, timeMenu
     };
-
+   
+    custom_character( 2, character_g );
     return genericMenu2( &sampleMenu );
 }
+
+
+void formatTimeString( char *fmt, int h, int m ) {
+
+    BOOL pm = FALSE;
+    if ( TwelveHour ) {
+        pm = ( h >= 12 );
+        if ( h > 12 )
+            h -= 12;
+        if ( !h )
+            h = 12;
+
+        sprintf( displayBuffer, "%s %2d:%02d%c%c", fmt, h, m, pm ? 9:8, 10 );
+    }
+    else 
+        sprintf( displayBuffer, "%s %02d:%02d", fmt, h, m );
+}
+
 
 void doTimeMode()
 {
@@ -1626,6 +1645,42 @@ void doTimeMode()
 
 
             genericMenu2( &TimeMenu );
+            while ( KeyScan2( FALSE ));
+
+        }
+
+        else if ( Key == KeyEnter ) {
+
+            Clock4MHz();
+extern void CalcRiseAndSet(double* rise, double* set);            double rise,set;
+            CalcRiseAndSet( &rise, &set );
+
+            rise += GMTOffset[ activeTimezone ] + 24;
+            set += GMTOffset[ activeTimezone ] + 24;
+
+            int rhour = (int) rise;
+            int rmin = (int) (( rise - rhour ) * 60);
+            rhour %= 24;
+
+            int shour = (int) set;
+            int smin = (int) (( set - shour) * 60);
+            shour %= 24;
+
+            Clock250KHz();
+
+
+            formatTimeString( "Sunrise", rhour, rmin );
+            UpdateLCDline1( displayBuffer );
+
+            int i;
+            for ( i = 0; i < 3; i++ )
+                custom_character( i, &( AMPM[i][0] ) );
+
+            formatTimeString( "Sunset ", shour, smin );
+            UpdateLCDline2( displayBuffer );
+
+
+            GetDebouncedKey();
             while ( KeyScan2( FALSE ));
 
         }
