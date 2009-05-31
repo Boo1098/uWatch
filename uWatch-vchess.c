@@ -625,7 +625,6 @@ static int computerMoves()
 
     /* and back again to slow.. */
     Clock250KHz();
-//    ResetSleepTimer();
     StartSleepTimer();
 
     if ( MainPV.n ) {
@@ -651,15 +650,14 @@ static int computerMoves()
 
     if ( fabs(v) >= WIN_SCORE ) {
 
-//        sprintf( out, "c=%d win=%d", computer, v );
-//        UpdateLCDline1(out);
-//        GetDebouncedKey();
+//       sprintf( displayBuffer, "C:%c v=%d", computer?'Y':'N', v );
+//       UpdateLCDline1( displayBuffer );
+//       GetDebouncedKey();
 
 
-        if (( computer && v >= WIN_SCORE ) || ( !computer && v <= -WIN_SCORE ))
-            UpdateLCDline1( "I Win!" );
-        else
-            UpdateLCDline1( "You Win!" );
+//        if (( computer && v >= WIN_SCORE ) || ( !computer && v <= -WIN_SCORE ))
+  
+        UpdateLCDline1( v >= WIN_SCORE ? "I win!" : "You Win!" );
 
         GetDebouncedKey();
         showBoard();

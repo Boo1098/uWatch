@@ -616,7 +616,7 @@ int appLCDTimeout()
     return MODE_EXIT;
 }
 
-/*
+
 double GMTOffset[] = { 0,0,0,0,0,0 };
 int partGMT;
 
@@ -648,7 +648,7 @@ int clockGMT( int n ) {
     }
     return MODE_EXIT;
 }
-*/
+
 
 
 int appAbout()

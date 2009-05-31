@@ -1564,7 +1564,7 @@ int setupTime( int p )
 
     const menuItem timeMenu[] = {
         { "Set Time",       &changeTime,         0      },
-//        { "Set GMT",        &clockGMT,           0      },
+        { "Set GMT Offset",        &clockGMT,           0      },
         { "Set Date",       doCal,               TRUE   },
         { "Calibrate",      &changeCalibration,  0      },
         { "Set 12/24h",     &change1224,         0      },
@@ -1575,7 +1575,7 @@ int setupTime( int p )
     const packedMenu2 sampleMenu = {
         "Clock Settings",
         printMenu,
-        0, 0, 6, timeMenu
+        0, 0, 7, timeMenu
     };
 
     return genericMenu2( &sampleMenu );
