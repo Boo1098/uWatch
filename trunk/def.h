@@ -13,7 +13,7 @@
 #include <string.h>
 #include "uWatch-op.h"
 
-#define LUNAR_LANDER 1
+#define LUNAR_LANDER 0
 
 
 #define RevString   "1.6.0.1"
