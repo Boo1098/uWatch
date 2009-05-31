@@ -196,11 +196,11 @@ extern char DisplayXreg[];
 #define iZreg (iRegs[2])
 #define iTreg (iRegs[3])
 
-void Clock1MHz ( void );
+//void Clock1MHz ( void );
 void Clock4MHz ( void );
 void Clock250KHz ( void );
-void Clock125KHz ( void );
-void Clock32KHz ( void );
+//void Clock125KHz ( void );
+//void Clock32KHz ( void );
 
 //************************************
 // resets the sleep timer

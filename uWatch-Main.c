@@ -30,14 +30,10 @@ This program is free software: you can redistribute it and/or modify
 #include "uWatch-SetupMode.h"
 #include "uWatch-LCD.h"
 
-#include "time.h"
-
 #include "menu.h"
 #include "characterset.h"
 #include "def.h"
 #include "calculator.h"
-#include "notebook.h"
-#include "calendar.h"
 #include "stopwatch.h"
 
 //define the config fuse bits
@@ -274,7 +270,7 @@ void DelayMs( int num )
 }
 
 
-//************************************
+/*// ************************************
 // set the clock rate to 1MHz
 // Used for UART comms
 void Clock1MHz( void )
@@ -283,6 +279,7 @@ void Clock1MHz( void )
     _RCDIV1 = 1;
     _RCDIV2 = 0;
 }
+*/
 
 //************************************
 // set the clock rate to 4MHz
@@ -304,7 +301,7 @@ void Clock250KHz( void )
     _RCDIV2 = 1;
 }
 
-//************************************
+/*// ************************************
 // set the clock rate to 125KHz
 void Clock125KHz( void )
 {
@@ -313,7 +310,7 @@ void Clock125KHz( void )
     _RCDIV2 = 1;
 }
 
-//************************************
+// ************************************
 // set the clock rate to 32KHz
 void Clock32KHz( void )
 {
@@ -321,7 +318,7 @@ void Clock32KHz( void )
     _RCDIV1 = 1;
     _RCDIV2 = 1;
 }
-
+*/
 
 //***********************************
 // Insert the LCD code here
@@ -1046,18 +1043,55 @@ static BOOL checkDST()
     return res;
 }
 
+
+int baseYear = 0;           // GMT base year adds to all dates
+
+
 // display time offset
 #define TOFF 2
 
 int stopCount = 0;
 char *stopStar = " \2";
 
+//extern double GMTOffset[];
+
+/*
+long long getUberSeconds( rtccDate date, rtccTime time ) {
+    long long us = 
+
+
+}
+*/
+
 ///int meld;
 
 //**********************************
 // displays the time and date on the LCD
-void TimeDateDisplay( void )
-{
+void TimeDateDisplay( void ) {
+
+/*    // The hardware date/time ALWAYS hold GMT values
+    // All other timezones add their offsets to GMT to give the local time
+    // DST should also be adjusted to this value
+
+    // Get GMT time/date
+    RtccReadTime( &localTime );
+    RtccReadDate( &localDate );
+
+    // Factor in the GMT offset for the active timezone, calculating an absolute seconds
+    // since year "0". Note, we don't handle the Gregorian calandar missing days in 1700 whatever
+
+    long gmtOff = (long) GMTOffset[ activeTimezone ] * 3600;
+    long long uberSeconds = getUberSeconds( localDate, localTime ) + gmtOff;
+
+    // Convert BACK to a date/time format, and let the code do the job it did previously...
+
+    rtccTime localTime;
+    rtccDate localDate;
+
+    convertUberSecondsToDateTime( &localDate, &localTime );
+*/
+
+
     rand32();             // causes other things to be random(ish)
 
     char s[MaxLCDdigits+1];
@@ -1081,6 +1115,8 @@ void TimeDateDisplay( void )
     RtccReadTime( &Time );          //read the RTCC registers
 
     last12 = TwelveHour;
+
+    //??? What is the following actually achieving... double read?
 
     // copy old date
     td = Date;
@@ -1519,17 +1555,21 @@ void ProgramInit( void )
     Latitude = 51.5;
 }
 
+int activeTimezone = 0;         // 0-5 via F-key
+
 int setupTime( int p )
 {
     extern int doCal( int modify );
+    extern int clockGMT( int n );
 
     const menuItem timeMenu[] = {
-        { "Set Time",       &changeTime,         0  },
-        { "Set Date",       doCal,         TRUE  },
-        { "Calibrate",      &changeCalibration,  0  },
-        { "Set 12/24h",     &change1224,         0  },
-        { "Set DST Zone",   &changeDST,          0  },
-        { "Set Location",   &changeLocation,     0  },
+        { "Set Time",       &changeTime,         0      },
+//        { "Set GMT",        &clockGMT,           0      },
+        { "Set Date",       doCal,               TRUE   },
+        { "Calibrate",      &changeCalibration,  0      },
+        { "Set 12/24h",     &change1224,         0      },
+        { "Set DST Zone",   &changeDST,          0      },
+        { "Set Location",   &changeLocation,     0      },
     };
 
     const packedMenu2 sampleMenu = {

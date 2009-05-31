@@ -7,25 +7,24 @@
 
 
 void increment( int *selection, int max ) {
-    ( *selection )++;
-    if (( *selection ) >= max )
+    if ( ++( *selection ) >= max )
         ( *selection ) = 0;
 }
 
+
 void decrement( int *selection, int max ) {
-    ( *selection )--;
-    if (( *selection ) < 0 )
+    if ( --( *selection ) < 0 )
         ( *selection ) = max - 1;
 }
 
 
-int calculatorMenu( const packedMenu2 *menu[], int size ) {
+void calculatorMenu( const packedMenu2 *menu[], int size ) {
 
     int mode = 0;
 
     while ( mode != MODE_EXIT && mode != MODE_KEYMODE ) {
 
-        mode = genericMenu2( menu[ CurrentMenu ] );   // last param "anywhere"
+        mode = genericMenu2( menu[ CurrentMenu ] );
 
         switch ( mode ) {
             case MODE_KEY_NEXT:
@@ -36,7 +35,6 @@ int calculatorMenu( const packedMenu2 *menu[], int size ) {
                 break;
         }
     }
-    return mode;
 }
 
 
@@ -106,19 +104,19 @@ int genericMenu2( const packedMenu2 *menu )
                 // auto-selection only available in calculator mode   
 
                 int autoSel = ReturnNumber( key );
-                if ( autoSel >= 0 && autoSel <= 9 ) {
+                if ( autoSel >= 0 ) {
     
                     // scan menu items to find equivalent function for key
                     // This is how function keys work in calculator mode -- finding the equivalent # in the op in the menu
     
                     static const int fkey[] = { -1,-1,-1,-1, 3, 4, 5, 0, 1, 2 };
-                    if ( !menu->title ) {
+                    //if ( !menu->title ) {
                         if ( fkey[autoSel]>=0 ) {
                             sel = fkey[autoSel];
                             if ( pmenu[sel].op != CALC_OP_NULL )
                                 break;
                         } 
-                    }
+                    //}
                 }
             }
 
@@ -163,36 +161,28 @@ int genericMenu( char *title,
     strcpy( t2, title );
     title = t2;
 
-//    if ( title )
-//        UpdateLCDline1( title );
 
     int sel = selection ? ( *selection ) : 0;
 
     custom_character( 0, character_arrow_updown );
 
-    char uc = '_';
-    char qkey[6];
-    int numptr = 0;
+
+    char qkeyBuffer[6];
+    char *qkey = qkeyBuffer;
     *qkey = 0;
+
     int qkv = 0;
-
-    if ( max < 0 ) {
-        max = -max;
-        uc = ' ';
-    }
-
-    if ( title )
-        showEntry( title, qkey, uc );
 
 
     int key = 0;
     do {
 
-        if ( printFunc ) {
-            char out[32];
-            sprintf( out, "%-15s\010", ( *printFunc )( &sel, max ));
-            UpdateLCDline2( out );
-        }
+        showEntry( title, qkeyBuffer, quickKeyFunc ? '_' : ' ' );
+
+        char out[32];
+        sprintf( out, "%-15s\010", ( *printFunc )( &sel, max ));
+        UpdateLCDline2( out );
+
 
         key = GetDebouncedKey();
         IFEXIT( key );
@@ -200,7 +190,7 @@ int genericMenu( char *title,
 
         // Neato turbo-menu keyboard enhancement!
 
-        if ( uc == '_' ) {
+        if (  quickKeyFunc ) {
 
             // Allow numbers to be input from keyboard -- jumps to first compatible
             // menu option starting with the same number substring.  The substring is
@@ -209,29 +199,25 @@ int genericMenu( char *title,
             int num = ReturnNumber( key );
             if ( num >= 0 ) {
 
-                if ( printFunc && numptr < 4 ) {
+                if ( qkey - qkeyBuffer < 4 ) {
     
                     qkv = 10 * qkv + num;
-                    qkey[ numptr++ ] = '0' + num;
-                    qkey[ numptr ] = 0;
-    
-                    showEntry( title, qkey, uc );
+                    *(qkey++) = '0' + num;
+                    *qkey = 0;
 
                     // Try and map the quick keypresses to a menu option. The passed-in function is responsible
                     // for this matching, and if it can, it will change "sel" to the correct selection.  This is 
                     // pretty neat, as it allows you to type in "10" and have "October" selected in the menu, for
                     // example.
 
-                    if ( quickKeyFunc ) {
-                        char *newt = (*quickKeyFunc)(&sel,qkv, max);
-                        if ( newt )
-                            title = newt;
-                    }    
+                    char *newt = (*quickKeyFunc)( &sel, qkv, max );
+                    if ( newt )
+                        title = newt;
                 }
 
             } else {
-                UpdateLCDline1( title );        // clear any numeric input so far
-                numptr = 0;
+                
+                qkey = qkeyBuffer;
                 *qkey = 0;
                 qkv=0;
             }

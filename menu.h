@@ -42,7 +42,7 @@ int genericMenu( char *title,
 #define VIEW_AUTOSCROLL 2
 
 int viewString( char *title, char *string, int *selection, int viewControl );
-int calculatorMenu( const packedMenu2 *menu[], int size );
+void calculatorMenu( const packedMenu2 *menu[], int size );
 
 extern const packedMenu2 mathMenu;
 extern const packedMenu2 *calcMenus[];
