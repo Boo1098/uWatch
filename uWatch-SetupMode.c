@@ -181,9 +181,9 @@ int changeTime( int p )
     int m = BCDtoDEC( Time.f.min );
     int s = BCDtoDEC( Time.f.sec );
 
-    custom_character( 2, &( AMPM[ 0 ][0] ) );
-    custom_character( 3, &( AMPM[ 1 ][0] ) );
-    custom_character( 4, &( AMPM[ 2 ][0] ) );
+    custom_character( 2, AMPM_A );
+    custom_character( 3, AMPM_P );
+    custom_character( 4, AMPM_M );
 
     if ( genericMenu( "Hour", &printHour, &decrement, &increment, chooseExact, 24, &h ) == MODE_KEYMODE )
         return MODE_KEYMODE;
@@ -408,7 +408,6 @@ int changeCalibration() {
 }
 
 
-
 int change1224()
 {
 
@@ -416,9 +415,9 @@ int change1224()
 
 
         if ( *sel ) {
-            custom_character( 2, &( AMPM[1][0] ) );
-            custom_character( 3, &( AMPM[2][0] ) );
-            sprintf( out, "12h 8:34:00\2\3" );
+            custom_character( 3, AMPM_P );
+            custom_character( 4, AMPM_M );
+            sprintf( out, "12h 8:34:00\3\4" );
         } else
             sprintf( out, "24h 20:34:00" );
 
@@ -623,7 +622,7 @@ int appLCDTimeout()
 }
 
 
-double GMTOffset[] = { 0,0,0,0,0,0 };
+double GMTOffset = 0; //[] = { 0,0,0,0,0,0 };
 int partGMT;
 
 char *printGMT( int *sel, int max ) {
@@ -637,10 +636,9 @@ char *printGMT2( int *sel, int max ) {
 }
 
 
-extern int activeTimezone;
 int clockGMT( int n ) {
 
-    int sel = (int)GMTOffset[activeTimezone]+17;
+    int sel = (int)GMTOffset/*[activeTimezone]*/+17;
     if ( genericMenu( "Hour?", &printGMT, &decrement, &increment, 0, 35, &sel ) != MODE_KEYMODE ) {
         partGMT = sel - 17;
 
@@ -649,7 +647,7 @@ int clockGMT( int n ) {
             int quart = sel * 0.25;
             if ( partGMT < 0 )
                 quart = -quart;
-            GMTOffset[activeTimezone] = partGMT + quart;
+            GMTOffset/*[activeTimezone]*/ = partGMT + quart;
         }
     }
     return MODE_EXIT;
@@ -672,7 +670,7 @@ int appAbout()
 int SetupMode( int p )
 {
 
-    extern const charSet appCharset[];
+    extern const charSet appCharSet[];
 
     const menuItem setupMenuMenu[] = {
         { "Calculator", &appCalculatorMode, 0 },
@@ -685,7 +683,7 @@ int SetupMode( int p )
     const packedMenu2 setupMenu = {
         "Setu\4",
         printMenu,
-        2, appCharset, 5, setupMenuMenu
+        2, appCharSet, 5, setupMenuMenu
     };
 
     return genericMenu2( &setupMenu );
