@@ -28,7 +28,9 @@
 #include        <stdlib.h>
 #include        <string.h>
 #include        <math.h>
+#include "def.h"
 #include        "uWatch-astro.h"
+
 
 #define PI2 6.283185307179586476925286766559006
 #define DPR 57.29577951308232087679815481410517
@@ -154,5 +156,8 @@ void CalcRiseAndSet(double* r, double* s)
         *r += 1.0;
         *s += 1.0;
     }
+
+    *r += GMTOffset; //[ activeTimezone ];
+    *s += GMTOffset; //[ activeTimezone ];
 }
 

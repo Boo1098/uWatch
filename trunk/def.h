@@ -13,7 +13,7 @@
 #include <string.h>
 #include "uWatch-op.h"
 
-#define LUNAR_LANDER 0
+#define LUNAR_LANDER 1
 
 
 #define RevString   "1.6.0.1"
@@ -323,7 +323,7 @@ extern int displayFormat;
 int seconds ( rtccTime *t );
 
 void setBase ( int base );
-extern unsigned long rand32();
+extern unsigned int rand32();
 extern int displayMode;
 extern int displayAccuracy;
 extern int displayEngN;
@@ -331,4 +331,8 @@ extern int displayEngN;
 char *printNumber( int *number, int max );
 char *chooseExact( int *sel, int kp, int max );
 
+extern double GMTOffset; //[];
+//extern int activeTimezone;
+
+extern void CalcRiseAndSet(double* rise, double* set);
 #endif

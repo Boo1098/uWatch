@@ -114,12 +114,14 @@ extern void SwapXY();
 #define CALC_OP_CONV_KG_LB      55
 #define CALC_OP_CONV_LB_KG      56
 
-#define CALC_OP_LOGIC_AND       57
+#define CALC_OP_LOGIC_AND       57  /* do not change ordering of this group */
 #define CALC_OP_LOGIC_OR        58
 #define CALC_OP_LOGIC_XOR       59
-#define CALC_OP_LOGIC_NOT       60
-#define CALC_OP_LOGIC_NOR       61
-#define CALC_OP_LOGIC_NAND      62
+#define CALC_OP_LOGIC_NOR       60
+#define CALC_OP_LOGIC_NAND      61
+
+
+#define CALC_OP_LOGIC_NOT       62
 
 #define CALC_OP_LIGHT           63
 #define CALC_OP_AVOGADRO        64

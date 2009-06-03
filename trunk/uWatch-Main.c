@@ -70,6 +70,16 @@ int OperatorsXY[PAREN_LEVELS+1];
 int OperatorsYZ[PAREN_LEVELS+1];
 int OperatorsZT[PAREN_LEVELS+1];
 
+/*
+double YZTiregs[ PAREN_LEVELS * 6];
+double *Yregs = &YZTiregs[PAREN_LEVELS*0];
+double *Zregs = &YZTiregs[PAREN_LEVELS*1];
+double *Tregs = &YZTiregs[PAREN_LEVELS*2];
+double *iYregs = &YZTiregs[PAREN_LEVELS*3];
+double *iZregs = &YZTiregs[PAREN_LEVELS*4];
+double *iTregs = &YZTiregs[PAREN_LEVELS*5];
+*/
+
 double Yregs[PAREN_LEVELS], Zregs[PAREN_LEVELS], Tregs[PAREN_LEVELS];
 double iYregs[PAREN_LEVELS], iZregs[PAREN_LEVELS], iTregs[PAREN_LEVELS];
 
@@ -87,11 +97,7 @@ int opPrec( int op )
     // bin ops: + - are 3
 
     int prec = 0;
-    if (    op == CALC_OP_LOGIC_AND
-         || op == CALC_OP_LOGIC_OR
-         || op == CALC_OP_LOGIC_NAND
-         || op == CALC_OP_LOGIC_NOR
-         || op == CALC_OP_LOGIC_XOR
+    if (    ( op >= CALC_OP_LOGIC_AND && op <= CALC_OP_LOGIC_NAND )
          || op == CALC_OP_PERMUTATION
          || op == CALC_OP_COMBINATION
          || op == CALC_OP_NPOW ||
@@ -110,15 +116,15 @@ int opPrec( int op )
 
 
 
-char LCDhistory1[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
-char LCDhistory2[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
+char LCDhistory[2][MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
+//char LCDhistory2[MaxLCDdigits+1];   //holds a copy of the LCD data for when the LCD is turned off
 
 BOOL NextMode;          //TRUE if MODE button switches to next mode. FALSE returns to Time/Date mode.
 BOOL TwelveHour;        //TRUE if 12 hour mode
-BOOL last12;   // COPY for time display
+//BOOL last12;   // COPY for time display
 int RPNmode;           //TRUE if RPN mode, otherwise Algebraic
 
-int CalcDisplayBase;   //2-binary, 10-decimal, 16 decimal
+int CalcDisplayBase;   //2-binary, 8=octal, 10-decimal, 16 decimal
 
 //programming mode variables
 BOOL ProgPlay;          //TRUE if keystroke playback mode is on
@@ -320,61 +326,55 @@ void Clock32KHz( void )
 }
 */
 
-//***********************************
-// Insert the LCD code here
-//#include "uWatch-LCD.c"
-//***********************************
 
 //***********************************
 // Display the data string passed
 // on top line of the LCD display
-void UpdateLCD( const char* s, int line )
-{
-    int c;
-    const char* p = s;
+void UpdateLCD( const char* s, int line ) {
 
     int l = strlen( s );
     if ( l > MaxLCDdigits )
-        p = s + l - MaxLCDdigits;
+        s += l - MaxLCDdigits;
 
     // prevent the sleep timer going off when we write to the
     // screen, so that the interrupt doesnt happen.
-    //StopSleepTimer();
     DisableSleepTimer();
 
-    c = 0;
-    if ( line ) c = 40;
-    lcd_goto( c );
+    lcd_goto( line ); //? 40 : 0 );
 
-    c = lcd_puts( p, MaxLCDdigits );
-    while ( c < MaxLCDdigits ) {
+    int c = lcd_puts( s, MaxLCDdigits );
+    while ( c++ < MaxLCDdigits )
         lcd_write( ' ' );   //blank the rest of the line
-        ++c;
-    }
 
     // sleep time ok from now on.
     EnableSleepTimer();
-    //StartSleepTimer();
+}
+
+
+void UpdateCommon( const char *s, int line ) {
+    strncpy( LCDhistory[line], s, MaxLCDdigits );
+    UpdateLCD( s, line );
 }
 
 //***********************************
 // Display the data string passed
 // on top line of the LCD display
-void UpdateLCDline1( const char* s )
-{
+void UpdateLCDline1( const char* s ) {
+    UpdateCommon( s, 0 );
+
     //make a backup copy of the display
-    strncpy( LCDhistory1, s, MaxLCDdigits );
-    UpdateLCD( s, 0 );
+//    strncpy( LCDhistory1, s, MaxLCDdigits );        // THIS IS WRONG FOR LONGER STRINGS
+//    UpdateLCD( s, 0 );
 }
 
 //***********************************
 // Display the data string passed
 // on bottom line of the LCD display
-void UpdateLCDline2( const char* s )
-{
+void UpdateLCDline2( const char* s ) {
     //make a backup copy of the display
-    strncpy( LCDhistory2, s, MaxLCDdigits );
-    UpdateLCD( s, 1 );
+//    strncpy( LCDhistory2, s, MaxLCDdigits );        // THIS IS WRONG FOR LONGER STRINGS
+//    UpdateLCD( s, 40 );
+    UpdateCommon( s, 40 );
 }
 
 void ClearCurrentRegs()
@@ -392,6 +392,14 @@ void ClearAllRegs( void )
 
     ClearCurrentRegs();
 
+/*    int i;
+    for ( i = 0; i < PAREN_LEVELS; i++ )
+        Yregs[i] = Zregs[i] = Tregs[i] =
+        iYregs[i] = iZregs[i] = iTregs[i] = 0;
+*/    
+    // changed for space savings (50 bytes or so)
+//    memset( YZTiregs, 0, PAREN_LEVELS*6*sizeof(double) );
+
     memset( Yregs, 0, PAREN_LEVELS*sizeof( Yregs[0] ) );
     memset( Zregs, 0, PAREN_LEVELS*sizeof( Zregs[0] ) );
     memset( Tregs, 0, PAREN_LEVELS*sizeof( iTregs[0] ) );
@@ -399,6 +407,7 @@ void ClearAllRegs( void )
     memset( iYregs, 0, PAREN_LEVELS*sizeof( iYregs[0] ) );
     memset( iZregs, 0, PAREN_LEVELS*sizeof( iZregs[0] ) );
     memset( iTregs, 0, PAREN_LEVELS*sizeof( iTregs[0] ) );
+
 
     memset( OperatorsXY, 0, ( PAREN_LEVELS + 1 )*sizeof( OperatorsXY[0] ) );
     memset( OperatorsYZ, 0, ( PAREN_LEVELS + 1 )*sizeof( OperatorsYZ[0] ) );
@@ -438,11 +447,14 @@ unsigned char i2c_in_byte( void )
     for ( n = 0; n < 8; n++ ) {
         i2c_high_scl();
 
-        if ( SDA ) {
+        i_byte = ( i_byte << 1 ) | SDA;     // assumption: SDA is 0 or 1, replacing 
+
+/*        if ( SDA ) {
             i_byte = ( i_byte << 1 ) | 0x01; // msbit first
         } else {
             i_byte = i_byte << 1;
         }
+*/
         i2c_low_scl();
     }
     return( i_byte );
@@ -474,14 +486,14 @@ void i2c_nack( void )
 }
 
 //***********************************
-void i2c_ack( void )
+/*void i2c_ack( void )
 {
     i2c_low_sda();  // bring data low and clock
     i2c_high_scl();
     i2c_low_scl();
     i2c_high_sda();
 }
-
+*/
 //***********************************
 void i2c_start( void )
 {
@@ -579,19 +591,21 @@ unsigned int KeystrokeReplay( void )
 // Function assumes that MemPointer has been set correctly
 void KeystrokeRecord( unsigned char key )
 {
-    if ( ProgPlay ) return; //can't record while in play mode
+    if ( !ProgPlay ) {                      //can't record while in play mode
+    
+        if ( key == KeyMode ) {             //check for end of record mode
+            I2CmemoryWRITE( MemPointer, 0 );  //store a zero to end programming mode
+            ProgRec = FALSE;                //switch off keystroke record mode
+            UpdateLCDline1( "Program Stored." );
+            DelayMs( 2000 );
+        }
 
-    if ( key == KeyMode ) {             //check for end of record mode
-        I2CmemoryWRITE( MemPointer, 0 );  //store a zero to end programming mode
-        ProgRec = FALSE;                //switch off keystroke record mode
-        UpdateLCDline1( "Program Stored." );
-        DelayMs( 2000 );
-        return;
+        else {
+    
+            I2CmemoryWRITE( MemPointer, key );  //store the keystroke into EEPROM
+            MemPointer++;                       //increment the EEPROM memory pointer
+        }
     }
-
-    I2CmemoryWRITE( MemPointer, key );  //store the keystroke into EEPROM
-    MemPointer++;                       //increment the EEPROM memory pointer
-    return;
 }
 
 
@@ -600,12 +614,12 @@ void KeystrokeRecord( unsigned char key )
 int ReturnNumber( int key )
 {
     static const char kmap[] = { Key0, Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8, Key9 };
-    int s;
-    for ( s = 0; s < 10; s++ )
+    int s = 9;
+    do {
         if ( kmap[s] == key )
-            return s;
-
-    return -1;
+            break;
+    } while ( s-- > 0 );
+    return s;
 }
 
 
@@ -1053,7 +1067,7 @@ int baseYear = 0;           // GMT base year adds to all dates
 int stopCount = 0;
 char *stopStar = " \2";
 
-extern double GMTOffset[];
+extern double GMTOffset; //[];
 
 /*
 long long getUberSeconds( rtccDate date, rtccTime time ) {
@@ -1114,7 +1128,7 @@ void TimeDateDisplay( void ) {
     // read current time
     RtccReadTime( &Time );          //read the RTCC registers
 
-    last12 = TwelveHour;
+    //last12 = TwelveHour;
 
     //??? What is the following actually achieving... double read?
 
@@ -1175,12 +1189,8 @@ void TimeDateDisplay( void ) {
     point = BASE + 8;
 
     if ( TwelveHour ) {
-        int cbase = pm ? 1 : 0;
-
-
-        s[BASE+8] = custom_character( 0, &( AMPM[cbase][0] ) );
-        s[BASE+9] = custom_character( 1, &( AMPM[2][0] ) );
-
+        s[BASE+8] = custom_character( 0, pm ? AMPM_P : AMPM_A );
+        s[BASE+9] = custom_character( 1, AMPM_M );
         point += 2;
     }
 
@@ -1414,11 +1424,11 @@ void __attribute__(( __interrupt__, auto_psv ) ) _T1Interrupt( void )
     //StartSleepTimer();            //switch the SLEEP timer back on
 
     //restore the previous display contents, except time mode
-    if ( WatchMode != WATCH_MODE_TIME ) {
-        UpdateLCD( LCDhistory1, 0 );
-        UpdateLCD( LCDhistory1, 0 ); // twice!
-        UpdateLCD( LCDhistory2, 1 );
-    }
+//    if ( WatchMode != WATCH_MODE_TIME ) {
+        UpdateLCD( LCDhistory[0], 0 );
+        UpdateLCD( LCDhistory[0], 0 ); // twice!
+        UpdateLCD( LCDhistory[1], 40 );
+//    }
 
 
     // restore any custom characters to LCD GRAM
@@ -1541,7 +1551,7 @@ void ProgramInit( void )
 
     // Power Down mode enabled, 11 bit sampling
     TwelveHour = TRUE;      //TRUE if 12 hour mode
-    last12 = TRUE;
+    //last12 = TRUE;
     RPNmode = TRUE;             // default to RPN!!
     ProgPlay = FALSE;       //turn off keystroke playback
     ProgRec = FALSE;        //turn off keystroke record
@@ -1555,7 +1565,7 @@ void ProgramInit( void )
     Latitude = 51.5;
 }
 
-int activeTimezone = 0;         // 0-5 via F-key
+//int activeTimezone = 0;         // 0-5 via F-key
 
 int setupTime( int p )
 {
@@ -1563,42 +1573,45 @@ int setupTime( int p )
     extern int clockGMT( int n );
 
     const menuItem timeMenu[] = {
-        { "Set Time",       &changeTime,         0      },
-        { "Set Date",       doCal,               TRUE   },
-        { "Calibrate",      &changeCalibration,  0      },
-        { "Set 12/24h",     &change1224,         0      },
-        { "Set DST Zone",   &changeDST,          0      },
-        { "Set GMT Zone",   &clockGMT,           0      },
-        { "Set Location",   &changeLocation,     0      },
+        { "Time",       &changeTime,         0      },
+        { "Date",       doCal,               TRUE   },
+        { "Calibration",      &changeCalibration,  0      },
+        { "12/24h",     &change1224,         0      },
+        { "DST Zone",   &changeDST,          0      },
+        { "GMT Zone",   &clockGMT,           0      },
+        { "Location",   &changeLocation,     0      },
     };
 
     const packedMenu2 sampleMenu = {
-        "Clock Settin\2s",
+        "Set",
         printMenu,
         0, 0, 7, timeMenu
     };
    
-    custom_character( 2, character_g );
+    //custom_character( 2, character_p );
     return genericMenu2( &sampleMenu );
 }
 
 
 void formatTimeString( char *fmt, int h, int m ) {
 
-    BOOL pm = FALSE;
     if ( TwelveHour ) {
-        pm = ( h >= 12 );
+        int pm = ( h >= 12 ) ? 9:8;
         if ( h > 12 )
             h -= 12;
         if ( !h )
             h = 12;
 
-        sprintf( displayBuffer, "%s %2d:%02d%c%c", fmt, h, m, pm ? 9:8, 10 );
+        sprintf( displayBuffer, "%s %2d:%02d%c%c", fmt, h, m, pm, 10 );
     }
     else 
         sprintf( displayBuffer, "%s %02d:%02d", fmt, h, m );
 }
 
+const charSet appCharSet[] = {
+    character_right_menu,
+    character_p,
+};
 
 void doTimeMode()
 {
@@ -1612,7 +1625,7 @@ void doTimeMode()
         TimeDateDisplay();
 
         Key = KeyScan2();
-        if ( !mask && ( Key != KeyMode ) )
+        if ( !mask && ( Key != KeyMode && Key != KeyEnter ) )
             mask = 0xFFFF;
 
         Key &= mask;
@@ -1622,7 +1635,7 @@ void doTimeMode()
 
         else if ( Key == KeyMenu ) {
 
-            WatchMode = WATCH_MODE_TIME_MENU;
+            WatchMode = WATCH_MODE_TIME_MENU;           // PREVENT time/date display in backlight code
 
             extern int doCal( int modify );
 
@@ -1632,31 +1645,23 @@ void doTimeMode()
                 { "\3Setu\4",    setupTime,  0 },
             };
 
-            const charSet tCharset2[] = {
-                character_right_menu,
-                character_p,
-            };
-
             const packedMenu2 TimeMenu = {
                 "Clock",
                 printMenu,
-                2, tCharset2, 3, tMenu2
+                2, appCharSet, 3, tMenu2
             };
 
 
             genericMenu2( &TimeMenu );
-            while ( KeyScan2( FALSE ));
+            mask = 0;
 
         }
 
         else if ( Key == KeyEnter ) {
 
             Clock4MHz();
-extern void CalcRiseAndSet(double* rise, double* set);            double rise,set;
+            double rise,set;
             CalcRiseAndSet( &rise, &set );
-
-            rise += GMTOffset[ activeTimezone ] + 24;
-            set += GMTOffset[ activeTimezone ] + 24;
 
             int rhour = (int) rise;
             int rmin = (int) (( rise - rhour ) * 60);
@@ -1668,20 +1673,18 @@ extern void CalcRiseAndSet(double* rise, double* set);            double rise,s
 
             Clock250KHz();
 
-
             formatTimeString( "Sunrise", rhour, rmin );
             UpdateLCDline1( displayBuffer );
 
-            int i;
-            for ( i = 0; i < 3; i++ )
-                custom_character( i, &( AMPM[i][0] ) );
+            custom_character( 0, AMPM_A );
+            custom_character( 1, AMPM_P );
+            custom_character( 2, AMPM_M );
 
             formatTimeString( "Sunset ", shour, smin );
             UpdateLCDline2( displayBuffer );
 
-
             GetDebouncedKey();
-            while ( KeyScan2( FALSE ));
+            mask = 0;
 
         }
 
@@ -1690,10 +1693,6 @@ extern void CalcRiseAndSet(double* rise, double* set);            double rise,s
 
 }
 
-const charSet appCharset[] = {
-    character_right_menu,
-    character_p,
-};
 
 
 //***********************************
@@ -1713,7 +1712,7 @@ int main( void )
     //retrieve calibration value from last byte
     RCFGCALbits.CAL = I2CmemoryREAD( 63535 );
 
-    BacklightOFF();
+    //BacklightOFF();
 
     //clear all the calculator registers
     ClearAllRegs();
@@ -1752,17 +1751,17 @@ extern int SetupMode();
         const packedMenu2 appsMenu = {
             "A\4\4lication",
             printMenu,
-            2, appCharset, 3, appMenu
+            2, appCharSet, 3, appMenu
         };
 
         genericMenu2( &appsMenu );
     }
 }
 
-unsigned long rand32()
+unsigned int rand32()
 {
     static unsigned int seed = 0;
-    seed = 1664525L*seed + 1013904223L;
+    seed = 1664525L*seed + 1013904223L;     // yes, int * long is dodgy, saving as an int.
     return seed;
 }
 
