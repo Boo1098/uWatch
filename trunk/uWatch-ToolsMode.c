@@ -112,7 +112,7 @@ int ToolsMode( int p )
     };
 
     const packedMenu2 toolsMenu = {
-        "A\4\4s",
+        "Tool",
         printMenu,
         2, appCharSet, 2, toolsMenuMenu
     };
