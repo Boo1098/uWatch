@@ -231,7 +231,7 @@ char *printHitStand(int *n, int max ) {
 static void shuffling(int* deck)
 {
     shuffle( deck );
-    UpdateLCDline2( "Shuffling..." );
+    UpdateLCDline2( "Shuffle..." );
     DelayMs(1000);
 }
 

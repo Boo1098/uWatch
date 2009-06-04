@@ -40,8 +40,7 @@ void calculatorMenu( const packedMenu2 *menu[], int size ) {
 
 int genericMenu2( const packedMenu2 *menu )
 {
-    int mode = MODE_EXIT;
-
+    int mode = 0;
     int sel = 0;
 
     // Draw the menu indicators
@@ -62,83 +61,88 @@ int genericMenu2( const packedMenu2 *menu )
 
     const menuItem *pmenu = menu->menu;
     do {
-        if ( menu->print ) {
-            if ( !menu->title ) {
 
-                // we're drawing a FUNCTION KEY MENU -- aka calculator menu
-                // and the OP values are associated with function keypresses.  Here we
-                // draw BOTH LCD lines and we also highlight the current selection
-
-                sprintf( out, "%s%s%s", pmenu[0].name, pmenu[1].name, pmenu[2].name );
-                UpdateLCDline1( out );
-                sprintf( out, "%s%s%s", pmenu[3].name, pmenu[4].name, pmenu[5].name );
-                UpdateLCDline2( out );
-
-            } else {
-                char out2[17];
-                sprintf( out2, "%-15s\010", ( *( menu->print ) )( &sel, pmenu ) );
-                UpdateLCDline2( out2 );
-            }
-        }
-
-        if ( pmenu[sel].op < 0 ) { // NO DEBOUNCE? .. USED IN STOPWATCH MODE
-            key = KeyScan2();
-            if ( !key )
-                mask = 0xFFFF;
-            key &= mask;
-        } else
-            key = GetDebouncedKey();
-
-        if ( key ) {
-            IFEXIT( key );
-
-            // Calculator-style menus need to cycle from menu to menu -- this is
-            // done by using the MENU/RP keys, and passing appropriate values for each
-
-            if ( !menu->title ) {
-                if ( NEXT(key) )
-                    return MODE_KEY_NEXT;
-                if ( PREVIOUS( key ) )
-                    return MODE_KEY_PREVIOUS;
+        do {
+            if ( menu->print ) {
+                if ( !menu->title ) {
     
-                // auto-selection only available in calculator mode   
-
-                int autoSel = ReturnNumber( key );
-                if ( autoSel >= 0 ) {
+                    // we're drawing a FUNCTION KEY MENU -- aka calculator menu
+                    // and the OP values are associated with function keypresses.  Here we
+                    // draw BOTH LCD lines and we also highlight the current selection
     
-                    // scan menu items to find equivalent function for key
-                    // This is how function keys work in calculator mode -- finding the equivalent # in the op in the menu
+                    sprintf( out, "%s%s%s", pmenu[0].name, pmenu[1].name, pmenu[2].name );
+                    UpdateLCDline1( out );
+                    sprintf( out, "%s%s%s", pmenu[3].name, pmenu[4].name, pmenu[5].name );
+                    UpdateLCDline2( out );
     
-                    static const int fkey[] = { -1,-1,-1,-1, 3, 4, 5, 0, 1, 2 };
-                    //if ( !menu->title ) {
-                        if ( fkey[autoSel]>=0 ) {
-                            sel = fkey[autoSel];
-                            if ( pmenu[sel].op != CALC_OP_NULL )
-                                break;
-                        } 
-                    //}
+                } else {
+                    char out2[17];
+                    sprintf( out2, "%-15s\010", ( *( menu->print ) )( &sel, pmenu ) );
+                    UpdateLCDline2( out2 );
                 }
             }
-
-            if ( NEXT( key ) ) {
-                increment( &sel, menu->menusize );
-                mask = 0;
-            }    
     
-            if ( PREVIOUS( key ) ) {
-                decrement( &sel, menu->menusize );
-                mask = 0;
+            if ( pmenu[sel].op < 0 ) { // NO DEBOUNCE? .. USED IN STOPWATCH MODE
+                key = KeyScan2();
+                if ( !key )
+                    mask = 0xFFFF;
+                key &= mask;
+            } else
+                key = GetDebouncedKey();
+    
+            if ( key ) {
+                IFEXIT( key );
+    
+                // Calculator-style menus need to cycle from menu to menu -- this is
+                // done by using the MENU/RP keys, and passing appropriate values for each
+    
+                if ( !menu->title ) {
+                    if ( NEXT(key) )
+                        return MODE_KEY_NEXT;
+                    if ( PREVIOUS( key ) )
+                        return MODE_KEY_PREVIOUS;
+        
+                    // auto-selection only available in calculator mode   
+    
+                    int autoSel = ReturnNumber( key );
+                    if ( autoSel >= 0 ) {
+        
+                        // scan menu items to find equivalent function for key
+                        // This is how function keys work in calculator mode -- finding the equivalent # in the op in the menu
+        
+                        static const int fkey[] = { -1,-1,-1,-1, 3, 4, 5, 0, 1, 2 };
+                        //if ( !menu->title ) {
+                            if ( fkey[autoSel]>=0 ) {
+                                sel = fkey[autoSel];
+                                if ( pmenu[sel].op != CALC_OP_NULL )
+                                    break;
+                            } 
+                        //}
+                    }
+                }
+    
+                if ( NEXT( key ) ) {
+                    increment( &sel, menu->menusize );
+                    mask = 0;
+                }    
+        
+                if ( PREVIOUS( key ) ) {
+                    decrement( &sel, menu->menusize );
+                    mask = 0;
+                }
             }
-        }
+    
+        } while ( !ENTER(key) );
+    
+    
+    //    if ( selection )
+    //        ( *selection ) = sel;
+    
+        if ( pmenu[sel].run )
+            mode = ( pmenu[sel].run )( pmenu[sel].op );
 
-    } while ( !ENTER(key) );
+    } while ( !mode );
 
-
-//    if ( selection )
-//        ( *selection ) = sel;
-
-    if ( pmenu[sel].run )
-        mode = ( pmenu[sel].run )( pmenu[sel].op );
 
     return mode;
 }

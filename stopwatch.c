@@ -19,35 +19,39 @@ unsigned long swTenths = 0;
 BOOL firstSecond;
 
 
-char *displayTime( unsigned long secs ) {
-    unsigned int hours = ( secs/ 36000L );
-    secs -= hours * 36000L;
-    unsigned int minutes = (unsigned int)( secs / 600L );
-    secs -= minutes * 600L;
-    sprintf( displayBuffer, "%02d:%02d:%2.1f", hours, minutes, ((double)secs)/10 );
+char *displayTime( long secs ) {
+
+    // Buried somewhere in here was the stopwatch weird time display issue
+    // this was fixed by moving to integer arithmetic AND using LONG values.  Probably an overflow/underflow.
+    // This method is smaller and also avoids the %02.1f floating point bug which DOESN'T display a leading 0
+    long secs2 = secs/10;
+    int hours = ( secs2 / 3600L );
+    secs2 -= hours * 3600L;
+    int minutes = ( secs2 / 60L );
+    secs -= (( hours * 3600L ) + ( minutes * 60L )) * 10L;
+    int s1 = secs/10;
+    int s2 = secs-s1*10;
+    sprintf( displayBuffer, "%02d:%02d:%02d.%d", hours, minutes, s1, s2 );
     return displayBuffer;
 }
 
 
 extern int seconds( rtccTime *t );
 
-unsigned int getRT() {
+int getRT() {
     rtccTime time;
     RtccReadTime(&time);
-    return (unsigned int) ( 10 * seconds( &time ));
+    return 10 * seconds( &time );
 }
 
 
-unsigned long lastNow = 0;
-unsigned long currentTime;
+long lastNow = 0;
+long currentTime;
 int delay = 2200;
 
 char *stopWatchPrintMenu( int *item, const menuItem *menu ) {
 
     Clock4MHz();
-
-    //char out2[20];
-
 
     switch ( menu[*item].op ) {
 
@@ -119,7 +123,7 @@ int stopWatchLap( int op ) {
     if ( stopWatchActive ) {
         stopWatchLapTime = lastNow - stopWatchStart + swTenths;
     }
-    return MODE_EXIT;
+    return 0;
 }
 
 

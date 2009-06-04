@@ -247,7 +247,12 @@
   This seems to be a pretty naieve implementation, but better than nothing.
 - timeout reset on wakeup, so it doesn't retrigger immediately (sometimes)
   
-  
+1.6.0.2
+- added GMT Zone setting
+- added GMT to sunrise/sunset calculations
+- added sunrise/sunset display to clock (press enter)
+- fixed stopwatch. again.
+
   
   
 64929

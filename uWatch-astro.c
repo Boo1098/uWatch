@@ -44,9 +44,16 @@ static double frac(double x)
 #define SRATE   0.9972696
 #define EPS  (1.0/120.0)
 
+void m24( double *v ) {
+    *v += 24;
+    while ( *v >= 24 )
+        *v -= 24;
+}
+
+
 static double daytime(double t)
 {
-    if (t < 0) t += 24;
+    m24(&t);
     return t * SRATE;
 }
 
@@ -89,7 +96,7 @@ static double minisun(double t, double* ra, double* dec)
     rho=sqrt(1.0-z*z);
     *dec = (360.0/PI2)*atan(z/rho); 
     *ra  = ( 48.0/PI2)*atan(y/(x+rho));
-    if (*ra<0) *ra += 24.0;
+    m24(ra);
     return l * DPR;
 }
 
@@ -100,6 +107,8 @@ static void SunRiseSet(double t, double lambda, double phi,
     double ra, dec;
     double ct, srt, sst, tau, r, s;
     double lst0;
+
+    double DPR15 = DPR/15.0;
 
     phi *= RPD;
     sphi = sin(phi);
@@ -113,7 +122,7 @@ static void SunRiseSet(double t, double lambda, double phi,
     dec *= RPD;
     ct = (sinh0 - sphi*sin(dec))/(cphi*cos(dec));
     
-    tau = acos(ct) * (DPR/15.0);
+    tau = acos(ct) * DPR15;
     srt = ra - tau;
     sst = ra + tau;
 
@@ -124,32 +133,32 @@ static void SunRiseSet(double t, double lambda, double phi,
     minisun(t + r/24, &ra, &dec);
     dec *= RPD;
     ct = (sinh0 - sphi*sin(dec))/(cphi*cos(dec));
-    tau = acos(ct) * (DPR/15.0);
+    tau = acos(ct) * DPR15;
     srt = ra - tau;
     *rise = daytime(srt - lst0);
 
     minisun(t + s/24, &ra, &dec);
     dec *= RPD;
     ct = (sinh0 - sphi*sin(dec))/(cphi*cos(dec));
-    tau = acos(ct) * (DPR/15.0);
+    tau = acos(ct) * DPR15;
     sst = ra + tau;
     *set = daytime(sst - lst0);
 }
 
 void CalcRiseAndSet(double* r, double* s)
 {
-    double sinh0;
-    double lambda, phi, t;
-    
+    //double lambda, phi, t;
+    //double t;
+
     //sinh0 = sin(-50.0/60.0 * RPD); /* sunrise           at h=-50'        */
-    sinh0 = -1.454389765158265677038484573310e-2;
+    //double sinh0 = -1.454389765158265677038484573310e-2;
 
     // get global position
-    lambda = Longitude; 
-    phi = Latitude;
+    //lambda = Longitude; 
+    //phi = Latitude;
 
-    t = MJD + 51544;
-    SunRiseSet(t,lambda, phi, sinh0, r, s);
+    SunRiseSet( MJD + 51544, Longitude, Latitude,
+        -1.454389765158265677038484573310e-2, r, s);
 
     if (DST)
     {
@@ -159,5 +168,14 @@ void CalcRiseAndSet(double* r, double* s)
 
     *r += GMTOffset; //[ activeTimezone ];
     *s += GMTOffset; //[ activeTimezone ];
+
+    m24(r);
+    m24(s);
+
+    //while (*r < 0 )
+    //    *r += 24;
+    //while ( *s < 0 )
+    //    *s += 24;
+
 }
 

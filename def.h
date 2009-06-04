@@ -16,7 +16,7 @@
 #define LUNAR_LANDER 1
 
 
-#define RevString   "1.6.0.1"
+#define RevString   "1.6.0.2"
 
 //define all the I/O pins
 #define Row1        _RB10
