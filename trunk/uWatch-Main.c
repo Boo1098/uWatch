@@ -1665,11 +1665,11 @@ void doTimeMode()
 
             int rhour = (int) rise;
             int rmin = (int) (( rise - rhour ) * 60);
-            rhour %= 24;
+            //rhour %= 24;
 
             int shour = (int) set;
             int smin = (int) (( set - shour) * 60);
-            shour %= 24;
+            //shour %= 24;
 
             Clock250KHz();
 
