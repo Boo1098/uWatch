@@ -353,7 +353,7 @@ void UpdateLCD( const char* s, int line ) {
 
 void UpdateCommon( const char *s, int line ) {
     strncpy( LCDhistory[line], s, MaxLCDdigits );
-    UpdateLCD( s, line );
+    UpdateLCD( s, line * 40 );
 }
 
 //***********************************
@@ -374,7 +374,7 @@ void UpdateLCDline2( const char* s ) {
     //make a backup copy of the display
 //    strncpy( LCDhistory2, s, MaxLCDdigits );        // THIS IS WRONG FOR LONGER STRINGS
 //    UpdateLCD( s, 40 );
-    UpdateCommon( s, 40 );
+    UpdateCommon( s, 1 );
 }
 
 void ClearCurrentRegs()
@@ -1582,13 +1582,13 @@ int setupTime( int p )
         { "Location",   &changeLocation,     0      },
     };
 
+    extern const charSet appCharSet[];
     const packedMenu2 sampleMenu = {
-        "Set",
+        "Setu\4",
         printMenu,
-        0, 0, 7, timeMenu
+        2, appCharSet, 7, timeMenu
     };
-   
-    //custom_character( 2, character_p );
+
     return genericMenu2( &sampleMenu );
 }
 
