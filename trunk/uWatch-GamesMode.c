@@ -93,7 +93,7 @@ int lunarLander( int p )
                 return MODE_KEYMODE;
 
 
-            if ( genericMenu( "Burn fuel?", printNumber, decrement, increment, chooseExact, fuelRemaining+1, &burnAmount ) == MODE_KEYMODE )
+            if ( genericMenu( "Burn fuel:", printNumber, decrement, increment, chooseExact, fuelRemaining+1, &burnAmount ) == MODE_KEYMODE )
                return MODE_KEYMODE;
         }
 
@@ -134,9 +134,9 @@ int lunarLander( int p )
 
     UpdateLCDline1( "Result:" );
     if ( newVelocity <= 0 ) {
-        UpdateLCDline2( "Perfect!" );
+        UpdateLCDline2( "Perfect landing!" );
     } else if ( newVelocity < 2 ) {
-        UpdateLCDline2( "Bumpy!" );
+        UpdateLCDline2( "Bumpy landing!" );
     } else {
         UpdateLCDline1( "You crashed!" );
     }

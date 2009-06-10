@@ -108,7 +108,7 @@ int ToolsMode( int p )
 
     const menuItem toolsMenuMenu[] = {
         { "Quadratic",  quadratic, 0 },
-        { "Factorise", factor, 0 },
+        { "Factorize", factor, 0 },
     };
 
     const packedMenu2 toolsMenu = {
