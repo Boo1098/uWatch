@@ -152,6 +152,8 @@ extern void SwapXY();
 #define CALC_OP_MODEENGN        84
 
 #define CALC_OP_ORIGINAL        85
+#define CALC_OP_D2R             86
+#define CALC_OP_R2D             87
 
 
 #endif // __uwatch_op_h__

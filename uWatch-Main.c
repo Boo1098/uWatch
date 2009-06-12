@@ -4,7 +4,7 @@
 // Version 1.6
 // Last Update: 16th March 09
 // Written for the Microchip C30 Compiler
-// Copyright(c) 2008 David L. Jones
+// Copyright(c) 2008 David L. Jones.
 // http://www.calcwatch.com
 // EMAIL: david@alternatezone.com
 // Target Device: PIC24FJ64GA004 (44pin)

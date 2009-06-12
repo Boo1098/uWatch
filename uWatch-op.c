@@ -1036,6 +1036,14 @@ void Operation( int op )
             }    
             break;
 
+        case CALC_OP_R2D:
+            *rp *= 180.0/PI;
+            break;
+
+        case CALC_OP_D2R:
+            *rp *= PI/180.0;
+            break;
+
     }
 
 }
