@@ -190,12 +190,12 @@ const menuItem mathConversion1Menu[] = {
 //};
 
 const menuItem mathConversion2Menu[] = {
-    { " k\5\176lb",    OperatePrecedence,  CALC_OP_CONV_KG_LB  },
-    { "   ", OperatePrecedence, CALC_OP_NULL },
-    { " lb\176k\5",    OperatePrecedence,  CALC_OP_CONV_LB_KG  },
-    { "  R\176P  ",   OperatePrecedence,  CALC_OP_R2P         },
-    { "", OperatePrecedence, CALC_OP_NULL },
-    { "    P\176R", OperatePrecedence,  CALC_OP_P2R         },
+    { "k\5\176lb ",    OperatePrecedence,  CALC_OP_CONV_KG_LB  },
+    { " R\176P  ",   OperatePrecedence,  CALC_OP_R2P         },
+    { "\337\176R", OperatePrecedence, CALC_OP_D2R },
+    { "lb\176k\5 ",    OperatePrecedence,  CALC_OP_CONV_LB_KG  },
+    { " P\176R  ", OperatePrecedence,  CALC_OP_P2R         },
+    { "R\176\337", OperatePrecedence, CALC_OP_R2D },
 };
 
 const packedMenu2 mathConversion1 = {
@@ -207,7 +207,7 @@ const packedMenu2 mathConversion1 = {
 const packedMenu2 mathConversion2 = {
     0, //CALC-STYLE
     printMenu,
-    0,0, 6, mathConversion2Menu
+    3,mathConstantCharset, 6, mathConversion2Menu
 };
 
 
@@ -220,10 +220,10 @@ const charSet mathOtherCharset[] = {
 };
 
 const menuItem mathTimeDateMenu[] = {
-    { "  DMY",  OperatePrecedence,  CALC_OP_DMY             },
+    { "\176D.MY",  OperatePrecedence,  CALC_OP_DMY             },
     { " da\6s ", OperatePrecedence,  CALC_OP_DAYS            },
     { "sunst",  OperatePrecedence,  CALC_OP_SUNSET          },
-    { "  HMS ", OperatePrecedence,  CALC_OP_HMS             },
+    { "\176H.MS ", OperatePrecedence,  CALC_OP_HMS             },
     { "hour",   OperatePrecedence,  CALC_OP_HOURS           },
     { "", OperatePrecedence, CALC_OP_NULL },
 };

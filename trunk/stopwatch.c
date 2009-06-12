@@ -19,18 +19,18 @@ unsigned long swTenths = 0;
 BOOL firstSecond;
 
 
-char *displayTime( long secs ) {
+char *displayTime( unsigned long secs ) {
 
     // Buried somewhere in here was the stopwatch weird time display issue
     // this was fixed by moving to integer arithmetic AND using LONG values.  Probably an overflow/underflow.
     // This method is smaller and also avoids the %02.1f floating point bug which DOESN'T display a leading 0
-    long secs2 = secs/10;
-    int hours = ( secs2 / 3600L );
+    unsigned long secs2 = secs/10;
+    unsigned int hours = ( secs2 / 3600L );
     secs2 -= hours * 3600L;
-    int minutes = ( secs2 / 60L );
+    unsigned int minutes = ( secs2 / 60L );
     secs -= (( hours * 3600L ) + ( minutes * 60L )) * 10L;
-    int s1 = secs/10;
-    int s2 = secs-s1*10;
+    unsigned int s1 = secs/10;
+    unsigned int s2 = secs-s1*10;
     sprintf( displayBuffer, "%02d:%02d:%02d.%d", hours, minutes, s1, s2 );
     return displayBuffer;
 }
