@@ -87,7 +87,7 @@ const charSet mathTrigCharset[] = {
 const menuItem mathTrigMenu[] = {
     { " sin ",  OperatePrecedence,  CALC_OP_SIN    },
     { " cos ",  OperatePrecedence,  CALC_OP_COS    },
-    { " tan",  OperatePrecedence,  CALC_OP_TAN    },
+    { " tan ",  OperatePrecedence,  CALC_OP_TAN    },
     { " sin\351", OperatePrecedence,  CALC_OP_ASIN   },
     { " cos\351", OperatePrecedence,  CALC_OP_ACOS   },
     { " tan\351", OperatePrecedence,  CALC_OP_ATAN   },
@@ -192,10 +192,10 @@ const menuItem mathConversion1Menu[] = {
 const menuItem mathConversion2Menu[] = {
     { "k\5\176lb ",    OperatePrecedence,  CALC_OP_CONV_KG_LB  },
     { " R\176P  ",   OperatePrecedence,  CALC_OP_R2P         },
-    { "\337\176R", OperatePrecedence, CALC_OP_D2R },
+    { "\337\176r", OperatePrecedence, CALC_OP_D2R },
     { "lb\176k\5 ",    OperatePrecedence,  CALC_OP_CONV_LB_KG  },
     { " P\176R  ", OperatePrecedence,  CALC_OP_P2R         },
-    { "R\176\337", OperatePrecedence, CALC_OP_R2D },
+    { "r\176\337", OperatePrecedence, CALC_OP_R2D },
 };
 
 const packedMenu2 mathConversion1 = {
@@ -272,10 +272,10 @@ const packedMenu2 mathOther = {
 const menuItem mathComplexMenu[] = {
     { " Ima\5",  OperatePrecedence, CALC_OP_IMAGINARY_PART  },  
     { "  // ",  OperatePrecedence, CALC_OP_PARALLEL        },  // 1/(1/X+1/y)
-    { " C\176R", OperatePrecedence, CALC_OP_COMPLEX_SPLIT   },
+    { " Cpx\176R", OperatePrecedence, CALC_OP_COMPLEX_SPLIT   },
     { " Real",  OperatePrecedence, CALC_OP_REAL_PART       },
-    { " Con\6",  OperatePrecedence, CALC_OP_CONJUGATE       },
-    { " R\176C",  OperatePrecedence, CALC_OP_COMPLEX_JOIN    },
+    { " con\6",  OperatePrecedence, CALC_OP_CONJUGATE       },
+    { " R\176Cpx",  OperatePrecedence, CALC_OP_COMPLEX_JOIN    },
 };
 
 const packedMenu2 mathComplex = {

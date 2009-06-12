@@ -3,6 +3,8 @@
 #include "menu.h"
 #include "characterset.h"
 #include "uWatch-LCD.h"
+#include "uWatch-op.h"
+
 #include "def.h"
 
 
@@ -71,6 +73,9 @@ int genericMenu2( const packedMenu2 *menu )
                     // draw BOTH LCD lines and we also highlight the current selection
     
                     sprintf( out, "%s%s%s", pmenu[0].name, pmenu[1].name, pmenu[2].name );
+                    char *s = pmenu[0].name;
+                    if ( s[1] == 's' && s[2] == 'i' &&  DegreesMode )
+                        strcat( out, "\337" );
                     UpdateLCDline1( out );
                     sprintf( out, "%s%s%s", pmenu[3].name, pmenu[4].name, pmenu[5].name );
                     UpdateLCDline2( out );
