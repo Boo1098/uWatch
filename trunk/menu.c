@@ -75,7 +75,7 @@ int genericMenu2( const packedMenu2 *menu )
                     sprintf( out, "%s%s%s", pmenu[0].name, pmenu[1].name, pmenu[2].name );
                     char *s = pmenu[0].name;
                     if ( s[1] == 's' && s[2] == 'i' &&  DegreesMode )
-                        *out = '\377';
+                        *out = '\337';
                     UpdateLCDline1( out );
                     sprintf( out, "%s%s%s", pmenu[3].name, pmenu[4].name, pmenu[5].name );
                     UpdateLCDline2( out );
