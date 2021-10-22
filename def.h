@@ -5,10 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <rtcc.h>
-#include <timer.h>
-#include <uart.h>
-#include <pwrmgnt.h>
+//#define rtcc_v1_3
+//#define _TMR_RTCC_V1
+//#include <rtcc.h>
+//#include <timer.h>
+//#include <uart.h>
+//#include <pwrmgnt.h>
 #include <ports.h>
 #include <string.h>
 #include "uWatch-op.h"
@@ -206,6 +208,81 @@ void Clock250KHz ( void );
 // resets the sleep timer
 #define ResetSleepTimer()   TMR1=0
 
+// union/structure for read/write of time into the RTCC device
+typedef union
+{ 
+    struct
+    {
+        BYTE    rsvd;       // reserved for future use
+        BYTE    sec;        // BCD codification for seconds, 00-59
+        BYTE    min;        // BCD codification for minutes, 00-59
+        BYTE    hour;       // BCD codification for hours, 00-24
+    }f;                     // field access
+    BYTE        b[4];       // BYTE access
+    unsigned short int      w[2];       // 16 bits access
+    unsigned long int      l;          // 32 bits access
+}rtccTime;
+
+// union/structure for read/write of date into the RTCC device
+typedef union
+{
+    struct
+    {
+        BYTE    wday;       // BCD codification for day of the week, 00-06
+        BYTE    mday;       // BCD codification for day of the month, 01-31
+        BYTE    mon;        // BCD codification for month, 01-12
+        BYTE    year;       // BCD codification for years, 00-99
+    }f;                     // field access
+    BYTE        b[4];       // BYTE access
+    unsigned short int      w[2];       // 16 bits access
+    unsigned long int      l;          // 32 bits access   
+}rtccDate;
+
+// union/structure for read/write of time and date from/to the RTCC device
+typedef union
+{ 
+    struct
+    {
+        BYTE    year;       // BCD codification for year, 00-99
+        BYTE    rsvd;       // reserved for future use
+        BYTE    mday;       // BCD codification for day of the month, 01-31
+        BYTE    mon;        // BCD codification for month, 01-12
+        BYTE    hour;       // BCD codification for hours, 00-24
+        BYTE    wday;       // BCD codification for day of the week, 00-06   
+        BYTE    sec;        // BCD codification for seconds, 00-59 
+        BYTE    min;        // BCD codification for minutes, 00-59
+    }f;                     // field access
+    BYTE        b[8];       // BYTE access
+    UINT16      w[4];       // 16 bits access
+    UINT32      l[2];       // 32 bits access
+}rtccTimeDate;
+
+// RTCC definitions
+typedef enum
+{
+    RCFGCAL_MASK_RTCEN      =   0x8000,
+    RCFGCAL_MASK_FRZ        =   0x4000,
+    RCFGCAL_MASK_RTCWREN    =   0x2000,
+    RCFGCAL_MASK_RTCSYNC    =   0x1000,
+    RCFGCAL_MASK_HALFSEC    =   0x0800,
+    RCFGCAL_MASK_RTCOE      =   0x0400,
+    RCFGCAL_MASK_RTCPTR     =   0x0300,
+    RCFGCAL_MASK_CAL        =   0x00ff
+}RCFGCAL_MASK;
+
+// accessing the RTCC/Alarm Value Register Window pointer bits
+typedef enum
+{
+    RTCCPTR_MASK_SECMIN     =   0x0000,
+    RTCCPTR_MASK_HRSWEEK    =   0x0100,
+    RTCCPTR_MASK_DAYMON     =   0x0200,
+    RTCCPTR_MASK_YEAR       =   0x0300   /* value reserved when used as Alarm Pointer */
+}RTCCPTR_MASK;
+
+
+#define mRtccSetRtcPtr(mask)   (RCFGCAL|=mask)
+#define mRtccClearRtcPtr()   (RCFGCAL&=~RCFGCAL_MASK_RTCPTR)
+
 
 extern rtccTime Time;
 extern rtccDate Date;
@@ -322,7 +399,7 @@ extern int displayFormat;
 
 int seconds ( rtccTime *t );
 
-void setBase ( int base );
+//void setBase ( int base );
 extern unsigned int rand32();
 extern int displayMode;
 extern int displayAccuracy;
@@ -334,5 +411,6 @@ char *chooseExact( int *sel, int kp, int max );
 extern double GMTOffset; //[];
 //extern int activeTimezone;
 
-extern void CalcRiseAndSet(double* rise, double* set);
+extern void CalcRiseAndSet(double* rise, double* set);
+
 #endif

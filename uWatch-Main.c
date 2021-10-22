@@ -25,7 +25,7 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
-#include <p24Fxxxx.h>
+#include <p24FJ128GA204.h>
 
 #include "uWatch-SetupMode.h"
 #include "uWatch-LCD.h"
@@ -36,9 +36,15 @@ This program is free software: you can redistribute it and/or modify
 #include "calculator.h"
 #include "stopwatch.h"
 
+
+
 //define the config fuse bits
-_CONFIG1( JTAGEN_OFF & GCP_OFF & GWRP_OFF & BKBUG_OFF & COE_OFF & FWDTEN_OFF & WINDIS_OFF & FWPSA_PR128 & WDTPS_PS1 );
-_CONFIG2( IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSCMOD_NONE );
+//_CONFIG1( JTAGEN_OFF & GCP_OFF & GWRP_OFF & BKBUG_OFF & COE_OFF & FWDTEN_OFF & WINDIS_OFF & FWPSA_PR128 & WDTPS_PS1 );
+//_CONFIG2( IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSCMOD_NONE );
+
+_CONFIG1( JTAGEN_OFF & GCP_OFF & GWRP_OFF & FWDTEN_OFF & WINDIS_OFF & FWPSA_PR128 & WDTPS_PS1 );
+_CONFIG2( IESO_OFF & FCKSM_CSECME & IOL1WAY_ON );
+
 
 // these flags were "char" except that makes bigger code!
 int CurrentMenu = 0;               // The number of the currently active menu line. 0 to MaxRPNmenuItems
@@ -112,6 +118,86 @@ int opPrec( int op )
               op == CALC_OP_DIVIDE ) prec = 2;
 
     return prec;
+}
+
+/*********************************************************************
+ * Function:        void RtccReadTime(rtccTime* pTm)
+ *
+ * PreCondition:    pTm a valid pointer
+ * Input:           pTm - pointer to a rtccTime union to store the current time
+ * Output:          None
+ * Side Effects:    None
+ * Overview:        The function updates the user supplied union/structure with
+ *                  the current time of the RTCC device.
+ *                  the current time of the RTCC device.
+ * Note:            - The function makes sure that the read value is valid.
+ *                  It avoids waiting for the RTCSYNC to be clear by 
+ *                  performing successive reads.
+ ********************************************************************/
+void RtccReadTime(rtccTime* pTm)
+{
+   rtccTimeDate rTD0, rTD1;
+
+   do
+   {
+      mRtccClearRtcPtr();
+      mRtccSetRtcPtr(RTCCPTR_MASK_HRSWEEK);
+
+      rTD0.w[2]=RTCVAL;
+      rTD0.w[3]=RTCVAL;    // read the user value
+   
+      mRtccClearRtcPtr();
+      mRtccSetRtcPtr(RTCCPTR_MASK_HRSWEEK);
+   
+      rTD1.w[2]=RTCVAL;
+      rTD1.w[3]=RTCVAL;    // read the user value
+
+   }while(rTD0.f.sec!=rTD1.f.sec); // make sure you have the same sec
+
+   pTm->f.hour=rTD0.f.hour;
+   pTm->f.min=rTD0.f.min;
+   pTm->f.sec=rTD0.f.sec;    // update user's data
+
+}
+
+/*********************************************************************
+ * Function:        void RtccReadDate(rtccDate* pDt)
+ *
+ * PreCondition:    pDt a valid pointer
+ * Input:           pDt - pointer to a rtccTime union to store the current time
+ * Output:          None
+ * Side Effects:    None
+ * Overview:        The function updates the user supplied union/structure with
+ *                  the current time of the RTCC device.
+ * Note:            - The function makes sure that the read value is valid.
+ *                  It avoids waiting for the RTCSYNC to be clear by 
+ *                  performing successive reads.
+ ********************************************************************/
+void RtccReadDate(rtccDate* pDt)
+{
+   rtccTimeDate rTD0, rTD1;
+   do
+   {
+      mRtccClearRtcPtr();
+      mRtccSetRtcPtr(RTCCPTR_MASK_YEAR);
+
+      rTD0.w[0]=RTCVAL;
+      rTD0.w[1]=RTCVAL;
+      rTD0.w[2]=RTCVAL;
+   
+      mRtccClearRtcPtr();
+      mRtccSetRtcPtr(RTCCPTR_MASK_YEAR);
+
+      rTD1.w[0]=RTCVAL;
+      rTD1.w[1]=RTCVAL;
+      rTD1.w[2]=RTCVAL;
+
+   }while(rTD0.f.mday!=rTD1.f.mday); // make sure you have the month day
+
+   pDt->f.mday=rTD0.f.mday;
+   pDt->f.mon=rTD0.f.mon;
+   pDt->f.wday=rTD0.f.wday;
+   pDt->f.year=rTD0.f.year;
 }
 
 
@@ -890,7 +976,8 @@ void LCDoff( void )
 void IdleI2C1( void )
 {
     /* Wait until I2C Bus is Inactive */
-    while ( I2C1CONbits.SEN || I2C1CONbits.PEN || I2C1CONbits.RCEN || I2C1CONbits.ACKEN || I2C1STATbits.TRSTAT );
+    
+    while ( I2C1CONLbits.SEN || I2C1CONLbits.PEN || I2C1CONLbits.RCEN || I2C1CONLbits.ACKEN || I2C1STATbits.TRSTAT );
 }
 
 // put these in the code segment
@@ -1077,7 +1164,9 @@ long long getUberSeconds( rtccDate date, rtccTime time ) {
 }
 */
 
-///int meld;
+
+
+
 
 //**********************************
 // displays the time and date on the LCD
@@ -1379,69 +1468,69 @@ void TimeDateDisplay( void ) {
 //***********************************
 // Interrupt service routine for Timer1
 // This is called by a timeout because the user as not pressed a key in a few minutes
-void __attribute__(( __interrupt__, auto_psv ) ) _T1Interrupt( void )
-{
-    //StopSleepTimer();            //switch the SLEEP timer OFF
-    LCDoff();                   //switch OFF LCD power
-    BacklightOFF();             //switch off backlight
-    _TRISB8 = 1;        //SCL
-    _TRISB9 = 1;        //SDA
-    IFS0bits.T1IF = 0;          //clear Timer1 interrupt
-    SetRow2;            //switch on the keypad row so the wake-up key can be activated.
-    SetRow6;            //switch on the keypad row so the wake-up key can be activated.
-    CNEN1bits.CN3IE = 1;  //enable CN3 pin for interrupt in SLEEP mode
-    IFS1bits.CNIF = 0;  //clear input change interrupt
-    IPC4bits.CNIP0 = 1; //set CN pin change interrupt priority level
-    IPC4bits.CNIP1 = 0; //priority is lower than Timer1, so CN vector is not called
-    IPC4bits.CNIP2 = 0; //operation simply continues from after the sleep instruction
-    IEC1bits.CNIE = 1;  //enable the pin change interrupt, ready to wake up
-
-    backlightAvailable = TRUE;          // allow backlight in calc mode
-
-    Sleep();                            //put the watch to SLEEP.
-    //only the RTCC is kept running at this point.
-    //when the watch wakes back up, operation will continue from this point.
-
-    Clock250KHz();      // testing if the speed is an issue with wake-from-sleep problem!
-
-    IEC1bits.CNIE = 0;          //switch off the pin change interrupt
-    IFS1bits.CNIF = 0;          //clear input change interrupt
-    LCDon();                    //switch on LCD power
-//    ResetSleepTimer();          //reset the timer
-    lcd_init();                 //initialise LCD
-    lcd_clear();
-
-    //re-enable the I2C bus
-    _TRISB8 = 0;        //SCL
-    _TRISB9 = 0;        //SDA
-    i2c_high_scl();     //clear the I2C bus
-    i2c_high_sda();
-
-
-    ResetSleepTimer();              //1.6.1 sleep timer resets on powerup
-
-
-    //StartSleepTimer();            //switch the SLEEP timer back on
-
-    //restore the previous display contents, except time mode
-//    if ( WatchMode != WATCH_MODE_TIME ) {
-        UpdateLCD( LCDhistory[0], 0 );
-        UpdateLCD( LCDhistory[0], 0 ); // twice!
-        UpdateLCD( LCDhistory[1], 40 );
-//    }
-
-
-    // restore any custom characters to LCD GRAM
-    restoreCustomCharacters();
-
-    // prevent mode-switch on sleep awakening
-    if ( KeyScan2() == KeyMode )
-        mask = 0;
-
-    // removed by BOO
-    // this is the ugly delay after wakeup where we see garbage...
-    //  DelayMs(500);               //add a key delay
-}
+//void __attribute__(( __interrupt__, auto_psv ) ) _T1Interrupt( void )
+//{
+//    //StopSleepTimer();            //switch the SLEEP timer OFF
+//    LCDoff();                   //switch OFF LCD power
+//    BacklightOFF();             //switch off backlight
+//    _TRISB8 = 1;        //SCL
+//    _TRISB9 = 1;        //SDA
+//    IFS0bits.T1IF = 0;          //clear Timer1 interrupt
+//    SetRow2;            //switch on the keypad row so the wake-up key can be activated.
+//    SetRow6;            //switch on the keypad row so the wake-up key can be activated.
+//    CNEN1bits.CN3IE = 1;  //enable CN3 pin for interrupt in SLEEP mode
+//    IFS1bits.CNIF = 0;  //clear input change interrupt
+//    IPC4bits.CNIP0 = 1; //set CN pin change interrupt priority level
+//    IPC4bits.CNIP1 = 0; //priority is lower than Timer1, so CN vector is not called
+//    IPC4bits.CNIP2 = 0; //operation simply continues from after the sleep instruction
+//    IEC1bits.CNIE = 1;  //enable the pin change interrupt, ready to wake up
+//
+//    backlightAvailable = TRUE;          // allow backlight in calc mode
+//
+//    Sleep();                            //put the watch to SLEEP.
+//    //only the RTCC is kept running at this point.
+//    //when the watch wakes back up, operation will continue from this point.
+//
+//    Clock250KHz();      // testing if the speed is an issue with wake-from-sleep problem!
+//
+//    IEC1bits.CNIE = 0;          //switch off the pin change interrupt
+//    IFS1bits.CNIF = 0;          //clear input change interrupt
+//    LCDon();                    //switch on LCD power
+////    ResetSleepTimer();          //reset the timer
+//    lcd_init();                 //initialise LCD
+//    lcd_clear();
+//
+//    //re-enable the I2C bus
+//    _TRISB8 = 0;        //SCL
+//    _TRISB9 = 0;        //SDA
+//    i2c_high_scl();     //clear the I2C bus
+//    i2c_high_sda();
+//
+//
+//    ResetSleepTimer();              //1.6.1 sleep timer resets on powerup
+//
+//
+//    //StartSleepTimer();            //switch the SLEEP timer back on
+//
+//    //restore the previous display contents, except time mode
+////    if ( WatchMode != WATCH_MODE_TIME ) {
+//        UpdateLCD( LCDhistory[0], 0 );
+//        UpdateLCD( LCDhistory[0], 0 ); // twice!
+//        UpdateLCD( LCDhistory[1], 40 );
+////    }
+//
+//
+//    // restore any custom characters to LCD GRAM
+//    restoreCustomCharacters();
+//
+//    // prevent mode-switch on sleep awakening
+//    if ( KeyScan2() == KeyMode )
+//        mask = 0;
+//
+//    // removed by BOO
+//    // this is the ugly delay after wakeup where we see garbage...
+//    //  DelayMs(500);               //add a key delay
+//}
 
 
 
@@ -1449,7 +1538,11 @@ void __attribute__(( __interrupt__, auto_psv ) ) _T1Interrupt( void )
 void ProgramInit( void )
 {
     _ADON = 0;      //switch OFF ADC
-    AD1PCFG = 0xFFFF; //set all ADC pins to digital I/O
+    
+    //set all ADC pins to digital I/O
+    ANSA = 0x0000;
+    ANSB = 0x0000; 
+    ANSC = 0x0000;
 
     //define all the I/O pins
 
@@ -1511,10 +1604,10 @@ void ProgramInit( void )
     TMR2 = 0x0;
     OC1RS = 0x01;
 
-    OC1CONbits.OCM0 = 0;    //switch PWM mode ON on OC1
-    OC1CONbits.OCM1 = 1;
-    OC1CONbits.OCM2 = 1;
-    OC1CONbits.OCTSEL = 0;  //output compare registers use Timer2
+    OC1CON1bits.OCM0 = 0;    //switch PWM mode ON on OC1
+    OC1CON1bits.OCM1 = 1;
+    OC1CON1bits.OCM2 = 1;
+    OC1CON1bits.OCTSEL0 = 0;  //output compare registers use Timer2
 
     _RP2R = 18;             //map RP2 pin 23 to OC1 PWM output using Peripheral Pin Select (for LCD power)
 
@@ -1522,7 +1615,7 @@ void ProgramInit( void )
     //initialise the RTCC
     __builtin_write_OSCCONL( 2 );   // enable the Secondary Oscillator
     RTCCunlock();           //allow write access to the RTCC
-    mRtccOn();              //switch on the RTCC
+    RCFGCALbits.RTCEN=0x1;              //switch on the RTCC
 
     //initialise the RTCC with something on first start, just in case it's corrupted
     Date.f.wday = 1;
@@ -1547,7 +1640,7 @@ void ProgramInit( void )
 
     //I2C setup
     //  I2C1BRG=2;              //buad rate reg must be a minimum of 2
-    I2C1CONbits.I2CEN = 0;  //disable the I2C bus
+    I2C1CONLbits.I2CEN = 0;  //disable the I2C bus
 
     // Power Down mode enabled, 11 bit sampling
     TwelveHour = TRUE;      //TRUE if 12 hour mode
