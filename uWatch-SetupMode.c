@@ -41,35 +41,28 @@ This program is free software: you can redistribute it and/or modify
 
 
 
-
+// Set RTCC Time
+// h = hours in 24 hour time
+// m = minutes
+// s = seconds
 void SetTimeBCD( unsigned int h, unsigned int m, unsigned int s )
 {
-    //if ( h < 0x24 && m < 0x60 && s < 0x60 ) {
-        RCFGCALbits.RTCPTR = 1;     //select correct RTC register
-        RTCVAL = h;
-
-        //the result is now a 16bit BCD number
-        //m = ( m << 8 ) + s;
-        RCFGCALbits.RTCPTR = 0;     //select correct RTC register
-        RTCVAL = ( m << 8 ) + s;
-    //}
+    // Write time to the 16-bit registers
+    TIMEH=(h/10)%10<<12|(h%10)<<8|(m/10)%10<<4|(m%10);
+    TIMEL=(s/10)%10<<12|(s%10)<<8;
 }
 
+// Set RTCC Date
+// y = last two digits of year
+// m = number of month 
+// d = number of day in month 
 int SetDateBCD( unsigned int y, unsigned int m, unsigned int d )
 {
     int v = ( m && m < 0x13 && d && d < 0x32 && y < 0x100 );
     if ( v ) {
-        //month and day are combined in the one word
-        m = ( m << 8 ) + d;
-
-        //the result is now a 16bit BCD number
-        RCFGCALbits.RTCPTR = 2;     //select correct RTC register
-        RTCVAL = m;
-
-        //the result is now an 8bit BCD number
-        RCFGCALbits.RTCPTR = 3;     //select correct RTC register
-        RTCVAL = y;
-
+        DATEH=(y/10)%10<<12|y%10<<8|(m/10)%10<<4|m%10;
+        DATELbits.DAYTEN=(d/10)%10;
+        DATELbits.DAYONE=d%10;
     }
     return v;
 }
@@ -399,11 +392,12 @@ char *chooseExact( int *sel, int kp, int max ) {
 
 
 int changeCalibration() {
-    int cal = RCFGCALbits.CAL;
+    int cal = RTCCON2H;
     if ( genericMenu( "Calibration", printNumber, decrement, increment, chooseExact, 256, &cal ) == MODE_KEYMODE )
         return MODE_KEYMODE;
-    RCFGCALbits.CAL = ( char ) cal;
-    I2CmemoryWRITE( 63535, RCFGCALbits.CAL );     //store value in last byte
+    RTCCON2H = ( char ) cal;
+    I2CmemoryWRITE( 63534, RTCCON2H & 0xff00 );
+    I2CmemoryWRITE( 63535, RTCCON2H & 0x00ff );     //store value in last two bytes
     return MODE_EXIT;
 }
 

@@ -244,13 +244,13 @@ typedef union
     struct
     {
         BYTE    year;       // BCD codification for year, 00-99
-        BYTE    rsvd;       // reserved for future use
-        BYTE    mday;       // BCD codification for day of the month, 01-31
         BYTE    mon;        // BCD codification for month, 01-12
-        BYTE    hour;       // BCD codification for hours, 00-24
+        BYTE    mday;       // BCD codification for day of the month, 01-31
         BYTE    wday;       // BCD codification for day of the week, 00-06   
-        BYTE    sec;        // BCD codification for seconds, 00-59 
+        BYTE    hour;       // BCD codification for hours, 00-24
         BYTE    min;        // BCD codification for minutes, 00-59
+        BYTE    sec;        // BCD codification for seconds, 00-59 
+        BYTE    rsvd;       // reserved for future use
     }f;                     // field access
     BYTE        b[8];       // BYTE access
     UINT16      w[4];       // 16 bits access

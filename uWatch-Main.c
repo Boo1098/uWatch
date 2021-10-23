@@ -25,7 +25,7 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
-#include <p24FJ128GA204.h>
+#include <p24FJ64GP205.h>
 
 #include "uWatch-SetupMode.h"
 #include "uWatch-LCD.h"
@@ -42,8 +42,8 @@ This program is free software: you can redistribute it and/or modify
 //_CONFIG1( JTAGEN_OFF & GCP_OFF & GWRP_OFF & BKBUG_OFF & COE_OFF & FWDTEN_OFF & WINDIS_OFF & FWPSA_PR128 & WDTPS_PS1 );
 //_CONFIG2( IESO_OFF & FCKSM_CSECME & OSCIOFNC_ON & IOL1WAY_ON & I2C1SEL_PRI & POSCMOD_NONE );
 
-_CONFIG1( JTAGEN_OFF & GCP_OFF & GWRP_OFF & FWDTEN_OFF & WINDIS_OFF & FWPSA_PR128 & WDTPS_PS1 );
-_CONFIG2( IESO_OFF & FCKSM_CSECME & IOL1WAY_ON );
+//_CONFIG1( JTAGEN_OFF & GCP_OFF & GWRP_OFF & FWDTEN_OFF & WINDIS_OFF & FWPSA_PR128 & WDTPS_PS1 );
+//_CONFIG2( IESO_OFF & FCKSM_CSECME & IOL1WAY_ON );
 
 
 // these flags were "char" except that makes bigger code!
@@ -136,23 +136,10 @@ int opPrec( int op )
  ********************************************************************/
 void RtccReadTime(rtccTime* pTm)
 {
-   rtccTimeDate rTD0, rTD1;
+   rtccTimeDate rTD0;
 
-   do
-   {
-      mRtccClearRtcPtr();
-      mRtccSetRtcPtr(RTCCPTR_MASK_HRSWEEK);
-
-      rTD0.w[2]=RTCVAL;
-      rTD0.w[3]=RTCVAL;    // read the user value
-   
-      mRtccClearRtcPtr();
-      mRtccSetRtcPtr(RTCCPTR_MASK_HRSWEEK);
-   
-      rTD1.w[2]=RTCVAL;
-      rTD1.w[3]=RTCVAL;    // read the user value
-
-   }while(rTD0.f.sec!=rTD1.f.sec); // make sure you have the same sec
+   rTD0.w[2]=TIMEH;
+   rTD0.w[3]=TIMEL;
 
    pTm->f.hour=rTD0.f.hour;
    pTm->f.min=rTD0.f.min;
@@ -175,25 +162,11 @@ void RtccReadTime(rtccTime* pTm)
  ********************************************************************/
 void RtccReadDate(rtccDate* pDt)
 {
-   rtccTimeDate rTD0, rTD1;
-   do
-   {
-      mRtccClearRtcPtr();
-      mRtccSetRtcPtr(RTCCPTR_MASK_YEAR);
-
-      rTD0.w[0]=RTCVAL;
-      rTD0.w[1]=RTCVAL;
-      rTD0.w[2]=RTCVAL;
+   rtccTimeDate rTD0;
    
-      mRtccClearRtcPtr();
-      mRtccSetRtcPtr(RTCCPTR_MASK_YEAR);
-
-      rTD1.w[0]=RTCVAL;
-      rTD1.w[1]=RTCVAL;
-      rTD1.w[2]=RTCVAL;
-
-   }while(rTD0.f.mday!=rTD1.f.mday); // make sure you have the month day
-
+   rTD0.w[1]=DATEL;
+   rTD0.w[0]=DATEH;
+   
    pDt->f.mday=rTD0.f.mday;
    pDt->f.mon=rTD0.f.mon;
    pDt->f.wday=rTD0.f.wday;
@@ -942,14 +915,13 @@ int GetNumBCD()
 // sets the RTCWREN bit to enable writing to the RTCC registers
 void RTCCunlock( void )
 {
-    asm volatile( "disi #5" );
-    asm volatile( "mov #0x55, w7" );
-    asm volatile( "mov w7, _NVMKEY" );
-    asm volatile( "mov #0xAA, w8" );
-    asm volatile( "mov w8, _NVMKEY" );
-    asm volatile( "bset _RCFGCAL, #13" );
-    asm volatile( "nop" );
-    asm volatile( "nop" );
+    asm volatile("DISI #6 ; disable interrupts for 6 instructions");
+    asm volatile("MOV #NVMKEY, W1");
+    asm volatile("MOV #0x55, W2 ; first unlock code");
+    asm volatile("MOV W2, [W1] ; write first unlock code");
+    asm volatile("MOV #0xAA, W3 ; second unlock sequence");
+    asm volatile("MOV W3, [W1] ; write second unlock sequence");
+    asm volatile("BCLR RTCCON1L,#11 ; clear the WRLOCK bit");
 }
 
 //***********************************
@@ -1546,13 +1518,14 @@ void ProgramInit( void )
 
     //define all the I/O pins
 
-    CNPU1 = 0;      //disable all pullups
-    CNPU2 = 0;
+    IOCPUA = 0;      //disable all pullups
+    IOCPUB = 0;
+    IOCPUC = 0;
 
-    _CN11PUE = 1;   //enable pull-up's on port pins for keypad columns
-    _CN2PUE = 1;
-    _CN19PUE = 1;
-    _CN3PUE = 1;
+    IOCPUBbits.IOCPUB15 = 1;   //enable pull-up's on port pins for keypad columns
+    IOCPUAbits.IOCPUA0 = 1;
+    IOCPUCbits.IOCPUC9 = 1;
+    IOCPUAbits.IOCPUA1 = 1;
 
     Clock250KHz();      //set the clock freuqnecy to 250KHz
 
@@ -1602,12 +1575,12 @@ void ProgramInit( void )
     T2CONbits.TCKPS1 = 0;
     PR2 = 0x0001;
     TMR2 = 0x0;
-    OC1RS = 0x01;
+    
+    CCP1CON1Lbits.CCPON = 1;    // Enable OC1
 
-    OC1CON1bits.OCM0 = 0;    //switch PWM mode ON on OC1
-    OC1CON1bits.OCM1 = 1;
-    OC1CON1bits.OCM2 = 1;
-    OC1CON1bits.OCTSEL0 = 0;  //output compare registers use Timer2
+    CCP1CON1Lbits.MOD = 0b0101;    //switch PWM mode ON on OC1
+
+    CCP1CON1Lbits.CLKSEL = 0b0010;  //output compare registers use Timer2
 
     _RP2R = 18;             //map RP2 pin 23 to OC1 PWM output using Peripheral Pin Select (for LCD power)
 
@@ -1615,7 +1588,7 @@ void ProgramInit( void )
     //initialise the RTCC
     __builtin_write_OSCCONL( 2 );   // enable the Secondary Oscillator
     RTCCunlock();           //allow write access to the RTCC
-    RCFGCALbits.RTCEN=0x1;              //switch on the RTCC
+    RTCCON1Lbits.RTCEN=0x1;              //switch on the RTCC
 
     //initialise the RTCC with something on first start, just in case it's corrupted
     Date.f.wday = 1;
@@ -1803,7 +1776,7 @@ int main( void )
     i2c_high_sda();
 
     //retrieve calibration value from last byte
-    RCFGCALbits.CAL = I2CmemoryREAD( 63535 );
+    RTCCON2H = I2CmemoryREAD( 63534 ) << 8 | I2CmemoryREAD(63535);
 
     //BacklightOFF();
 
